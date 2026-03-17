@@ -1,315 +1,354 @@
 import { ButtonLink } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
+import { AnswerBlocks } from "@/components/ui/answer-blocks";
+import { FaqAccordion } from "@/components/ui/faq-accordion";
+import { Card } from "@/components/ui/card";
 import { Section } from "@/components/ui/section";
 import { SectionTitle } from "@/components/ui/section-title";
+import {
+  JsonLd,
+  createBreadcrumbSchema,
+  createFaqSchema,
+  createServiceSchema
+} from "@/lib/seo";
 
-const overviewPoints = [
+const answerBlocks = [
   {
-    index: "01",
-    title: "從工作現場出發",
-    description:
-      "我們談的不是抽象工具功能，而是行政、企劃、行銷、業務、PM 與主管每天真正會遇到的資訊整理、溝通與協作工作。"
+    question: "OFFICE NEXT 的服務在做什麼？",
+    answer:
+      "我們把 AI 導入、品牌敘事與白領工作流程整理成可執行的顧問與訓練方案，讓團隊不只知道工具，而是真的知道怎麼工作。"
   },
   {
-    index: "02",
-    title: "建立可複製的方法",
-    description:
-      "服務重點不是一次性的加速，而是幫你整理出可持續使用、可擴張到團隊的工作方法，讓成果更穩定。"
-  },
-  {
-    index: "03",
-    title: "把 AI 放進日常節奏",
-    description:
-      "OFFICE NEXT 協助你把 AI 變成工作協作員，讓提案、整理、會議與內容產出都能更順地接上原本的工作流程。"
+    question: "怎麼判斷自己需要哪一種服務？",
+    answer:
+      "如果你需要先定義方向，適合從顧問開始；如果你需要讓團隊實際改變工作方式，適合從工作坊或企業內訓切入。"
   }
 ];
 
-const services = [
+const serviceSections = [
   {
-    id: "01",
-    title: "白領 AI 課程",
+    id: "service-ai-strategy",
+    name: "AI 策略顧問",
     description:
-      "從正確使用 GPT，到日常工作中的 AI 協作應用，幫助個人建立更聰明、更省力的工作方式。",
-    audience: "行政、企劃、行銷、業務、PM、主管",
-    outcome: "更快整理資訊、更穩定輸出內容、減少重工與重複"
+      "從目標、流程、角色分工到管理邊界，協助企業建立真正可執行的 AI 使用策略，而不是只收集一份工具名單。",
+    serviceType: "AI Strategy Consulting",
+    audience: "管理者、創辦人、顧問型團隊",
+    bestFor: "適合正在盤點導入方向、建立 AI 判斷框架與優先序的組織。",
+    outcomes: [
+      "更清楚的 AI 導入優先序與管理決策框架",
+      "哪些任務適合導入、哪些仍需人工判斷的明確邊界",
+      "可延續的流程與文件標準，而不是一次性的示範"
+    ],
+    scenarios: [
+      "團隊開始接觸 AI，但每個人理解不同，導致內部沒有共識。",
+      "管理層希望提高效率，卻不確定哪些流程值得先投入。",
+      "你需要一個能串起品牌、內容、管理與工作方法的上位策略。"
+    ]
   },
   {
-    id: "02",
-    title: "GPT 智慧工作模組",
+    id: "service-brand-design",
+    name: "品牌與服務重整",
     description:
-      "OFFICE NEXT 的旗艦課程，聚焦白領日常工作中最常見的資訊整理、提案架構、文案優化、會議彙整與半自動協作應用。",
-    audience: "想將 GPT 真正用進工作的人",
-    outcome: "從知道工具，到真正會用工具做事"
+      "整理服務敘事、提案架構、報價層級與對外頁面內容，讓品牌更清楚地被客戶、搜尋引擎與 AI 系統理解。",
+    serviceType: "Brand and Service Design",
+    audience: "品牌主理人、專業服務團隊",
+    bestFor: "適合服務內容說不清楚、品牌訊息分散、網站不夠聚焦的團隊。",
+    outcomes: [
+      "更清楚的服務架構與對外敘事方式",
+      "更容易被理解與擷取的品牌文案與頁面內容",
+      "讓高級感與資訊清晰度可以同時成立的內容策略"
+    ],
+    scenarios: [
+      "潛在客戶進站後無法快速理解你真正提供什麼。",
+      "品牌看起來不差，但服務層次與合作方式不夠明確。",
+      "你希望頁面更符合 SEO / GEO，但不想做成廉價內容網站。"
+    ]
   },
   {
-    id: "03",
-    title: "工作坊 / 實戰訓練",
+    id: "service-enterprise-enablement",
+    name: "企業合作與內訓",
     description:
-      "以實際工作場景為核心，透過案例與操作，讓學習不只是理解概念，而是直接進入應用。",
-    audience: "需要落地實作而非理論導向的團隊或個人",
-    outcome: "快速建立可立即使用的方法與流程"
-  },
-  {
-    id: "04",
-    title: "企業內訓",
-    description:
-      "協助企業從部門工作現場出發，設計更合適的 AI 提效與工作升級方案。",
-    audience: "企業、部門主管、HR、培訓單位",
-    outcome: "團隊效率提升、AI 使用落差縮小、工作節奏更一致"
-  },
-  {
-    id: "05",
-    title: "流程優化顧問",
-    description:
-      "針對特定工作場景重新梳理任務流程，找出可被 AI 協作與優化的關鍵節點。",
-    audience: "希望優化工作方法與流程的團隊或品牌",
-    outcome: "流程更清楚、重複工作減少、協作更順暢"
+      "以真實工作情境設計企業內訓、工作坊與導入節奏，讓管理者與團隊建立共同語言、工作標準與實作能力。",
+    serviceType: "Corporate AI Training",
+    audience: "企業管理者、知識工作團隊",
+    bestFor: "適合需要跨部門導入 AI、建立組織共同語言與訓練節奏的企業。",
+    outcomes: [
+      "更一致的 AI 使用原則與內部溝通語言",
+      "面向真實工作場景的訓練內容與實作模組",
+      "讓導入不只停留在口號，而能進入日常工作的組織能力"
+    ],
+    scenarios: [
+      "企業已經在談 AI，但各部門對導入期待完全不同。",
+      "內訓不能只是展示工具，你需要真正貼近工作情境的內容。",
+      "你想把 AI 變成組織能力，而不是短期專案。"
+    ]
   }
 ];
 
-const audiences = [
-  "每天被大量重複性工作消耗",
-  "用過 AI 工具，但還沒真正融入工作",
-  "團隊想升級，但沒有清楚方法",
-  "希望減少瞎忙，提升工作品質與效率",
-  "想建立可複製、可持續的工作方式"
-];
-
-const processSteps = [
+const selectorItems = [
   {
-    step: "01",
-    title: "了解需求",
-    description: "先釐清你目前的工作型態、團隊現況與希望改善的方向，確認問題不是表面上的工具焦慮。"
+    href: "#service-ai-strategy",
+    label: "AI 策略顧問",
+    note: "先定義方向與邏輯"
   },
   {
-    step: "02",
-    title: "盤點工作場景",
-    description: "進一步拆解真實任務流程，找出哪些工作重複、哪些協作斷點值得優先處理。"
+    href: "#service-brand-design",
+    label: "品牌與服務重整",
+    note: "先整理對外訊息與服務架構"
   },
   {
-    step: "03",
-    title: "設計適合的方案",
-    description: "依照你的目標與資源條件，配置適合的課程、工作坊、內訓或流程優化方式，而不是套用固定模板。"
-  },
-  {
-    step: "04",
-    title: "執行與優化",
-    description: "把方法真正落地到工作現場，並持續調整操作方式，讓 AI 協作可以穩定成為日常的一部分。"
+    href: "#service-enterprise-enablement",
+    label: "企業合作與內訓",
+    note: "先建立共同語言與落地能力"
   }
 ];
 
-function ServicesHero() {
+const decisionGuide = [
+  {
+    title: "如果你最需要的是釐清方向",
+    recommendation: "先從 AI 策略顧問開始",
+    description:
+      "當你還在盤點問題、優先序與導入範圍時，顧問比工作坊更適合，因為它能先建立判斷框架。"
+  },
+  {
+    title: "如果你最需要的是整理品牌與服務",
+    recommendation: "先從品牌與服務重整開始",
+    description:
+      "當你的服務內容、網站敘事或對外提案不夠清楚時，先整理品牌表達會比直接做訓練更有效。"
+  },
+  {
+    title: "如果你最需要的是讓團隊真的上手",
+    recommendation: "先從企業合作與內訓開始",
+    description:
+      "當管理者已經知道方向，但執行層仍缺少共同語言與工作方法時，訓練與工作坊更適合作為起點。"
+  }
+];
+
+const faqs = [
+  {
+    question: "Services 頁主要提供哪些服務？",
+    answer:
+      "這一頁主要介紹 AI 策略顧問、品牌與服務重整，以及企業合作與內訓三大核心方向。"
+  },
+  {
+    question: "如果我不知道該選顧問還是內訓，怎麼辦？",
+    answer:
+      "通常可先看你目前最急迫的是方向定義、品牌內容整理，還是團隊實作能力建立。這頁的 decision guide 就是為了協助這個判斷。"
+  },
+  {
+    question: "所有服務內容都能被搜尋引擎與 AI 讀取嗎？",
+    answer:
+      "可以。所有主要服務文案、適合對象、你會得到什麼與常見情境都已直接輸出在 HTML 中，互動只是輔助導覽。"
+  }
+];
+
+const subnavItems = [
+  { href: "#services-overview", label: "服務總覽" },
+  { href: "#services-selector", label: "服務導覽" },
+  { href: "#service-ai-strategy", label: "AI 策略顧問" },
+  { href: "#service-brand-design", label: "品牌與服務重整" },
+  { href: "#service-enterprise-enablement", label: "企業合作與內訓" },
+  { href: "#services-decision-guide", label: "選擇指南" },
+  { href: "#services-faq", label: "FAQ" }
+];
+
+export function ServicesPageContent() {
   return (
-    <section className="relative overflow-hidden border-b border-ink/6 bg-[#f6f1e9] pb-16 pt-20 md:pb-20 md:pt-28 lg:pb-24 lg:pt-32">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.74),transparent_38%)]" />
-      <div className="absolute inset-y-0 right-0 w-[46%] bg-[radial-gradient(circle_at_center,rgba(131,104,74,0.08),transparent_62%)]" />
-      <div className="absolute inset-0 bg-hero-grid bg-[size:72px_72px] opacity-[0.05]" />
-      <Container className="relative">
-        <div className="grid gap-12 lg:grid-cols-[1.08fr_0.92fr] lg:items-end">
+    <>
+      <JsonLd
+        data={[
+          createBreadcrumbSchema([
+            { name: "首頁", path: "/" },
+            { name: "服務項目", path: "/services" }
+          ]),
+          createFaqSchema(faqs),
+          ...serviceSections.map((service) =>
+            createServiceSchema({
+              name: service.name,
+              description: service.description,
+              path: "/services",
+              serviceType: service.serviceType,
+              audience: service.audience
+            })
+          )
+        ]}
+      />
+
+      <section className="relative overflow-hidden border-b border-ink/6 bg-[#f6f1e9] pb-16 pt-20 md:pb-20 md:pt-28 lg:pb-24 lg:pt-32">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.74),transparent_38%)]" />
+        <div className="absolute inset-y-0 right-0 w-[46%] bg-[radial-gradient(circle_at_center,rgba(131,104,74,0.08),transparent_62%)]" />
+        <div className="absolute inset-0 bg-hero-grid bg-[size:72px_72px] opacity-[0.05]" />
+        <Container className="relative grid gap-12 lg:grid-cols-[1.08fr_0.92fr] lg:items-end">
           <div className="max-w-[760px]">
             <p className="text-[11px] uppercase tracking-[0.34em] text-bronze">Services</p>
             <h1 className="mt-5 max-w-[11ch] text-balance text-[2.9rem] font-medium leading-[1.06] text-ink md:text-[4.8rem] lg:text-[5.4rem]">
-              為白領設計的 AI 工作升級服務
+              AI 顧問、品牌設計與企業合作
             </h1>
             <p className="mt-7 max-w-[43rem] text-[1.04rem] text-slate md:text-[1.16rem]">
-              從個人工作提效，到團隊協作升級，OFFICE NEXT 提供課程、工作坊、企業內訓與流程優化服務，幫助你把 AI 真正用進日常工作。
-            </p>
-            <p className="mt-5 text-[0.98rem] uppercase tracking-[0.18em] text-bronze/90 md:text-[1rem]">
-              不是增加更多工具，而是建立更好的工作方式。
+              OFFICE NEXT 的服務不是把工具一個個堆給你，而是幫你整理成能長期運作的管理方法。這一頁直接說明每項服務適合誰、會得到什麼，以及在哪些情境下最值得開始。
             </p>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <ButtonLink href="/contact">聯絡洽詢</ButtonLink>
+              <ButtonLink href="/contact">預約顧問需求討論</ButtonLink>
               <ButtonLink href="/corporate-training" variant="secondary">
-                查看企業合作
+                查看企業內訓方案
               </ButtonLink>
             </div>
           </div>
 
           <div className="rounded-[2.4rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.78),rgba(248,242,233,0.92))] p-7 shadow-[0_28px_70px_rgba(17,17,17,0.08)] backdrop-blur-sm md:p-9">
-            <p className="text-[11px] uppercase tracking-[0.3em] text-bronze">Service Focus</p>
-            <div className="mt-6 space-y-5">
-              <div className="border-b border-ink/8 pb-5">
-                <p className="text-sm uppercase tracking-[0.18em] text-slate/70">個人升級</p>
-                <p className="mt-2 text-[1.18rem] leading-8 text-ink">讓日常工作更快、更穩、更不容易重工。</p>
-              </div>
-              <div className="border-b border-ink/8 pb-5">
-                <p className="text-sm uppercase tracking-[0.18em] text-slate/70">團隊協作</p>
-                <p className="mt-2 text-[1.18rem] leading-8 text-ink">讓部門之間的工作節奏更一致，縮小 AI 使用落差。</p>
-              </div>
-              <div>
-                <p className="text-sm uppercase tracking-[0.18em] text-slate/70">流程優化</p>
-                <p className="mt-2 text-[1.18rem] leading-8 text-ink">把反覆出現的工作節點重新整理，讓 AI 真正接得上流程。</p>
-              </div>
+            <p className="text-[11px] uppercase tracking-[0.3em] text-bronze">Quick Answers</p>
+            <div className="mt-6">
+              <AnswerBlocks items={answerBlocks} />
             </div>
           </div>
-        </div>
-      </Container>
-    </section>
-  );
-}
+        </Container>
+      </section>
 
-function ServicesOverviewSection() {
-  return (
-    <Section>
-      <div className="grid gap-12 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
-        <SectionTitle
-          eyebrow="Overview"
-          title="你不需要學更多，而是需要用得更對"
-          description="OFFICE NEXT 的服務，不是把 AI 當作炫技工具，而是幫助你在真實工作場景中，建立更有效率、更穩定、更能複製的工作方法。"
-        />
-        <div className="grid gap-5 md:grid-cols-3">
-          {overviewPoints.map((item) => (
-            <Card
-              key={item.index}
-              className="flex min-h-[260px] flex-col justify-between rounded-[2.2rem] border border-ink/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(247,241,233,0.9))]"
-            >
-              <p className="font-serif text-3xl italic leading-none text-bronze">{item.index}</p>
-              <div className="mt-10">
-                <h2 className="text-[1.38rem] font-medium leading-8 text-ink">{item.title}</h2>
-                <p className="mt-4 text-[1rem] text-slate">{item.description}</p>
-              </div>
-            </Card>
-          ))}
-        </div>
+      <div className="sticky top-[78px] z-40 border-b border-ink/6 bg-paper/82 backdrop-blur-xl">
+        <Container className="overflow-x-auto">
+          <nav aria-label="Services 頁內導覽" className="flex min-w-max gap-3 py-4">
+            {subnavItems.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="rounded-full border border-ink/8 bg-white/70 px-4 py-2 text-sm text-slate transition hover:border-ink/16 hover:bg-white hover:text-ink"
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+        </Container>
       </div>
-    </Section>
-  );
-}
 
-function ServiceDetailsSection() {
-  return (
-    <Section surface="muted">
-      <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
-        <SectionTitle
-          eyebrow="Signature Services"
-          title="服務不是堆疊項目，而是對應不同工作升級階段"
-          description="無論你是想先把個人工作做順，還是要帶動整個團隊的協作升級，OFFICE NEXT 都有對應的服務形式，幫你從知道 AI，走到真正會一起工作。"
-        />
-        <div className="space-y-5">
-          {services.map((service) => (
-            <Card
-              key={service.id}
-              className="rounded-[2.5rem] border border-ink/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(248,242,233,0.94))] p-0"
-            >
-              <div className="grid gap-6 px-7 py-7 md:px-8 md:py-8 lg:grid-cols-[92px_1fr]">
-                <div className="flex items-start lg:justify-center">
-                  <span className="font-serif text-[2.6rem] italic leading-none text-bronze">{service.id}</span>
-                </div>
-                <div>
-                  <h2 className="text-[1.55rem] font-medium leading-9 text-ink">{service.title}</h2>
-                  <p className="mt-4 max-w-[48rem] text-[1rem] text-slate">{service.description}</p>
-                  <div className="mt-6 grid gap-4 border-t border-ink/8 pt-6 md:grid-cols-2">
-                    <div>
-                      <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">適合對象</p>
-                      <p className="mt-3 text-[1rem] text-ink">{service.audience}</p>
-                    </div>
-                    <div>
-                      <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">可得到的結果</p>
-                      <p className="mt-3 text-[1rem] text-ink">{service.outcome}</p>
+      <Section id="services-overview" className="scroll-mt-36">
+        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <SectionTitle
+            eyebrow="Core Services"
+            title="三個核心方向，對應三種不同需求"
+            description="這不是 SaaS pricing page，而是協助你理解不同合作方式該在什麼階段介入。"
+          />
+          <div className="grid gap-5 md:grid-cols-3">
+            {serviceSections.map((service) => (
+              <article
+                key={service.id}
+                className="rounded-[2.2rem] border border-ink/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(247,241,233,0.96))] p-6 shadow-[0_22px_60px_rgba(17,17,17,0.06)] transition duration-300 hover:-translate-y-1 hover:border-ink/14 hover:shadow-[0_28px_72px_rgba(17,17,17,0.1)]"
+              >
+                <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">{service.audience}</p>
+                <h2 className="mt-5 text-[1.35rem] font-medium leading-8 text-ink">{service.name}</h2>
+                <p className="mt-4 text-base text-slate">{service.description}</p>
+                <a href={`#${service.id}`} className="mt-6 inline-block text-sm text-ink transition hover:text-slate">
+                  跳到這項服務的完整說明
+                </a>
+              </article>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      <Section id="services-selector" surface="muted" className="scroll-mt-36">
+        <div className="grid gap-10 lg:grid-cols-[0.84fr_1.16fr] lg:items-start">
+          <SectionTitle
+            eyebrow="Service Selector"
+            title="用服務導覽 selector 快速定位最適合的方向"
+            description="這裡像 tabs，但實際上是可爬的錨點導覽。所有內容都已先 render，只是幫助使用者更快定位。"
+          />
+          <div className="grid gap-4 md:grid-cols-3">
+            {selectorItems.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="rounded-[1.9rem] border border-ink/8 bg-white/78 px-5 py-5 shadow-[0_16px_44px_rgba(17,17,17,0.05)] transition duration-300 hover:-translate-y-0.5 hover:border-ink/14 hover:bg-white hover:shadow-[0_24px_60px_rgba(17,17,17,0.08)]"
+              >
+                <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">Selector</p>
+                <h3 className="mt-4 text-[1.18rem] font-medium leading-8 text-ink">{item.label}</h3>
+                <p className="mt-3 text-sm text-slate">{item.note}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      {serviceSections.map((service) => (
+        <Section key={service.id} id={service.id} className="scroll-mt-36">
+          <div className="grid gap-10 lg:grid-cols-[0.84fr_1.16fr] lg:items-start">
+            <SectionTitle
+              eyebrow="Service Detail"
+              title={service.name}
+              description={service.description}
+            />
+            <div className="grid gap-5">
+              <div className="rounded-[2.5rem] border border-ink/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(247,241,233,0.98))] p-7 shadow-[0_24px_64px_rgba(17,17,17,0.06)]">
+                <div className="grid gap-5 md:grid-cols-3">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">適合對象</p>
+                    <p className="mt-4 text-base text-slate">{service.bestFor}</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">你會得到什麼</p>
+                    <div className="mt-4 grid gap-3 md:grid-cols-3">
+                      {service.outcomes.map((item) => (
+                        <div
+                          key={item}
+                          className="rounded-[1.5rem] border border-ink/8 bg-white/70 px-4 py-4 text-sm text-slate"
+                        >
+                          {item}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
+                <div className="mt-7 border-t border-ink/8 pt-6">
+                  <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">常見情境</p>
+                  <div className="mt-4 grid gap-3">
+                    {service.scenarios.map((scenario, index) => (
+                      <div
+                        key={scenario}
+                        className="flex items-start gap-4 rounded-[1.5rem] border border-ink/8 bg-white/72 px-4 py-4"
+                      >
+                        <span className="font-serif text-2xl italic leading-none text-bronze">0{index + 1}</span>
+                        <p className="text-base text-slate">{scenario}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-    </Section>
-  );
-}
-
-function AudienceSection() {
-  return (
-    <Section>
-      <div className="rounded-[2.8rem] border border-ink/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.74),rgba(246,239,230,0.9))] px-7 py-10 shadow-[0_26px_70px_rgba(17,17,17,0.06)] md:px-10 md:py-12 lg:px-12 lg:py-14">
-        <SectionTitle
-          eyebrow="Who It Is For"
-          title="這些服務，適合正在面對以下情境的人"
-          description="如果你不是缺少工具，而是缺少更清楚的方法與節奏，這些服務就是為你準備的。"
-        />
-        <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-5">
-          {audiences.map((item, index) => (
-            <div
-              key={item}
-              className="flex min-h-[220px] flex-col justify-between rounded-[2rem] border border-white/80 bg-white/70 px-6 py-7 shadow-[0_18px_45px_rgba(17,17,17,0.05)]"
-            >
-              <p className="font-serif text-3xl italic leading-none text-bronze">0{index + 1}</p>
-              <p className="mt-10 text-[1.16rem] leading-8 text-ink">{item}</p>
             </div>
-          ))}
-        </div>
-      </div>
-    </Section>
-  );
-}
-
-function ProcessSection() {
-  return (
-    <Section surface="muted">
-      <SectionTitle
-        eyebrow="Process"
-        title="從需求到落地，我們會一起走完這段過程"
-        description="合作不只是一次課程安排，而是從需求釐清到落地優化的完整過程。"
-      />
-      <div className="mt-12 grid gap-5 lg:grid-cols-4">
-        {processSteps.map((item) => (
-          <Card
-            key={item.step}
-            className="relative min-h-[280px] rounded-[2.3rem] border border-ink/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(247,241,233,0.94))]"
-          >
-            <div className="absolute left-8 top-8 h-px w-12 bg-bronze/45" />
-            <p className="pt-10 font-serif text-3xl italic leading-none text-bronze">{item.step}</p>
-            <h2 className="mt-8 text-[1.4rem] font-medium leading-8 text-ink">{item.title}</h2>
-            <p className="mt-4 text-[1rem] text-slate">{item.description}</p>
-          </Card>
-        ))}
-      </div>
-    </Section>
-  );
-}
-
-function FinalCta() {
-  return (
-    <Section className="pb-24 pt-8 md:pt-10">
-      <div className="rounded-[2.9rem] border border-white/10 bg-[linear-gradient(135deg,#111111_0%,#1d1d1d_100%)] px-8 py-12 text-paper shadow-[0_36px_92px_rgba(17,17,17,0.18)] md:px-12 md:py-16">
-        <div className="grid gap-10 lg:grid-cols-[1.14fr_0.86fr] lg:items-end">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.32em] text-[#d7c5ab]">Next Step</p>
-            <h2 className="mt-5 max-w-[12ch] text-balance text-[2.2rem] font-medium leading-[1.14] md:text-[4rem]">
-              找到最適合你的工作升級方式
-            </h2>
-            <p className="mt-6 max-w-[39rem] text-[1rem] text-[#e6dfd5] md:text-[1.05rem]">
-              如果你正在思考，哪些工作該交給 AI、哪些流程值得重新設計，OFFICE NEXT 可以陪你一起找到更適合的方式。
-            </p>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap lg:justify-end">
-            <ButtonLink href="/contact" className="bg-paper text-ink hover:bg-white">
-              聯絡洽詢
-            </ButtonLink>
-            <ButtonLink
-              href="/corporate-training"
-              variant="secondary"
-              className="border-white/16 bg-white/6 text-paper hover:bg-white/12 hover:text-paper"
-            >
-              查看企業合作
-            </ButtonLink>
+        </Section>
+      ))}
+
+      <Section id="services-decision-guide" surface="muted" className="scroll-mt-36">
+        <div className="grid gap-10 lg:grid-cols-[0.88fr_1.12fr] lg:items-start">
+          <SectionTitle
+            eyebrow="Decision Guide"
+            title="怎麼選適合自己的服務"
+            description="這個區塊像互動式 decision guide，但每個判斷選項與答案都先存在 HTML，只是以可掃讀的模組化方式呈現。"
+          />
+          <div className="grid gap-5">
+            {decisionGuide.map((item) => (
+              <article
+                key={item.title}
+                className="group rounded-[2.3rem] border border-ink/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(247,241,233,0.98))] p-7 shadow-[0_22px_58px_rgba(17,17,17,0.05)] transition duration-300 hover:-translate-y-0.5 hover:border-ink/14 hover:shadow-[0_28px_70px_rgba(17,17,17,0.08)]"
+              >
+                <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">{item.title}</p>
+                <h3 className="mt-4 text-[1.35rem] font-medium leading-8 text-ink">{item.recommendation}</h3>
+                <p className="mt-4 text-base text-slate">{item.description}</p>
+              </article>
+            ))}
           </div>
         </div>
-      </div>
-    </Section>
-  );
-}
+      </Section>
 
-export function ServicesPageContent() {
-  return (
-    <>
-      <ServicesHero />
-      <ServicesOverviewSection />
-      <ServiceDetailsSection />
-      <AudienceSection />
-      <ProcessSection />
-      <FinalCta />
+      <Section id="services-faq" className="scroll-mt-36 pb-24 pt-8 md:pt-10">
+        <div className="grid gap-10 lg:grid-cols-[0.86fr_1.14fr] lg:items-start">
+          <SectionTitle
+            eyebrow="FAQ"
+            title="服務相關常見問題"
+            description="FAQ 採用高級 accordion，但所有答案一開始就存在頁面 HTML 中，互動只改善閱讀體驗。"
+          />
+          <FaqAccordion items={faqs} firstOpen />
+        </div>
+      </Section>
     </>
   );
 }

@@ -1,12 +1,13 @@
-import type { Metadata } from "next";
-
 import { ServicesPageContent } from "@/components/services/services-page-content";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = createPageMetadata({
+  path: "/services",
   title: "服務項目",
   description:
-    "OFFICE NEXT 辦公進化所提供為白領設計的 AI 工作升級服務，涵蓋白領 AI 課程、GPT 智慧工作模組、工作坊、企業內訓與流程優化顧問。"
-};
+    "查看 OFFICE NEXT 的 AI 策略顧問、品牌與服務設計、工作流程重整等核心服務，了解適合對象與合作方向。",
+  keywords: ["服務項目", "AI 顧問服務", "品牌顧問", "工作流程設計"]
+});
 
 export default function ServicesPage() {
   return <ServicesPageContent />;

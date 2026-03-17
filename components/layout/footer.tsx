@@ -1,14 +1,14 @@
 import Link from "next/link";
 
-import { siteConfig } from "@/lib/site";
+import { brandEntity, siteConfig } from "@/lib/site";
 
 import { Container } from "../ui/container";
 
 const footerLinks = [
-  { href: "/services", label: "顧問與課程" },
-  { href: "/corporate-training", label: "企業內訓" },
-  { href: "/about", label: "品牌理念" },
-  { href: "/contact", label: "聯絡我們" }
+  { href: "/services", label: "查看服務項目與合作方向" },
+  { href: "/corporate-training", label: "了解企業內訓與合作模式" },
+  { href: "/about", label: "認識 OFFICE NEXT 的品牌定位" },
+  { href: "/contact", label: "前往聯絡頁提出需求" }
 ];
 
 export function Footer() {
@@ -19,28 +19,31 @@ export function Footer() {
           <p className="text-sm font-semibold uppercase tracking-[0.26em] text-ink">
             {siteConfig.shortName}
           </p>
-          <p className="max-w-2xl text-base text-slate">{siteConfig.description}</p>
+          <p className="max-w-2xl text-base text-slate">{brandEntity.shortDescription}</p>
           <p className="text-sm tracking-[0.14em] text-slate">
-            OFFICE NEXT 辦公進化所
+            {brandEntity.positioning}
             <br />
-            讓 AI 成為你的工作協作員
+            {brandEntity.proposition}
           </p>
         </div>
         <div className="space-y-4">
           <p className="text-xs uppercase tracking-[0.28em] text-bronze">Explore</p>
-          <div className="grid gap-3 text-sm text-slate">
+          <nav aria-label="頁尾導覽" className="grid gap-3 text-sm text-slate">
             {footerLinks.map((item) => (
               <Link key={item.href} href={item.href} className="transition hover:text-ink">
                 {item.label}
               </Link>
             ))}
-          </div>
+          </nav>
         </div>
         <div className="space-y-4">
-          <p className="text-xs uppercase tracking-[0.28em] text-bronze">Contact</p>
+          <p className="text-xs uppercase tracking-[0.28em] text-bronze">Brand Entity</p>
           <div className="space-y-3 text-sm text-slate">
-            <p>企業課程與顧問合作洽詢</p>
-            <p>hello@officenext.tw</p>
+            <p>{brandEntity.url}</p>
+            <Link href={`mailto:${siteConfig.contactEmail}`} className="transition hover:text-ink">
+              {siteConfig.contactEmail}
+            </Link>
+            <p>Social links reserved for future sameAs profiles</p>
           </div>
         </div>
       </Container>
