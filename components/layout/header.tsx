@@ -7,23 +7,25 @@ import { Container } from "../ui/container";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 border-b border-ink/8 bg-paper/85 backdrop-blur-xl">
-      <Container className="flex h-20 items-center justify-between gap-6">
+    <header className="sticky top-0 z-50 border-b border-ink/6 bg-paper/86 backdrop-blur-xl">
+      <Container className="flex h-[78px] items-center justify-between gap-6">
         <Link href="/" className="min-w-0">
-          <div className="text-sm font-semibold uppercase tracking-[0.26em] text-ink">
+          <div className="text-[0.9rem] font-semibold uppercase tracking-[0.28em] text-ink">
             {siteConfig.shortName}
           </div>
-          <div className="truncate pt-1 text-xs tracking-[0.22em] text-slate">辦公進化所</div>
+          <div className="truncate pt-1 text-[11px] tracking-[0.22em] text-slate">
+            辦公進化所
+          </div>
         </Link>
-        <nav className="hidden items-center gap-7 text-sm text-slate lg:flex">
+        <nav className="hidden items-center gap-8 text-sm text-slate lg:flex">
           {siteConfig.navItems.map((item) => (
             <Link key={item.href} href={item.href} className="transition hover:text-ink">
               {item.label}
             </Link>
           ))}
         </nav>
-        <ButtonLink href="/contact" variant="secondary" className="px-4 py-2.5 text-xs">
-          聯絡我們
+        <ButtonLink href="/contact" variant="secondary" className="px-5 py-3 text-[11px] tracking-[0.22em]">
+          預約顧問諮詢
         </ButtonLink>
       </Container>
     </header>

@@ -3,27 +3,27 @@ import { Section } from "../ui/section";
 import { SectionTitle } from "../ui/section-title";
 
 const painPoints = [
-  "會議紀錄、資料彙整、摘要重寫，一做再做，花很多時間卻很難累積真正價值。",
-  "你可能試過 ChatGPT，但它還只是偶爾幫忙，沒有真正成為工作的一部分。",
-  "你希望工作更省力、更穩定，但不想一開始就被技術門檻嚇退。",
-  "知道 AI 很重要，卻不知道該從個人應用、團隊協作還是流程優化先下手。"
+  "每天忙於整理資料、摘要資訊、撰寫回覆與例行報表，時間被大量低價值重複工作吃掉。",
+  "知道 ChatGPT 或各種 AI 工具有幫助，但無法串成穩定工作流程，只能零碎使用。",
+  "團隊內每個人各自摸索，缺少一致的方法與標準，無法真正放大效率成果。",
+  "想導入 AI，卻擔心流程混亂、輸出品質不穩，最後反而增加溝通與管理成本。"
 ];
 
 export function PainPointsSection() {
   return (
-    <Section>
+    <Section className="pt-18 md:pt-24">
       <SectionTitle
         eyebrow="Pain Points"
-        title="你忙的，很多其實不該一直由你親手重做"
-        description="如果你每天都在以下情境裡反覆消耗，OFFICE NEXT 會很適合你。"
+        title="真正拖慢工作效率的，往往不是能力，而是流程。"
+        description="當重複工作持續堆疊，團隊即使很努力，也很難把時間投入在真正重要的判斷與決策。OFFICE NEXT 針對的正是這類白領工作現場。"
       />
       <div className="mt-12 grid gap-6 md:grid-cols-2">
         {painPoints.map((item, index) => (
-          <Card key={item} className="flex min-h-52 flex-col justify-between">
-            <span className="text-sm font-medium uppercase tracking-[0.22em] text-bronze">
-              0{index + 1}
+          <Card key={item} className="flex min-h-[240px] flex-col justify-between">
+            <span className="text-[11px] font-medium uppercase tracking-[0.26em] text-bronze">
+              Pain 0{index + 1}
             </span>
-            <p className="mt-10 text-lg leading-8 text-slate">{item}</p>
+            <p className="mt-10 max-w-[24rem] text-[1.2rem] leading-9 text-ink">{item}</p>
           </Card>
         ))}
       </div>

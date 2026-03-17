@@ -3,28 +3,28 @@ import { Section } from "../ui/section";
 
 export function FinalCtaSection() {
   return (
-    <Section className="pb-28 pt-10">
-      <div className="rounded-[2.5rem] bg-[#111111] px-8 py-12 text-paper shadow-soft md:px-12 md:py-16">
+    <Section className="pb-24 pt-8 md:pb-28">
+      <div className="rounded-[2.8rem] border border-white/10 bg-[linear-gradient(135deg,#111111_0%,#1c1c1c_100%)] px-8 py-12 text-paper shadow-[0_34px_90px_rgba(17,17,17,0.18)] md:px-12 md:py-16">
         <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
           <div>
-            <p className="text-xs uppercase tracking-[0.32em] text-[#d4c2a8]">Start Now</p>
-            <h2 className="mt-5 max-w-3xl text-balance text-3xl font-medium leading-tight md:text-5xl">
-              把重複工作交給 AI，把價值留給自己
+            <p className="text-[11px] uppercase tracking-[0.32em] text-[#d7c5ab]">Start A Better Workflow</p>
+            <h2 className="mt-5 max-w-[11ch] text-balance text-[2.2rem] font-medium leading-[1.14] md:text-[4rem]">
+              準備好讓團隊工作方式，正式升級到 AI 協作階段。
             </h2>
-            <p className="mt-6 max-w-3xl text-base leading-8 text-[#e4ddd4] md:text-lg">
-              如果你希望讓個人工作更有效率，或想為團隊建立更成熟的 AI 協作方式，OFFICE NEXT 可以陪你一起開始。
+            <p className="mt-6 max-w-[38rem] text-[1rem] leading-8 text-[#e6dfd5] md:text-[1.05rem]">
+              無論你要規劃個人效率升級、GPT 工作模組，或企業內訓導入，OFFICE NEXT 都能協助你把 AI 從工具使用，推進為真正可執行的工作流程。
             </p>
           </div>
-          <div className="flex flex-wrap gap-4 lg:justify-end">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap lg:justify-end">
             <ButtonLink href="/contact" className="bg-paper text-ink hover:bg-white">
-              立即洽詢
+              預約顧問諮詢
             </ButtonLink>
             <ButtonLink
               href="/services"
               variant="secondary"
-              className="border-white/20 bg-white/5 text-paper hover:bg-white/10 hover:text-paper"
+              className="border-white/16 bg-white/6 text-paper hover:bg-white/12 hover:text-paper"
             >
-              查看服務
+              查看服務方案
             </ButtonLink>
           </div>
         </div>

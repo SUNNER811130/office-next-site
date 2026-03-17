@@ -21,15 +21,17 @@ const displayFont = Instrument_Serif({
   display: "swap"
 });
 
+const defaultTitle = `${siteConfig.shortName} | 讓 AI 成為你的工作協作員`;
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.shortName}｜讓 AI 成為你的工作協作員`,
-    template: `%s｜${siteConfig.shortName}`
+    default: defaultTitle,
+    template: `%s | ${siteConfig.shortName}`
   },
   description: siteConfig.description,
   openGraph: {
-    title: `${siteConfig.shortName}｜讓 AI 成為你的工作協作員`,
+    title: defaultTitle,
     description: siteConfig.description,
     url: siteConfig.url,
     siteName: siteConfig.name,
@@ -38,7 +40,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `${siteConfig.shortName}｜讓 AI 成為你的工作協作員`,
+    title: defaultTitle,
     description: siteConfig.description
   }
 };

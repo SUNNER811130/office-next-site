@@ -4,9 +4,9 @@ import { Section } from "../ui/section";
 import { SectionTitle } from "../ui/section-title";
 
 const insights = [
-  "不是你效率差，是你一直在做 AI 能接手的事。",
-  "很多人學 AI 之後還是很忙，問題不在工具，而在做事方式。",
-  "未來白領真正的差距，不只是能力差距，而是工作設計能力差距。"
+  "AI 導入真正的分水嶺，不是工具知道多少，而是團隊是否重寫了工作分工。",
+  "當每個人都在用 AI，真正的競爭力來自組織是否建立了更穩定的工作標準。",
+  "白領提效的下一步，不是更忙地做更多事，而是重新定義哪些工作本來就不該由人親自完成。"
 ];
 
 export function InsightsSection() {
@@ -14,20 +14,20 @@ export function InsightsSection() {
     <Section>
       <SectionTitle
         eyebrow="Perspective"
-        title="觀點，不只來自工具，而是來自工作現場"
-        description="OFFICE NEXT 持續分享白領 AI 提效、辦公自動化與工作流程升級相關內容，幫助更多人用更輕盈的方法，面對日常工作的複雜與重複。"
+        title="不是追逐 AI 話題，而是建立更成熟的工作觀點。"
+        description="OFFICE NEXT 將 AI 放回商務現場來理解，持續關注白領工作流程如何被重新整理，以及企業與個人應如何建立新的效率判斷。"
       />
       <div className="mt-12 grid gap-6 lg:grid-cols-3">
-        {insights.map((item) => (
-          <Card key={item} className="flex min-h-64 flex-col justify-between">
-            <p className="font-serif text-3xl italic leading-tight text-bronze">Essay</p>
-            <p className="mt-10 text-xl leading-9 text-ink">{item}</p>
+        {insights.map((item, index) => (
+          <Card key={item} className="flex min-h-[280px] flex-col justify-between">
+            <p className="font-serif text-3xl italic leading-tight text-bronze">0{index + 1}</p>
+            <p className="mt-12 text-[1.35rem] leading-10 text-ink">{item}</p>
           </Card>
         ))}
       </div>
       <div className="mt-10">
         <ButtonLink href="/about" variant="secondary">
-          閱讀更多觀點
+          了解品牌觀點
         </ButtonLink>
       </div>
     </Section>

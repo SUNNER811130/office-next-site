@@ -3,22 +3,22 @@ import { Section } from "../ui/section";
 export function WhySection() {
   return (
     <Section surface="muted">
-      <div className="mx-auto max-w-5xl rounded-[2.5rem] border border-ink/10 bg-white/85 p-8 shadow-soft md:p-12">
-        <p className="text-xs uppercase tracking-[0.32em] text-bronze">Why We Started</p>
-        <div className="mt-6 grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="space-y-6 text-base leading-8 text-slate md:text-lg">
+      <div className="mx-auto max-w-[1120px] rounded-[2.75rem] border border-white/70 bg-white/78 p-8 shadow-[0_24px_80px_rgba(17,17,17,0.06)] md:p-12 lg:p-14">
+        <p className="text-[11px] uppercase tracking-[0.34em] text-bronze">Why We Started</p>
+        <div className="mt-6 grid gap-10 lg:grid-cols-[1.12fr_0.88fr]">
+          <div className="space-y-6 text-[1rem] text-slate md:text-[1.05rem]">
             <p>
-              現在很多白領真正疲憊的，不是高難度挑戰，而是每天被大量零碎、反覆、低價值但又不得不做的工作綁住。
+              多數人已經知道 AI 有幫助，但真正卡住的，往往不是「要不要用」，而是「怎麼把它放進每天的工作裡」。尤其在白領場景中，工作經常跨越簡報、報表、回覆、資料整理與跨部門協作，工具再多，若沒有方法，仍然難以形成穩定產出。
             </p>
             <p>
-              會議記錄、資料整理、提案摘要、報表彙整、文字修稿、流程追蹤、跨部門溝通每一件看起來都不大，卻不斷消耗專注力、判斷力與創造力。
+              OFFICE NEXT 因此從商務脈絡出發，重新整理 AI 在工作現場的角色。我們關心的是效率如何被系統化，而不是單點技巧如何被短暫炫耀。
             </p>
             <p>
-              OFFICE NEXT 相信，真正的辦公進化，不是把人逼得更忙，而是讓人把時間留給更值得被人完成的事。
+              這也是品牌成立的原因：讓 AI 不只是更快，而是讓工作方式本身變得更成熟、更有秩序。
             </p>
           </div>
-          <blockquote className="flex items-end rounded-[2rem] bg-ink px-8 py-10 text-2xl leading-relaxed text-paper md:text-3xl">
-            不是所有工作都該由人重複完成。
+          <blockquote className="flex items-end rounded-[2.2rem] bg-ink px-8 py-10 text-[1.9rem] leading-[1.45] text-paper md:text-[2.45rem]">
+            把時間留給判斷、溝通與價值創造，把重複工作交給 AI。
           </blockquote>
         </div>
       </div>

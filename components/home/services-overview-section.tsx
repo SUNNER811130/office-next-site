@@ -3,25 +3,38 @@ import { Section } from "../ui/section";
 import { SectionTitle } from "../ui/section-title";
 
 const services = [
-  "從正確使用 GPT 到日常工作實戰，幫助個人把 AI 變成可靠的工作協作員。",
-  "聚焦真實工作情境，透過案例與操作，建立可立即上手的方法與流程。",
-  "協助團隊理解 AI 的導入方式，從工作習慣、協作流程到部門效率全面升級。",
-  "針對特定工作場景，重新梳理任務流程，找出可被 AI 協作與優化的關鍵節點。"
+  {
+    label: "AI 工作盤點",
+    description: "盤點個人或團隊中高頻重複工作的節點，找出最值得先交給 AI 的工作環節。"
+  },
+  {
+    label: "流程與指令設計",
+    description: "從任務拆解、提示設計到輸出格式，建立更穩定的 AI 協作方式，而不是零散試用。"
+  },
+  {
+    label: "部門應用情境整理",
+    description: "針對行政、營運、行銷、專案與管理層常見場景，整理可實際採用的工作模組。"
+  },
+  {
+    label: "內部落地與推進",
+    description: "讓 AI 導入不只停在個人熟悉，而能延伸到團隊共識、操作標準與實際執行。"
+  }
 ];
 
 export function ServicesOverviewSection() {
   return (
     <Section surface="muted">
-      <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+      <div className="grid gap-12 lg:grid-cols-[0.92fr_1.08fr]">
         <SectionTitle
           eyebrow="How We Help"
-          title="從瞎忙，到智動"
-          description="OFFICE NEXT 提供的不只是工具教學，而是一套更適合白領的工作升級方法。"
+          title="從工具使用，走向工作方法升級。"
+          description="OFFICE NEXT 的服務重點不是多教幾個指令，而是協助你把 AI 安放進工作流程，形成一套更成熟、更可複製的做事方式。"
         />
-        <div className="grid gap-5">
+        <div className="grid gap-5 md:grid-cols-2">
           {services.map((item) => (
-            <Card key={item} className="bg-[#fcfaf7]">
-              <p className="text-lg leading-8 text-slate">{item}</p>
+            <Card key={item.label} className="flex min-h-[220px] flex-col justify-between bg-[linear-gradient(180deg,rgba(255,255,255,0.86),rgba(247,241,233,0.96))]">
+              <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">{item.label}</p>
+              <p className="mt-8 text-lg text-slate">{item.description}</p>
             </Card>
           ))}
         </div>

@@ -3,19 +3,27 @@ import { SectionTitle } from "../ui/section-title";
 
 export function BrandCoreSection() {
   return (
-    <Section>
-      <div className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
+    <Section className="pb-16 pt-16 md:pb-20 md:pt-20">
+      <div className="grid gap-12 lg:grid-cols-[1.02fr_0.98fr] lg:items-start">
         <SectionTitle
           eyebrow="Core Proposition"
-          title="重新設計你的辦公方式"
-          description="很多人以為工作升級，是更努力一點、更快一點、再撐一下。但真正拉開差距的，往往不是投入更多時間，而是懂得把哪些事交給自己，哪些事交給 AI。"
+          title="把 AI 放進真實工作，而不是停在示範與話題。"
+          description="OFFICE NEXT 關心的不是工具熱潮，而是白領工作者如何在日常協作、彙整、撰寫與回覆中，建立一套真正能持續使用的 AI 工作方式。"
         />
-        <div className="space-y-8 text-base leading-8 text-slate md:text-lg">
-          <p>
-            OFFICE NEXT 不只是教你怎麼使用工具，而是幫助你把 AI 真正接進工作流程，從日常協作、資訊整理、會議彙整，到提案、追進度與重複事務優化，讓工作更有秩序，也更有餘裕。
-          </p>
-          <div className="rounded-[2rem] border border-ink/10 bg-[#f6f2eb] px-7 py-8 text-sm uppercase tracking-[0.32em] text-ink">
-            更少重複 / 更高價值 / 更聰明的辦公方式
+        <div className="space-y-8">
+          <div className="space-y-5 text-[1rem] text-slate md:text-[1.05rem]">
+            <p>
+              我們將 AI 視為工作協作員，而非短期噱頭。品牌聚焦在辦公場景中的效率瓶頸，協助個人與團隊把重複工作標準化、把流程重新分工，讓人力回到更需要判斷與溝通的位置。
+            </p>
+            <p>
+              因此，OFFICE NEXT 的內容設計、課程與顧問服務都圍繞同一件事展開：讓 AI 真正進入工作流程，而不是停留在一兩次驚艷的操作展示。
+            </p>
+          </div>
+          <div className="rounded-[2rem] border border-ink/8 bg-[#f6f1e9] px-7 py-8">
+            <p className="text-[11px] uppercase tracking-[0.32em] text-bronze">Brand Promise</p>
+            <p className="mt-3 text-xl leading-9 text-ink md:text-2xl">
+              讓每一次導入 AI，都能回到商務現場可執行、可擴散、可交接的標準。
+            </p>
           </div>
         </div>
       </div>
