@@ -1,0 +1,9 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="900" fill="#F8F3EC"/>
+  <rect x="84" y="84" width="1032" height="732" rx="44" fill="#FCFAF7"/>
+  <rect x="144" y="160" width="416" height="560" rx="28" fill="#E7DDD1"/>
+  <rect x="610" y="160" width="446" height="132" rx="24" fill="#F0E5D7"/>
+  <rect x="610" y="326" width="446" height="132" rx="24" fill="#EFE7DC"/>
+  <rect x="610" y="492" width="446" height="132" rx="24" fill="#F0E5D7"/>
+  <text x="144" y="760" fill="#111111" font-family="Georgia, serif" font-size="54">Advisory Section Placeholder</text>
+</svg>

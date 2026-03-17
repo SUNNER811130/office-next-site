@@ -5,7 +5,7 @@ import { Footer } from "@/components/layout/footer";
 import { FloatingCta } from "@/components/layout/floating-cta";
 import { Header } from "@/components/layout/header";
 import { JsonLd, createOrganizationSchema, createWebsiteSchema } from "@/lib/seo";
-import { siteConfig } from "@/lib/site";
+import { getDynamicSiteConfig } from "@/lib/site";
 
 import "./globals.css";
 
@@ -23,49 +23,52 @@ const displayFont = Instrument_Serif({
   display: "swap"
 });
 
-const defaultTitle = `${siteConfig.shortName} | 白領工作與 AI 策略顧問`;
+export async function generateMetadata(): Promise<Metadata> {
+  const siteConfig = await getDynamicSiteConfig();
+  const defaultTitle = `${siteConfig.shortName} | ${siteConfig.brandEntity.positioning}`;
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
-  title: {
-    default: defaultTitle,
-    template: `%s | ${siteConfig.shortName}`
-  },
-  description: siteConfig.description,
-  keywords: ["AI 顧問", "白領工作設計", "企業內訓", "品牌策略"],
-  alternates: {
-    canonical: "/"
-  },
-  icons: {
-    icon: "/icon",
-    apple: "/apple-icon"
-  },
-  manifest: "/manifest.webmanifest",
-  robots: {
-    index: true,
-    follow: true
-  },
-  openGraph: {
-    title: defaultTitle,
+  return {
+    metadataBase: new URL(siteConfig.url),
+    title: {
+      default: defaultTitle,
+      template: `%s | ${siteConfig.shortName}`
+    },
     description: siteConfig.description,
-    url: siteConfig.url,
-    siteName: siteConfig.name,
-    locale: "zh_TW",
-    type: "website",
-    images: [
-      {
-        url: siteConfig.ogImage,
-        alt: `${siteConfig.shortName} Open Graph Image`
-      }
-    ]
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: defaultTitle,
-    description: siteConfig.description,
-    images: [siteConfig.ogImage]
-  }
-};
+    keywords: ["AI 顧問", "品牌策略", "服務設計", "工作坊設計"],
+    alternates: {
+      canonical: "/"
+    },
+    icons: {
+      icon: "/icon",
+      apple: "/apple-icon"
+    },
+    manifest: "/manifest.webmanifest",
+    robots: {
+      index: true,
+      follow: true
+    },
+    openGraph: {
+      title: defaultTitle,
+      description: siteConfig.description,
+      url: siteConfig.url,
+      siteName: siteConfig.name,
+      locale: "zh_TW",
+      type: "website",
+      images: [
+        {
+          url: siteConfig.ogImage,
+          alt: `${siteConfig.shortName} Open Graph Image`
+        }
+      ]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: defaultTitle,
+      description: siteConfig.description,
+      images: [siteConfig.ogImage]
+    }
+  };
+}
 
 export default function RootLayout({
   children

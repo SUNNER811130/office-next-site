@@ -1,6 +1,10 @@
+import { readContent } from "@/lib/content-store";
+
 import { ButtonLink } from "@/components/ui/button";
 
-export function FloatingCta() {
+export async function FloatingCta() {
+  const content = await readContent();
+
   return (
     <>
       <div className="pointer-events-none fixed bottom-6 right-6 z-40 hidden lg:block">
@@ -8,10 +12,10 @@ export function FloatingCta() {
           <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">Start Here</p>
           <div className="mt-3 grid gap-2">
             <ButtonLink href="/contact" className="px-5 py-3">
-              聯絡洽詢
+              {content.contact.mailtoLabel}
             </ButtonLink>
-            <ButtonLink href="/corporate-training" variant="secondary" className="px-5 py-3">
-              企業合作
+            <ButtonLink href="/services" variant="secondary" className="px-5 py-3">
+              查看服務
             </ButtonLink>
           </div>
         </div>
@@ -21,10 +25,10 @@ export function FloatingCta() {
         <div className="rounded-full border border-white/70 bg-paper/92 px-3 py-3 shadow-[0_18px_50px_rgba(17,17,17,0.12)] backdrop-blur-xl">
           <div className="grid grid-cols-2 gap-2">
             <ButtonLink href="/contact" className="px-4 py-3 text-[12px]">
-              聯絡洽詢
+              寄信洽詢
             </ButtonLink>
-            <ButtonLink href="/corporate-training" variant="secondary" className="px-4 py-3 text-[12px]">
-              企業合作
+            <ButtonLink href="/services" variant="secondary" className="px-4 py-3 text-[12px]">
+              查看服務
             </ButtonLink>
           </div>
         </div>

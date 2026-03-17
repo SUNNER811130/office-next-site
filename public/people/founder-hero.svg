@@ -1,0 +1,8 @@
+<svg width="900" height="1100" viewBox="0 0 900 1100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="900" height="1100" fill="#F7F1E8"/>
+  <rect x="72" y="72" width="756" height="956" rx="48" fill="#EFE7DC"/>
+  <circle cx="450" cy="390" r="146" fill="#D8C7B1"/>
+  <rect x="252" y="560" width="396" height="272" rx="64" fill="#83684A" fill-opacity="0.18"/>
+  <text x="120" y="950" fill="#111111" font-family="Georgia, serif" font-size="54">Founder Hero Placeholder</text>
+  <text x="120" y="1004" fill="#5D6268" font-family="Arial, sans-serif" font-size="26">Upload a portrait or editorial photo from the admin media library.</text>
+</svg>

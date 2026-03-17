@@ -1,49 +1,75 @@
 import Link from "next/link";
 
-import { brandEntity, siteConfig } from "@/lib/site";
+import { readContent } from "@/lib/content-store";
 
 import { Container } from "../ui/container";
 
-const footerLinks = [
-  { href: "/services", label: "查看服務項目與合作方向" },
-  { href: "/corporate-training", label: "了解企業內訓與合作模式" },
-  { href: "/about", label: "認識 OFFICE NEXT 的品牌定位" },
-  { href: "/contact", label: "前往聯絡頁提出需求" }
-];
+function socialItems(social: Awaited<ReturnType<typeof readContent>>["social"]) {
+  return [
+    { label: "LinkedIn", url: social.linkedin },
+    { label: "Facebook", url: social.facebook },
+    { label: "Instagram", url: social.instagram },
+    { label: "Threads", url: social.threads },
+    { label: "YouTube", url: social.youtube },
+    { label: "X", url: social.x },
+    ...social.other.map((item) => ({ label: item.label, url: item.url }))
+  ].filter((item) => item.url);
+}
 
-export function Footer() {
+export async function Footer() {
+  const content = await readContent();
+  const socials = socialItems(content.social);
+
   return (
     <footer className="border-t border-ink/8 bg-[#efe7dc] py-14 md:py-16">
-      <Container className="grid gap-12 lg:grid-cols-[1.3fr_0.8fr_0.7fr]">
+      <Container className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
         <div className="space-y-5">
-          <p className="text-sm font-semibold uppercase tracking-[0.26em] text-ink">
-            {siteConfig.shortName}
-          </p>
-          <p className="max-w-2xl text-base text-slate">{brandEntity.shortDescription}</p>
+          {content.brand.logoWordmarkUrl ? (
+            <img
+              src={content.brand.logoWordmarkUrl}
+              alt={content.brand.name}
+              className="h-8 w-auto max-w-[220px] object-contain"
+            />
+          ) : (
+            <p className="text-sm font-semibold uppercase tracking-[0.26em] text-ink">
+              {content.brand.shortName}
+            </p>
+          )}
+          <p className="max-w-2xl text-base text-slate">{content.brand.summary}</p>
           <p className="text-sm tracking-[0.14em] text-slate">
-            {brandEntity.positioning}
+            {content.brand.positioning}
             <br />
-            {brandEntity.proposition}
+            {content.brand.proposition}
           </p>
         </div>
+
         <div className="space-y-4">
           <p className="text-xs uppercase tracking-[0.28em] text-bronze">Explore</p>
           <nav aria-label="頁尾導覽" className="grid gap-3 text-sm text-slate">
-            {footerLinks.map((item) => (
+            {content.navigation.footerLinks.map((item) => (
               <Link key={item.href} href={item.href} className="transition hover:text-ink">
                 {item.label}
               </Link>
             ))}
           </nav>
         </div>
+
         <div className="space-y-4">
-          <p className="text-xs uppercase tracking-[0.28em] text-bronze">Brand Entity</p>
+          <p className="text-xs uppercase tracking-[0.28em] text-bronze">Contact</p>
           <div className="space-y-3 text-sm text-slate">
-            <p>{brandEntity.url}</p>
-            <Link href={`mailto:${siteConfig.contactEmail}`} className="transition hover:text-ink">
-              {siteConfig.contactEmail}
+            <p>{content.siteUrl}</p>
+            <Link href={`mailto:${content.contact.email}`} className="transition hover:text-ink">
+              {content.contact.email}
             </Link>
-            <p>Social links reserved for future sameAs profiles</p>
+            {socials.length > 0 ? (
+              <div className="flex flex-wrap gap-3">
+                {socials.map((item) => (
+                  <Link key={item.label} href={item.url} className="transition hover:text-ink">
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
       </Container>
