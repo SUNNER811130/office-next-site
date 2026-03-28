@@ -15,8 +15,8 @@ export const metadata = createPageMetadata({
   keywords: ["Insights", "品牌觀點", "AI 協作", "白領工作升級", "工作方法論"]
 });
 
-export default function InsightsPage() {
-  const posts = getAllInsights();
+export default async function InsightsPage() {
+  const posts = await getAllInsights();
 
   return (
     <>

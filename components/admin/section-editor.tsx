@@ -6,10 +6,11 @@ import { FieldGroup } from "@/components/admin/field-group";
 import { MediaPicker } from "@/components/admin/media-picker";
 import { RepeaterField, type RepeaterSubField } from "@/components/admin/repeater-field";
 import { SaveBar } from "@/components/admin/save-bar";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import type { MediaCategory } from "@/types/content";
 
 type SimpleField = {
-  type: "text" | "textarea";
+  type: "text" | "textarea" | "richtext";
   path: string;
   label: string;
   description?: string;
@@ -69,11 +70,13 @@ function setValue<T>(target: T, path: string, value: unknown): T {
 export function SectionEditor<T>({
   section,
   initialValue,
-  fields
+  fields,
+  onSaveAsync
 }: {
   section: string;
   initialValue: T;
   fields: SectionField[];
+  onSaveAsync?: (value: T) => Promise<void>;
 }) {
   const [value, setValueState] = useState(initialValue);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -131,6 +134,18 @@ export function SectionEditor<T>({
           );
         }
 
+        if (field.type === "richtext") {
+          return (
+            <FieldGroup key={field.path} title={field.label} description={field.description}>
+              <RichTextEditor
+                value={(getValue(value, field.path) as string) ?? ""}
+                onChange={(next) => updatePath(field.path, next)}
+                placeholder={field.placeholder}
+              />
+            </FieldGroup>
+          );
+        }
+
         const multiline = field.type === "textarea";
         const Element = multiline ? "textarea" : "input";
 
@@ -157,20 +172,26 @@ export function SectionEditor<T>({
           setStatus("saving");
           setError("");
 
-          const response = await fetch(`/api/admin/content/${section}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(value)
-          });
+          try {
+            if (onSaveAsync) {
+              await onSaveAsync(value);
+            } else {
+              const response = await fetch(`/api/admin/content/${section}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(value)
+              });
 
-          const result = (await response.json()) as { error?: string };
-          if (!response.ok) {
+              const result = (await response.json()) as { error?: string };
+              if (!response.ok) {
+                throw new Error(result.error || "儲存失敗");
+              }
+            }
+            setStatus("saved");
+          } catch (e: any) {
             setStatus("error");
-            setError(result.error || "儲存失敗");
-            return;
+            setError(e.message || "儲存失敗");
           }
-
-          setStatus("saved");
         }}
       />
     </div>

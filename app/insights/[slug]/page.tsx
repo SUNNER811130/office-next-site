@@ -22,14 +22,15 @@ type PageProps = {
 };
 
 export async function generateStaticParams() {
-  return getAllInsights().map((post) => ({
+  const posts = await getAllInsights();
+  return posts.map((post) => ({
     slug: post.slug
   }));
 }
 
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
-  const post = getInsightBySlug(slug);
+  const post = await getInsightBySlug(slug);
 
   if (!post) {
     return {};
@@ -48,13 +49,13 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function InsightArticlePage({ params }: PageProps) {
   const { slug } = await params;
-  const post = getInsightBySlug(slug);
+  const post = await getInsightBySlug(slug);
 
   if (!post) {
     notFound();
   }
 
-  const relatedPosts = getRelatedInsights(post.slug);
+  const relatedPosts = await getRelatedInsights(post.slug);
 
   return (
     <>
@@ -102,6 +103,15 @@ export default async function InsightArticlePage({ params }: PageProps) {
                 <p className="mt-7 max-w-[40rem] text-[1.05rem] text-slate md:text-[1.14rem]">
                   {post.summary}
                 </p>
+                {post.coverImageUrl && (
+                  <div className="mt-10 overflow-hidden rounded-[2rem] border border-ink/10 shadow-[0_20px_50px_rgba(17,17,17,0.06)]">
+                    <img 
+                      src={post.coverImageUrl} 
+                      alt={post.title} 
+                      className="aspect-video w-full object-cover"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="rounded-[2.5rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.86),rgba(248,242,233,0.94))] p-7 shadow-[0_28px_72px_rgba(17,17,17,0.08)] md:p-9">
@@ -173,22 +183,31 @@ export default async function InsightArticlePage({ params }: PageProps) {
                   <KeyTakeaways items={post.keyTakeaways} />
                 </section>
 
-                {post.bodySections.map((section, index) => (
-                  <section
-                    id={`section-${index + 1}`}
-                    key={section.title}
-                    className="scroll-mt-28 border-b border-ink/8 py-10 first:pt-0 last:border-b-0"
-                  >
-                    <h2 className="text-[2rem] font-medium leading-[1.12] text-ink md:text-[2.7rem]">
-                      {section.title}
-                    </h2>
-                    <div className="mt-6 space-y-5 text-[1.04rem] text-slate md:text-[1.08rem]">
-                      {section.content.map((paragraph) => (
-                        <p key={paragraph}>{paragraph}</p>
-                      ))}
-                    </div>
+                {post.htmlContent ? (
+                  <section id="article-content" className="scroll-mt-28 border-b border-ink/8 py-10">
+                    <div 
+                      className="prose prose-slate prose-lg max-w-none text-slate break-words" 
+                      dangerouslySetInnerHTML={{ __html: post.htmlContent }} 
+                    />
                   </section>
-                ))}
+                ) : (
+                  post.bodySections.map((section, index) => (
+                    <section
+                      id={`section-${index + 1}`}
+                      key={section.title}
+                      className="scroll-mt-28 border-b border-ink/8 py-10 first:pt-0 last:border-b-0"
+                    >
+                      <h2 className="text-[2rem] font-medium leading-[1.12] text-ink md:text-[2.7rem]">
+                        {section.title}
+                      </h2>
+                      <div className="mt-6 space-y-5 text-[1.04rem] text-slate md:text-[1.08rem]">
+                        {section.content.map((paragraph) => (
+                          <p key={paragraph}>{paragraph}</p>
+                        ))}
+                      </div>
+                    </section>
+                  ))
+                )}
 
                 <section id="article-answers" className="scroll-mt-28 py-10">
                   <ArticleQuickAnswers items={post.quickAnswers} />

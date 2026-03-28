@@ -34,9 +34,10 @@ export default async function HomePage() {
             <h1 className="mt-6 max-w-[11ch] text-balance text-[3rem] font-medium leading-[0.98] text-ink md:text-[5.2rem]">
               {content.home.hero.title}
             </h1>
-            <p className="mt-7 max-w-[42rem] text-[1.05rem] text-slate md:text-[1.18rem]">
-              {content.home.hero.description}
-            </p>
+            <div 
+              className="prose prose-slate mt-7 max-w-[42rem] text-[1.05rem] md:text-[1.18rem] md:prose-lg"
+              dangerouslySetInnerHTML={{ __html: content.home.hero.description }} 
+            />
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <ButtonLink href={content.home.hero.ctaPrimaryHref}>{content.home.hero.ctaPrimaryLabel}</ButtonLink>
               <ButtonLink href={content.home.hero.ctaSecondaryHref} variant="secondary">
@@ -46,11 +47,11 @@ export default async function HomePage() {
             <div className="mt-12 grid gap-4 border-t border-ink/8 pt-6 md:grid-cols-3">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">Brand</p>
-                <p className="mt-2 text-sm leading-7 text-slate">{content.brand.summary}</p>
+                <div className="prose prose-sm prose-slate mt-2 leading-7" dangerouslySetInnerHTML={{ __html: content.brand.summary }} />
               </div>
               <div>
                 <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">Positioning</p>
-                <p className="mt-2 text-sm leading-7 text-slate">{content.brand.positioning}</p>
+                <div className="prose prose-sm prose-slate mt-2 leading-7" dangerouslySetInnerHTML={{ __html: content.brand.positioning }} />
               </div>
               <div>
                 <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">Founder</p>
@@ -79,7 +80,7 @@ export default async function HomePage() {
           <SectionTitle
             eyebrow="Brand Proposition"
             title="把抽象方向整理成可執行的前台與後台"
-            description={content.brand.proposition}
+            description={<div className="prose prose-slate prose-sm" dangerouslySetInnerHTML={{ __html: content.brand.proposition }} />}
           />
           <div className="grid gap-5">
             {content.home.propositionCards.map((item) => (

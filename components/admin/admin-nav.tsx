@@ -10,6 +10,7 @@ const navItems = [
   { href: "/admin/testimonials", label: "Testimonials" },
   { href: "/admin/faq", label: "FAQ" },
   { href: "/admin/contact", label: "Contact" },
+  { href: "/admin/insights", label: "Insights" },
   { href: "/admin/media", label: "Media" }
 ];
 

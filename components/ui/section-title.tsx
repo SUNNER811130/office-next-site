@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 type SectionTitleProps = HTMLAttributes<HTMLDivElement> & {
   eyebrow?: string;
   title: string;
-  description?: string;
+  description?: React.ReactNode;
   align?: "left" | "center";
 };
 

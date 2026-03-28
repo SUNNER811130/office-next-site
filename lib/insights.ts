@@ -1,3 +1,7 @@
+import { promises as fs } from "fs";
+import path from "path";
+import { unstable_noStore as noStore } from "next/cache";
+
 export type InsightSection = {
   title: string;
   content: string[];
@@ -7,17 +11,14 @@ export type InsightPost = {
   slug: string;
   title: string;
   summary: string;
-  category:
-    | "白領工作升級"
-    | "GPT 實戰應用"
-    | "AI 協作流程"
-    | "企業導入觀點"
-    | "工作方法論";
+  category: string;
   publishedAt: string;
   updatedAt: string;
   author: string;
   readingTime: string;
   heroText: string;
+  coverImageUrl?: string;
+  htmlContent?: string;
   keyTakeaways: string[];
   quickAnswers: {
     question: string;
@@ -42,7 +43,7 @@ export type InsightPost = {
   };
 };
 
-export const insightPosts: InsightPost[] = [
+export const insightPostsSeed: InsightPost[] = [
   {
     slug: "white-collar-ai-upgrade-is-about-rules-not-tools",
     title: "白領 AI 工作升級，真正升級的是規則，不是工具清單",
@@ -239,14 +240,88 @@ export const insightPosts: InsightPost[] = [
   }
 ];
 
-export function getAllInsights() {
-  return insightPosts;
+const DATA_DIR = path.join(process.cwd(), "data");
+const INSIGHTS_FILE = path.join(DATA_DIR, "insights.json");
+
+export interface IInsightRepository {
+  readAll(): Promise<InsightPost[]>;
+  read(slug: string): Promise<InsightPost | null>;
+  create(post: InsightPost): Promise<void>;
+  update(slug: string, post: InsightPost): Promise<void>;
+  delete(slug: string): Promise<void>;
 }
 
-export function getInsightBySlug(slug: string) {
-  return insightPosts.find((post) => post.slug === slug);
+class LocalFileInsightRepository implements IInsightRepository {
+  private async ensureFile() {
+    await fs.mkdir(DATA_DIR, { recursive: true });
+    try {
+      await fs.access(INSIGHTS_FILE);
+    } catch {
+      await fs.writeFile(INSIGHTS_FILE, JSON.stringify(insightPostsSeed, null, 2), "utf8");
+    }
+  }
+
+  async readAll(): Promise<InsightPost[]> {
+    await this.ensureFile();
+    const raw = await fs.readFile(INSIGHTS_FILE, "utf8");
+    return JSON.parse(raw) as InsightPost[];
+  }
+
+  async read(slug: string): Promise<InsightPost | null> {
+    const all = await this.readAll();
+    return all.find((p) => p.slug === slug) || null;
+  }
+
+  async create(post: InsightPost): Promise<void> {
+    const all = await this.readAll();
+    all.unshift({ ...post, updatedAt: new Date().toISOString().split("T")[0] });
+    await fs.writeFile(INSIGHTS_FILE, JSON.stringify(all, null, 2), "utf8");
+  }
+
+  async update(slug: string, post: InsightPost): Promise<void> {
+    const all = await this.readAll();
+    const index = all.findIndex((p) => p.slug === slug);
+    if (index >= 0) {
+      all[index] = { ...post, updatedAt: new Date().toISOString().split("T")[0] };
+      await fs.writeFile(INSIGHTS_FILE, JSON.stringify(all, null, 2), "utf8");
+    }
+  }
+
+  async delete(slug: string): Promise<void> {
+    const all = await this.readAll();
+    const filtered = all.filter((p) => p.slug !== slug);
+    await fs.writeFile(INSIGHTS_FILE, JSON.stringify(filtered, null, 2), "utf8");
+  }
 }
 
-export function getRelatedInsights(currentSlug: string, limit = 2) {
-  return insightPosts.filter((post) => post.slug !== currentSlug).slice(0, limit);
+function getInsightRepository(): IInsightRepository {
+  return new LocalFileInsightRepository();
+}
+
+export async function getAllInsights() {
+  noStore();
+  return getInsightRepository().readAll();
+}
+
+export async function getInsightBySlug(slug: string) {
+  noStore();
+  return getInsightRepository().read(slug);
+}
+
+export async function createInsight(post: InsightPost) {
+  return getInsightRepository().create(post);
+}
+
+export async function updateInsight(slug: string, post: InsightPost) {
+  return getInsightRepository().update(slug, post);
+}
+
+export async function deleteInsight(slug: string) {
+  return getInsightRepository().delete(slug);
+}
+
+export async function getRelatedInsights(currentSlug: string, limit = 2) {
+  noStore();
+  const all = await getInsightRepository().readAll();
+  return all.filter((post) => post.slug !== currentSlug).slice(0, limit);
 }

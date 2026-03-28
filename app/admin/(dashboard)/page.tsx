@@ -11,6 +11,7 @@ const sections = [
   { href: "/admin/testimonials", label: "Testimonials", description: "見證內容與 logo / avatar" },
   { href: "/admin/faq", label: "FAQ", description: "常見問題與回答" },
   { href: "/admin/contact", label: "Contact", description: "聯絡信箱、選項與社群連結" },
+  { href: "/admin/insights", label: "Insights", description: "知識觀點與文章 CRUD 管理" },
   { href: "/admin/media", label: "Media", description: "圖片、Logo、OG 與 client logo 管理" }
 ];
 

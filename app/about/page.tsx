@@ -39,7 +39,7 @@ export default async function AboutPage() {
             <h1 className="mt-5 max-w-[12ch] text-balance text-[2.9rem] font-medium leading-[1.06] text-ink md:text-[4.8rem]">
               {content.founder.tagline}
             </h1>
-            <p className="mt-6 max-w-[42rem] text-[1.06rem] text-slate">{content.founder.bio}</p>
+            <div className="prose prose-slate mt-6 max-w-[42rem] text-[1.06rem]" dangerouslySetInnerHTML={{ __html: content.founder.bio }} />
             <div className="mt-10 flex gap-3">
               <ButtonLink href="/services">查看服務</ButtonLink>
               <ButtonLink href="/contact" variant="secondary">
@@ -65,11 +65,11 @@ export default async function AboutPage() {
           <div className="grid gap-5">
             <Card>
               <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">Positioning</p>
-              <p className="mt-3 text-[1.06rem] text-slate">{content.brand.positioning}</p>
+              <div className="prose prose-slate mt-3 text-[1.06rem]" dangerouslySetInnerHTML={{ __html: content.brand.positioning }} />
             </Card>
             <Card>
               <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">Proposition</p>
-              <p className="mt-3 text-[1.06rem] text-slate">{content.brand.proposition}</p>
+              <div className="prose prose-slate mt-3 text-[1.06rem]" dangerouslySetInnerHTML={{ __html: content.brand.proposition }} />
             </Card>
             <Card>
               <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">Founder</p>
@@ -102,7 +102,7 @@ export default async function AboutPage() {
                 <div>
                   <h2 className="text-[1.5rem] font-medium text-ink">{content.founder.name}</h2>
                   <p className="mt-2 text-sm uppercase tracking-[0.14em] text-bronze">{content.founder.role}</p>
-                  <p className="mt-4 text-base text-slate">{content.founder.bio}</p>
+                  <div className="prose prose-slate mt-4 text-base" dangerouslySetInnerHTML={{ __html: content.founder.bio }} />
                 </div>
               </div>
             </Card>
