@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SectionEditor, type SectionField } from "./section-editor";
 import type { CaseStudy } from "@/lib/cases";
@@ -19,6 +20,39 @@ const caseEditorFields: SectionField[] = [
 
 export function CaseEditor({ initialValue, isNew }: { initialValue: CaseStudy, isNew: boolean }) {
   const router = useRouter();
+  const [data, setData] = useState<CaseStudy>(initialValue);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleGenerate = async () => {
+    const prompt = window.prompt("請輸入一句話的案例核心重點（例如：幫某製造業導入 AI，三個月內效率提升 40%）：");
+    if (!prompt) return;
+
+    setIsGenerating(true);
+    try {
+      const res = await fetch("/api/admin/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const generated = await res.json();
+      
+      if (!res.ok) throw new Error(generated.error || "生成失敗");
+
+      setData(prev => ({
+        ...prev,
+        executiveSummary: generated.executiveSummary || prev.executiveSummary,
+        challenge: generated.challenge || prev.challenge,
+        solution: generated.solution || prev.solution,
+        results: generated.results || prev.results,
+        htmlContent: generated.executiveSummary ? `<p><strong>${generated.executiveSummary}</strong></p><p><strong>面臨挑戰：</strong><br/>${generated.challenge}</p><p><strong>解決方案：</strong><br/>${generated.solution}</p>` : prev.htmlContent
+      }));
+      
+    } catch (e: any) {
+      alert("AI 生成錯誤：" + e.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleSave = async (value: any) => {
     if (isNew) {
@@ -42,5 +76,23 @@ export function CaseEditor({ initialValue, isNew }: { initialValue: CaseStudy, i
     router.refresh();
   };
 
-  return <SectionEditor section="case" initialValue={initialValue} fields={caseEditorFields} onSaveAsync={handleSave} />;
+  return (
+    <div className="grid gap-6">
+      <div className="flex items-center justify-between rounded-[1.4rem] border border-bronze/20 bg-[#fbf5f0] p-5 shadow-sm">
+        <div>
+          <h3 className="text-lg font-medium text-ink">✨ AI 文案助手</h3>
+          <p className="mt-1 text-sm text-slate">輸入一句粗略草稿，由 DeepSeek 自動為您擴寫符合 GEO 格式的結構化內容。</p>
+        </div>
+        <button
+          onClick={handleGenerate}
+          disabled={isGenerating}
+          type="button"
+          className="rounded-full bg-bronze px-5 py-2.5 text-sm font-medium text-white transition hover:bg-bronze/90 disabled:opacity-50"
+        >
+          {isGenerating ? "生成中..." : "DeepSeek 幫我擴寫"}
+        </button>
+      </div>
+      <SectionEditor section="case" initialValue={data} onChange={setData} fields={caseEditorFields} onSaveAsync={handleSave} />
+    </div>
+  );
 }

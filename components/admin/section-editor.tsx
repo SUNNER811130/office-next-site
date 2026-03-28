@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { FieldGroup } from "@/components/admin/field-group";
 import { MediaPicker } from "@/components/admin/media-picker";
@@ -72,19 +72,28 @@ export function SectionEditor<T>({
   section,
   initialValue,
   fields,
-  onSaveAsync
+  onSaveAsync,
+  onChange
 }: {
   section: string;
   initialValue: T;
   fields: SectionField[];
   onSaveAsync?: (value: T) => Promise<void>;
+  onChange?: (value: T) => void;
 }) {
   const [value, setValueState] = useState(initialValue);
+
+  useEffect(() => {
+    setValueState(initialValue);
+  }, [initialValue]);
+
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [error, setError] = useState("");
 
   const updatePath = (path: string, next: unknown) => {
-    setValueState((current) => setValue(current, path, next));
+    const nextVal = setValue(value, path, next);
+    setValueState(nextVal);
+    if (onChange) onChange(nextVal);
     setStatus("idle");
   };
 
