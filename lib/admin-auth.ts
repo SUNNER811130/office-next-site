@@ -13,9 +13,14 @@ type SessionPayload = {
 };
 
 function getRequiredEnv() {
-  const username = process.env.ADMIN_USERNAME;
-  const password = process.env.ADMIN_PASSWORD;
-  const secret = process.env.SESSION_SECRET;
+  const clean = (val?: string) => {
+    if (!val) return "";
+    return val.trim().replace(/^['"](.*)['"]$/, '$1');
+  };
+
+  const username = clean(process.env.ADMIN_USERNAME);
+  const password = clean(process.env.ADMIN_PASSWORD);
+  const secret = clean(process.env.SESSION_SECRET);
 
   return {
     username,

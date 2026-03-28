@@ -17,8 +17,8 @@ export default async function AdminLoginPage({
   async function loginAction(formData: FormData) {
     "use server";
 
-    const username = String(formData.get("username") ?? "");
-    const password = String(formData.get("password") ?? "");
+    const username = String(formData.get("username") ?? "").trim();
+    const password = String(formData.get("password") ?? "").trim();
     const ok = await loginAdmin(username, password);
 
     if (!ok) {
