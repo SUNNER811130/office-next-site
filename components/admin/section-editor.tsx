@@ -21,6 +21,7 @@ type MediaField = {
   type: "media";
   path: string;
   label: string;
+  description?: string;
   category: MediaCategory;
   suggestedPath?: string;
 };
@@ -122,7 +123,7 @@ export function SectionEditor<T>({
 
         if (field.type === "media") {
           return (
-            <FieldGroup key={field.path} title={field.label}>
+            <FieldGroup key={field.path} title={field.label} description={field.description}>
               <MediaPicker
                 label={field.label}
                 value={(getValue(value, field.path) as string) ?? ""}

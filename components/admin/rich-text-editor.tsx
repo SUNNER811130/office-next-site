@@ -139,6 +139,7 @@ export function RichTextEditor({ value, onChange, placeholder, category = "conte
         >
           {uploading ? "上傳中..." : "插入圖片"}
         </button>
+        <span className="text-[12px] text-slate/60 px-2">建議圖片寬度最多 800px 以確保效能與排版</span>
       </div>
       <EditorContent editor={editor} />
     </div>

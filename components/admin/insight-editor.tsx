@@ -13,7 +13,7 @@ const insightFields: SectionField[] = [
   { type: "text", path: "author", label: "作者" },
   { type: "text", path: "readingTime", label: "閱讀時間" },
   { type: "textarea", path: "heroText", label: "Hero 導語文字" },
-  { type: "media", path: "coverImageUrl", label: "封面圖片 (16:9)", category: "sections" },
+  { type: "media", path: "coverImageUrl", label: "封面圖片 (16:9)", category: "sections", description: "建議尺寸：1200x630px 16:9 比例" },
   { type: "richtext", path: "htmlContent", label: "文章內容" },
   { type: "string-list", path: "keyTakeaways", itemLabel: "Takeaway", label: "Key Takeaways" },
   { 

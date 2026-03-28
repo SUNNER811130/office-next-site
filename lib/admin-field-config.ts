@@ -5,16 +5,16 @@ export const brandFields: SectionField[] = [
   { type: "richtext", path: "summary", label: "品牌摘要" },
   { type: "richtext", path: "positioning", label: "品牌定位" },
   { type: "richtext", path: "proposition", label: "品牌主張" },
-  { type: "media", path: "logoWordmarkUrl", label: "Logo Wordmark", category: "brand", suggestedPath: "brand/logo-wordmark.svg" },
-  { type: "media", path: "logoMarkUrl", label: "Logo Mark", category: "brand", suggestedPath: "brand/logo-mark.svg" },
-  { type: "media", path: "ogImageUrl", label: "OG Image", category: "og", suggestedPath: "og/og-default.png" }
+  { type: "media", path: "logoWordmarkUrl", label: "Logo Wordmark", category: "brand", suggestedPath: "brand/logo-wordmark.svg", description: "建議尺寸：不限寬高，請使用純色高反差或去背 SVG 以維持銳利度。" },
+  { type: "media", path: "logoMarkUrl", label: "Logo Mark", category: "brand", suggestedPath: "brand/logo-mark.svg", description: "建議尺寸：至少 512x512px，建議為正方形 SVG 或 PNG。" },
+  { type: "media", path: "ogImageUrl", label: "OG Image", category: "og", suggestedPath: "og/og-default.png", description: "建議尺寸：1200x630px，比例為 16:9，確保社群分享畫面最佳化。" }
 ];
 
 export const homeFields: SectionField[] = [
   { type: "text", path: "hero.eyebrow", label: "Hero Eyebrow" },
   { type: "text", path: "hero.title", label: "Hero Title" },
   { type: "richtext", path: "hero.description", label: "Hero Description" },
-  { type: "media", path: "hero.imageUrl", label: "Hero Image", category: "sections", suggestedPath: "sections/advisory-01.webp" },
+  { type: "media", path: "hero.imageUrl", label: "Hero Image", category: "sections", suggestedPath: "sections/advisory-01.webp", description: "建議尺寸：最少1920x1080px (16:9)，或更高解析度作為滿版背景用。" },
   { type: "text", path: "hero.ctaPrimaryLabel", label: "Primary CTA Label" },
   { type: "text", path: "hero.ctaPrimaryHref", label: "Primary CTA Href" },
   { type: "text", path: "hero.ctaSecondaryLabel", label: "Secondary CTA Label" },
@@ -50,8 +50,8 @@ export const founderFields: SectionField[] = [
   { type: "text", path: "role", label: "主理人角色" },
   { type: "text", path: "tagline", label: "一句定位" },
   { type: "richtext", path: "bio", label: "主理人簡介" },
-  { type: "media", path: "heroImageUrl", label: "Founder Hero", category: "people", suggestedPath: "people/founder-hero.webp" },
-  { type: "media", path: "portraitImageUrl", label: "Founder Portrait", category: "people", suggestedPath: "people/founder-portrait.webp" }
+  { type: "media", path: "heroImageUrl", label: "Founder Hero", category: "people", suggestedPath: "people/founder-hero.webp", description: "建議尺寸：1200x800px 橫圖，請確保視覺重心良好。" },
+  { type: "media", path: "portraitImageUrl", label: "Founder Portrait", category: "people", suggestedPath: "people/founder-portrait.webp", description: "建議尺寸：800x1000px 直式人像，臉部置中。" }
 ];
 
 export const servicesFields: SectionField[] = [
