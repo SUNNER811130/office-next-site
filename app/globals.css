@@ -13,24 +13,24 @@ html {
 body {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, rgba(131, 104, 74, 0.08), transparent 24%),
-    radial-gradient(circle at 90% 10%, rgba(17, 17, 17, 0.04), transparent 18%),
-    linear-gradient(180deg, #fdfbf8 0%, #f5efe6 52%, #f7f1e8 100%);
-  color: #111111;
+    radial-gradient(circle at top left, rgba(212,197,169,0.10), transparent 28%),
+    radial-gradient(circle at 90% 10%, rgba(26,39,68,0.04), transparent 22%),
+    linear-gradient(180deg, #FAFAF8 0%, #F5F3F0 52%, #F7F5F2 100%);
+  color: #374151;
   text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: rgba(131, 104, 74, 0.18);
+  background: rgba(212, 197, 169, 0.28);
 }
 
 @layer base {
   * {
-    @apply border-ink/10;
+    @apply border-ink/8;
   }
 
   body {
-    @apply font-sans antialiased;
+    @apply font-sans antialiased leading-relaxed;
   }
 
   a {
@@ -39,5 +39,9 @@ body {
 
   p {
     @apply leading-8;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-midnight;
   }
 }

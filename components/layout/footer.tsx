@@ -22,7 +22,7 @@ export async function Footer() {
   const socials = socialItems(content.social);
 
   return (
-    <footer className="border-t border-ink/8 bg-[#efe7dc] py-14 md:py-16">
+    <footer className="bg-midnight/[0.03] py-14 md:py-16">
       <Container className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
         <div className="space-y-5">
           {content.brand.logoWordmarkUrl ? (
@@ -34,7 +34,7 @@ export async function Footer() {
               className="h-8 w-auto max-w-[220px] object-contain"
             />
           ) : (
-            <p className="text-sm font-semibold uppercase tracking-[0.26em] text-ink">
+            <p className="text-sm font-semibold uppercase tracking-[0.26em] text-midnight">
               {content.brand.shortName}
             </p>
           )}
@@ -47,10 +47,10 @@ export async function Footer() {
         </div>
 
         <div className="space-y-4">
-          <p className="text-xs uppercase tracking-[0.28em] text-bronze">Explore</p>
+          <p className="text-xs uppercase tracking-[0.28em] text-champagne">Explore</p>
           <nav aria-label="頁尾導覽" className="grid gap-3 text-sm text-slate">
             {content.navigation.footerLinks.map((item) => (
-              <Link key={item.href} href={item.href} className="transition hover:text-ink">
+              <Link key={item.href} href={item.href} className="transition hover:text-midnight">
                 {item.label}
               </Link>
             ))}
@@ -58,16 +58,16 @@ export async function Footer() {
         </div>
 
         <div className="space-y-4">
-          <p className="text-xs uppercase tracking-[0.28em] text-bronze">Contact</p>
+          <p className="text-xs uppercase tracking-[0.28em] text-champagne">Contact</p>
           <div className="space-y-3 text-sm text-slate">
             <p>{content.siteUrl}</p>
-            <Link href={`mailto:${content.contact.email}`} className="transition hover:text-ink">
+            <Link href={`mailto:${content.contact.email}`} className="transition hover:text-midnight">
               {content.contact.email}
             </Link>
             {socials.length > 0 ? (
               <div className="flex flex-wrap gap-3">
                 {socials.map((item) => (
-                  <Link key={item.label} href={item.url} className="transition hover:text-ink">
+                  <Link key={item.label} href={item.url} className="transition hover:text-midnight">
                     {item.label}
                   </Link>
                 ))}

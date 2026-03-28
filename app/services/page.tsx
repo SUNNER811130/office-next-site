@@ -1,6 +1,7 @@
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { FaqAccordion } from "@/components/ui/faq-accordion";
+import { FadeUp, StaggerContainer, StaggerItem } from "@/components/ui/motion";
 import { Section } from "@/components/ui/section";
 import { SectionTitle } from "@/components/ui/section-title";
 import Image from "next/image";
@@ -32,11 +33,11 @@ export default async function ServicesPage() {
         ]}
       />
 
-      <Section className="border-b border-ink/6 bg-[#f6f1e9]">
+      <Section className="bg-oat">
         <div className="grid gap-12 lg:grid-cols-[1fr_0.92fr] lg:items-end">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.34em] text-bronze">Services</p>
-            <h1 className="mt-5 max-w-[11ch] text-balance text-[2.9rem] font-medium leading-[1.06] text-ink md:text-[4.8rem]">
+          <FadeUp>
+            <p className="text-[11px] uppercase tracking-[0.34em] text-champagne">Services</p>
+            <h1 className="mt-5 max-w-[11ch] text-balance text-[2.9rem] font-medium leading-[1.06] text-midnight md:text-[4.8rem]">
               服務方向與案例摘要由後台統一管理
             </h1>
             <p className="mt-7 max-w-[43rem] text-[1.06rem] text-slate">{content.brand.proposition}</p>
@@ -46,64 +47,76 @@ export default async function ServicesPage() {
                 查看主理人
               </ButtonLink>
             </div>
-          </div>
-          <Card>
-            <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">Service Snapshot</p>
-            <div className="mt-5 grid gap-4">
-              {content.services.items.map((item) => (
-                <div key={item.title} className="rounded-[1.4rem] border border-ink/8 bg-white/70 px-4 py-4">
-                  <p className="font-medium text-ink">{item.title}</p>
-                  <p className="mt-2 text-sm text-slate">{item.audience}</p>
-                </div>
-              ))}
-            </div>
-          </Card>
+          </FadeUp>
+          <FadeUp delay={0.15}>
+            <Card>
+              <p className="text-[11px] uppercase tracking-[0.28em] text-champagne">Service Snapshot</p>
+              <div className="mt-5 grid gap-4">
+                {content.services.items.map((item) => (
+                  <div key={item.title} className="rounded-2xl bg-white/60 px-4 py-4 backdrop-blur-sm">
+                    <p className="font-medium text-midnight">{item.title}</p>
+                    <p className="mt-2 text-sm text-slate">{item.audience}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </FadeUp>
         </div>
       </Section>
 
       <Section>
-        <div className="grid gap-5 lg:grid-cols-3">
+        <StaggerContainer className="grid gap-5 lg:grid-cols-3">
           {content.services.items.map((item) => (
-            <Card key={item.title}>
-              {item.imageUrl ? (
-                <Image src={item.imageUrl} alt={item.title} width={1600} height={1200} className="aspect-[4/3] w-full rounded-[1.6rem] object-cover" />
-              ) : null}
-              <h2 className="mt-5 text-[1.45rem] font-medium text-ink">{item.title}</h2>
-              <p className="mt-4 text-base text-slate">{item.description}</p>
-              <p className="mt-5 border-t border-ink/8 pt-5 text-sm text-slate">{item.audience}</p>
-            </Card>
+            <StaggerItem key={item.title}>
+              <Card>
+                {item.imageUrl ? (
+                  <Image src={item.imageUrl} alt={item.title} width={1600} height={1200} className="aspect-[4/3] w-full rounded-2xl object-cover" />
+                ) : null}
+                <h2 className="mt-5 text-[1.45rem] font-medium text-midnight">{item.title}</h2>
+                <p className="mt-4 text-base text-slate">{item.description}</p>
+                <p className="mt-5 border-t border-midnight/8 pt-5 text-sm text-slate">{item.audience}</p>
+              </Card>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       </Section>
 
       <Section surface="muted">
         <div className="grid gap-10">
-          <SectionTitle eyebrow="Case Snapshots" title="每個服務方向都可以被案例摘要與圖像支撐" />
-          <div className="grid gap-5 lg:grid-cols-3">
+          <FadeUp>
+            <SectionTitle eyebrow="Case Snapshots" title="每個服務方向都可以被案例摘要與圖像支撐" />
+          </FadeUp>
+          <StaggerContainer className="grid gap-5 lg:grid-cols-3">
             {content.cases.items.map((item) => (
-              <Card key={item.title}>
-                <Image
-                  src={item.imageUrl || "/sections/strategy-session-01.svg"}
-                  alt={item.title}
-                  width={1600}
-                  height={1200}
-                  className="aspect-[4/3] w-full rounded-[1.6rem] object-cover"
-                />
-                <p className="mt-5 text-[11px] uppercase tracking-[0.28em] text-bronze">{item.category}</p>
-                <h3 className="mt-4 text-[1.35rem] font-medium text-ink">{item.title}</h3>
-                <p className="mt-3 text-sm text-slate">{item.problem}</p>
-                <p className="mt-3 text-sm text-slate">{item.approach}</p>
-                <p className="mt-3 text-sm text-slate">{item.result}</p>
-              </Card>
+              <StaggerItem key={item.title}>
+                <Card>
+                  <Image
+                    src={item.imageUrl || "/sections/strategy-session-01.svg"}
+                    alt={item.title}
+                    width={1600}
+                    height={1200}
+                    className="aspect-[4/3] w-full rounded-2xl object-cover"
+                  />
+                  <p className="mt-5 text-[11px] uppercase tracking-[0.28em] text-champagne">{item.category}</p>
+                  <h3 className="mt-4 text-[1.35rem] font-medium text-midnight">{item.title}</h3>
+                  <p className="mt-3 text-sm text-slate">{item.problem}</p>
+                  <p className="mt-3 text-sm text-slate">{item.approach}</p>
+                  <p className="mt-3 text-sm text-slate">{item.result}</p>
+                </Card>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </Section>
 
       <Section className="pb-24">
         <div className="grid gap-10 lg:grid-cols-[0.88fr_1.12fr]">
-          <SectionTitle eyebrow="FAQ" title="服務合作常見問題" />
-          <FaqAccordion items={content.faq.items} firstOpen />
+          <FadeUp>
+            <SectionTitle eyebrow="FAQ" title="服務合作常見問題" />
+          </FadeUp>
+          <FadeUp delay={0.15}>
+            <FaqAccordion items={content.faq.items} firstOpen />
+          </FadeUp>
         </div>
       </Section>
     </>

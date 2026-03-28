@@ -3,6 +3,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { AnswerBlocks } from "@/components/ui/answer-blocks";
 import { FaqAccordion } from "@/components/ui/faq-accordion";
 import { Card } from "@/components/ui/card";
+import { FadeUp, StaggerContainer, StaggerItem } from "@/components/ui/motion";
 import { Section } from "@/components/ui/section";
 import { SectionTitle } from "@/components/ui/section-title";
 import {
@@ -98,41 +99,53 @@ export default function CorporateTrainingPage() {
 
       <Section>
         <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
-          <SectionTitle
-            eyebrow="Answer Blocks"
-            title="用短而準的答案說明企業內訓的必要性"
-            description="這些段落會直接出現在首輪 HTML，便於 AI 與搜尋引擎擷取。"
-          />
-          <AnswerBlocks items={answerBlocks} />
+          <FadeUp>
+            <SectionTitle
+              eyebrow="Answer Blocks"
+              title="用短而準的答案說明企業內訓的必要性"
+              description="這些段落會直接出現在首輪 HTML，便於 AI 與搜尋引擎擷取。"
+            />
+          </FadeUp>
+          <FadeUp delay={0.15}>
+            <AnswerBlocks items={answerBlocks} />
+          </FadeUp>
         </div>
       </Section>
 
       <Section surface="muted">
         <div className="grid gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
-          <SectionTitle
-            eyebrow="Training Modules"
-            title="常見內訓模組"
-            description="課程內容會依照企業角色與成熟度調整，但通常圍繞以下三個方向。"
-          />
-          <div className="grid gap-5">
+          <FadeUp>
+            <SectionTitle
+              eyebrow="Training Modules"
+              title="常見內訓模組"
+              description="課程內容會依照企業角色與成熟度調整，但通常圍繞以下三個方向。"
+            />
+          </FadeUp>
+          <StaggerContainer className="grid gap-5">
             {modules.map((module) => (
-              <Card key={module.title}>
-                <h2 className="text-[1.35rem] font-medium leading-8 text-ink">{module.title}</h2>
-                <p className="mt-4 text-base text-slate">{module.description}</p>
-              </Card>
+              <StaggerItem key={module.title}>
+                <Card>
+                  <h2 className="text-[1.35rem] font-medium leading-8 text-midnight">{module.title}</h2>
+                  <p className="mt-4 text-base text-slate">{module.description}</p>
+                </Card>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </Section>
 
       <Section>
         <div className="grid gap-10 lg:grid-cols-[0.86fr_1.14fr] lg:items-start">
-          <SectionTitle
-            eyebrow="FAQ"
-            title="企業內訓常見問題"
-            description="互動採用原生 accordion，答案不依賴 client-only 載入。"
-          />
-          <FaqAccordion items={faqs} firstOpen />
+          <FadeUp>
+            <SectionTitle
+              eyebrow="FAQ"
+              title="企業內訓常見問題"
+              description="互動採用原生 accordion，答案不依賴 client-only 載入。"
+            />
+          </FadeUp>
+          <FadeUp delay={0.15}>
+            <FaqAccordion items={faqs} firstOpen />
+          </FadeUp>
         </div>
         <div className="mt-12">
           <ButtonLink href="/contact">前往聯絡頁安排企業內訓討論</ButtonLink>
