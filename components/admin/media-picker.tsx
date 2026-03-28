@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import Image from "next/image";
 import { MediaGallery } from "@/components/admin/media-gallery";
 import { MediaUploader } from "@/components/admin/media-uploader";
 import type { MediaCategory } from "@/types/content";
@@ -56,7 +57,7 @@ export function MediaPicker({
 
       {value ? (
         <div className="overflow-hidden rounded-[1.2rem] border border-ink/8 bg-stone">
-          <img src={value} alt={label} className="h-48 w-full object-cover" />
+          <Image src={value} alt={label} width={800} height={600} className="h-48 w-full object-cover" />
         </div>
       ) : null}
 

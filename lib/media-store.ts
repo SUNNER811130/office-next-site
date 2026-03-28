@@ -1,6 +1,6 @@
 import path from "path";
 
-import { del, list, put } from "@vercel/blob";
+import { S3Client, PutObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 
 import type { MediaCategory } from "@/types/content";
 
@@ -13,7 +13,7 @@ export type MediaAsset = {
   uploadedAt?: string;
   category: MediaCategory;
   label?: string;
-  source: "blob" | "fallback";
+  source: "s3" | "fallback";
   canDelete: boolean;
 };
 
@@ -25,7 +25,7 @@ export type UploadAssetOptions = {
 };
 
 export type MediaStoreAdapter = {
-  kind: "blob" | "fallback";
+  kind: "s3" | "fallback";
   isConfigured: boolean;
   uploadAsset(file: File, options?: UploadAssetOptions): Promise<MediaAsset>;
   deleteAsset(key: string): Promise<void>;
@@ -79,7 +79,13 @@ function buildPathname(file: File, options?: UploadAssetOptions) {
   const category = options?.category ?? "sections";
   const extension = path.extname(file.name) || ".bin";
   const basename = sanitizeFilename(path.basename(file.name, extension)) || "asset";
-  return `${category}/${basename}${extension.toLowerCase()}`;
+  
+  if (options?.overwrite) {
+    return `${category}/${basename}${extension.toLowerCase()}`;
+  }
+  
+  const randomSuffix = Math.random().toString(36).substring(2, 8);
+  return `${category}/${basename}-${randomSuffix}${extension.toLowerCase()}`;
 }
 
 function inferContentTypeFromFilename(filename: string) {
@@ -105,7 +111,7 @@ const fallbackAdapter: MediaStoreAdapter = {
   kind: "fallback",
   isConfigured: false,
   async uploadAsset() {
-    throw new Error("BLOB_READ_WRITE_TOKEN is missing. Upload is unavailable until Vercel Blob is configured.");
+    throw new Error("R2 is not configured. Upload is unavailable.");
   },
   async deleteAsset() {
     throw new Error("Fallback assets are read-only and cannot be deleted.");
@@ -126,73 +132,111 @@ const fallbackAdapter: MediaStoreAdapter = {
   }
 };
 
-const blobAdapter: MediaStoreAdapter = {
-  kind: "blob",
+let s3ClientInstance: S3Client | null = null;
+function getS3Client() {
+  if (!s3ClientInstance) {
+    s3ClientInstance = new S3Client({
+      region: "auto",
+      endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+      credentials: {
+        accessKeyId: process.env.R2_ACCESS_KEY_ID || "",
+        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || ""
+      }
+    });
+  }
+  return s3ClientInstance;
+}
+
+const s3Adapter: MediaStoreAdapter = {
+  kind: "s3",
   isConfigured: true,
   async uploadAsset(file, options) {
+    const s3Client = getS3Client();
     const pathnameValue = buildPathname(file, options);
-    const blob = await put(pathnameValue, file, {
-      access: "public",
-      addRandomSuffix: options?.overwrite ? false : true,
-      token: process.env.BLOB_READ_WRITE_TOKEN
-    });
+    
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    await s3Client.send(
+      new PutObjectCommand({
+        Bucket: process.env.R2_BUCKET_NAME,
+        Key: pathnameValue,
+        Body: buffer,
+        ContentType: file.type || "application/octet-stream"
+      })
+    );
+
+    const publicDomain = process.env.R2_PUBLIC_DOMAIN?.replace(/\/+$/, "");
+    const url = `${publicDomain}/${pathnameValue}`;
 
     return {
-      key: blob.pathname,
-      url: blob.url,
-      filename: blob.pathname.split("/").pop() ?? blob.pathname,
+      key: pathnameValue,
+      url,
+      filename: pathnameValue.split("/").pop() ?? pathnameValue,
       contentType: file.type || "application/octet-stream",
       size: file.size,
       uploadedAt: new Date().toISOString(),
-      category: categoryFromPathname(blob.pathname),
+      category: categoryFromPathname(pathnameValue),
       label: options?.suggestedUsage,
-      source: "blob",
+      source: "s3",
       canDelete: true
     };
   },
   async deleteAsset(key) {
-    const assetUrl = key.startsWith("http")
-      ? key
-      : (await list({ prefix: key, token: process.env.BLOB_READ_WRITE_TOKEN })).blobs.find(
-          (blob) => blob.pathname === key
-        )?.url;
-
-    if (!assetUrl) {
-      throw new Error("Asset not found.");
+    const s3Client = getS3Client();
+    let actualKey = key;
+    
+    // If key is a full URL, extract the path
+    const publicDomain = process.env.R2_PUBLIC_DOMAIN?.replace(/\/+$/, "") || "";
+    if (key.startsWith("http") && publicDomain && key.startsWith(publicDomain)) {
+      actualKey = key.slice(publicDomain.length + 1);
     }
 
-    await del(assetUrl, { token: process.env.BLOB_READ_WRITE_TOKEN });
+    await s3Client.send(
+      new DeleteObjectCommand({
+        Bucket: process.env.R2_BUCKET_NAME,
+        Key: actualKey
+      })
+    );
   },
   async listAssets(prefix = "") {
-    const result = await list({
-      prefix,
-      token: process.env.BLOB_READ_WRITE_TOKEN
-    });
+    const s3Client = getS3Client();
+    const result = await s3Client.send(
+      new ListObjectsV2Command({
+        Bucket: process.env.R2_BUCKET_NAME,
+        Prefix: prefix
+      })
+    );
 
-    return result.blobs.map((blob) => ({
-      key: blob.pathname,
-      url: blob.url,
-      filename: blob.pathname.split("/").pop() ?? blob.pathname,
-      contentType: inferContentTypeFromFilename(blob.pathname),
-      size: blob.size,
-      uploadedAt: blob.uploadedAt?.toISOString(),
-      category: categoryFromPathname(blob.pathname),
-      source: "blob" as const,
-      canDelete: true
-    }));
+    const publicDomain = process.env.R2_PUBLIC_DOMAIN?.replace(/\/+$/, "");
+
+    return (result.Contents || []).map((item) => {
+      const pathname = item.Key || "";
+      return {
+        key: pathname,
+        url: `${publicDomain}/${pathname}`,
+        filename: pathname.split("/").pop() ?? pathname,
+        contentType: inferContentTypeFromFilename(pathname),
+        size: item.Size,
+        uploadedAt: item.LastModified?.toISOString(),
+        category: categoryFromPathname(pathname),
+        source: "s3" as const,
+        canDelete: true
+      };
+    });
   }
 };
 
 export function getMediaStore(): MediaStoreAdapter {
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    return blobAdapter;
+  if (process.env.R2_ACCOUNT_ID && process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY) {
+    return s3Adapter;
   }
 
   return fallbackAdapter;
 }
 
 export function isBlobConfigured() {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+  return Boolean(process.env.R2_ACCOUNT_ID && process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY);
 }
 
 export async function uploadAsset(file: File, options?: UploadAssetOptions) {
@@ -207,7 +251,7 @@ export async function listAssets(prefix?: string) {
   const adapter = getMediaStore();
   const fromAdapter = await adapter.listAssets(prefix);
 
-  if (adapter.kind === "blob") {
+  if (adapter.kind === "s3") {
     const fallback = await fallbackAdapter.listAssets(prefix);
     return [...fromAdapter, ...fallback];
   }

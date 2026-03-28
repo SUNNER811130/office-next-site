@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { readContent } from "@/lib/content-store";
@@ -13,9 +14,11 @@ export async function Header() {
       <Container className="flex h-[78px] items-center justify-between gap-6">
         <Link href="/" className="min-w-0" aria-label={`返回 ${content.brand.name} 首頁`}>
           {content.brand.logoWordmarkUrl ? (
-            <img
+            <Image
               src={content.brand.logoWordmarkUrl}
               alt={content.brand.name}
+              width={400}
+              height={100}
               className="h-7 w-auto max-w-[180px] object-contain"
             />
           ) : (

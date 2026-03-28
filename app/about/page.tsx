@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { FaqAccordion } from "@/components/ui/faq-accordion";
 import { Section } from "@/components/ui/section";
 import { SectionTitle } from "@/components/ui/section-title";
+import Image from "next/image";
 import { readContent } from "@/lib/content-store";
 import { JsonLd, createBreadcrumbSchema, createFaqSchema, createPageMetadata } from "@/lib/seo";
 
@@ -47,9 +48,11 @@ export default async function AboutPage() {
             </div>
           </div>
           <div className="overflow-hidden rounded-[2.4rem] border border-white/70 bg-white/70 p-4 shadow-[0_24px_70px_rgba(17,17,17,0.08)]">
-            <img
+            <Image
               src={content.founder.heroImageUrl || "/people/founder-hero.svg"}
               alt={content.founder.name}
+              width={1600}
+              height={2000}
               className="aspect-[4/5] w-full rounded-[2rem] object-cover"
             />
           </div>
@@ -89,9 +92,11 @@ export default async function AboutPage() {
           <div className="grid gap-5 md:grid-cols-2">
             <Card className="md:col-span-2">
               <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-center">
-                <img
+                <Image
                   src={content.founder.portraitImageUrl || "/people/founder-portrait.svg"}
                   alt={content.founder.name}
+                  width={1200}
+                  height={1200}
                   className="aspect-square w-full rounded-[1.8rem] object-cover"
                 />
                 <div>

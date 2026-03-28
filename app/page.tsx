@@ -4,6 +4,7 @@ import { Container } from "@/components/ui/container";
 import { FaqAccordion } from "@/components/ui/faq-accordion";
 import { Section } from "@/components/ui/section";
 import { SectionTitle } from "@/components/ui/section-title";
+import Image from "next/image";
 import { readContent } from "@/lib/content-store";
 import { JsonLd, createFaqSchema, createPageMetadata } from "@/lib/seo";
 
@@ -61,9 +62,11 @@ export default async function HomePage() {
           <div className="relative">
             <div className="absolute inset-0 translate-x-4 translate-y-4 rounded-[2.8rem] bg-[#e7ddd1]" />
             <div className="relative overflow-hidden rounded-[2.8rem] border border-white/70 bg-white/70 p-4 shadow-[0_28px_90px_rgba(17,17,17,0.12)]">
-              <img
+              <Image
                 src={content.home.hero.imageUrl || "/sections/advisory-01.svg"}
                 alt={content.home.hero.title}
+                width={1200}
+                height={1500}
                 className="aspect-[4/5] w-full rounded-[2rem] object-cover"
               />
             </div>
@@ -112,9 +115,11 @@ export default async function HomePage() {
           {content.services.items.map((service) => (
             <Card key={service.title}>
               {service.imageUrl ? (
-                <img
+                <Image
                   src={service.imageUrl}
                   alt={service.title}
+                  width={1600}
+                  height={1200}
                   className="aspect-[4/3] w-full rounded-[1.6rem] object-cover"
                 />
               ) : null}
@@ -137,9 +142,11 @@ export default async function HomePage() {
           <div className="grid gap-5 lg:grid-cols-3">
             {content.home.flagshipModules.map((module) => (
               <Card key={module.title}>
-                <img
+                <Image
                   src={module.imageUrl || "/sections/strategy-session-01.svg"}
                   alt={module.title}
+                  width={1600}
+                  height={1200}
                   className="aspect-[4/3] w-full rounded-[1.6rem] object-cover"
                 />
                 <p className="mt-5 text-[11px] uppercase tracking-[0.28em] text-bronze">{module.eyebrow}</p>
@@ -162,9 +169,11 @@ export default async function HomePage() {
           <div className="grid gap-5 lg:grid-cols-3">
             {content.cases.items.map((item) => (
               <Card key={item.title}>
-                <img
+                <Image
                   src={item.imageUrl || "/sections/advisory-01.svg"}
                   alt={item.title}
+                  width={1600}
+                  height={1200}
                   className="aspect-[4/3] w-full rounded-[1.6rem] object-cover"
                 />
                 <p className="mt-5 text-[11px] uppercase tracking-[0.28em] text-bronze">{item.category}</p>
@@ -194,9 +203,11 @@ export default async function HomePage() {
                   key={logo.name}
                   className="flex items-center justify-center rounded-[1.8rem] border border-ink/8 bg-white/80 p-8"
                 >
-                  <img
+                  <Image
                     src={logo.url || "/logos/client-01.svg"}
                     alt={logo.name}
+                    width={400}
+                    height={100}
                     className="h-12 w-auto max-w-full object-contain"
                   />
                 </div>
@@ -219,11 +230,13 @@ export default async function HomePage() {
                 <p className="text-lg leading-8 text-ink">“{item.quote}”</p>
                 <div className="mt-6 flex items-center gap-4">
                   {item.avatarUrl ? (
-                    <img src={item.avatarUrl} alt={item.name} className="h-14 w-14 rounded-full object-cover" />
+                    <Image src={item.avatarUrl} alt={item.name} width={100} height={100} className="h-14 w-14 rounded-full object-cover" />
                   ) : item.logoUrl ? (
-                    <img
+                    <Image
                       src={item.logoUrl}
                       alt={item.company}
+                      width={300}
+                      height={100}
                       className="h-10 w-auto max-w-[120px] object-contain"
                     />
                   ) : null}

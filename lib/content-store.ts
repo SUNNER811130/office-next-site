@@ -9,44 +9,45 @@ import type { ContentSection, ContentSectionMap, SiteContent } from "@/types/con
 const DATA_DIR = path.join(process.cwd(), "data");
 const CONTENT_FILE = path.join(DATA_DIR, "site-content.json");
 
-type ContentStoreAdapter = {
+export interface IContentRepository {
   read(): Promise<SiteContent>;
   write(content: SiteContent): Promise<void>;
-};
+}
 
-async function ensureContentFile() {
-  await fs.mkdir(DATA_DIR, { recursive: true });
+class LocalFileContentRepository implements IContentRepository {
+  private async ensureContentFile() {
+    await fs.mkdir(DATA_DIR, { recursive: true });
 
-  try {
-    await fs.access(CONTENT_FILE);
-  } catch {
-    await fs.writeFile(CONTENT_FILE, JSON.stringify(siteContentSeed, null, 2), "utf8");
+    try {
+      await fs.access(CONTENT_FILE);
+    } catch {
+      await fs.writeFile(CONTENT_FILE, JSON.stringify(siteContentSeed, null, 2), "utf8");
+    }
+  }
+
+  async read(): Promise<SiteContent> {
+    await this.ensureContentFile();
+    const raw = await fs.readFile(CONTENT_FILE, "utf8");
+    return JSON.parse(raw) as SiteContent;
+  }
+
+  async write(content: SiteContent): Promise<void> {
+    await this.ensureContentFile();
+    await fs.writeFile(CONTENT_FILE, JSON.stringify(content, null, 2), "utf8");
   }
 }
 
-const fileSystemAdapter: ContentStoreAdapter = {
-  async read() {
-    await ensureContentFile();
-    const raw = await fs.readFile(CONTENT_FILE, "utf8");
-    return JSON.parse(raw) as SiteContent;
-  },
-  async write(content) {
-    await ensureContentFile();
-    await fs.writeFile(CONTENT_FILE, JSON.stringify(content, null, 2), "utf8");
-  }
-};
-
-function getContentStoreAdapter(): ContentStoreAdapter {
-  return fileSystemAdapter;
+function getRepository(): IContentRepository {
+  return new LocalFileContentRepository();
 }
 
 export async function readContent(): Promise<SiteContent> {
   noStore();
-  return getContentStoreAdapter().read();
+  return getRepository().read();
 }
 
 export async function writeContent(content: SiteContent) {
-  await getContentStoreAdapter().write(content);
+  await getRepository().write(content);
 }
 
 export async function updateContentSection<K extends ContentSection>(

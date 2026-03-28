@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { readContent } from "@/lib/content-store";
@@ -25,9 +26,11 @@ export async function Footer() {
       <Container className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
         <div className="space-y-5">
           {content.brand.logoWordmarkUrl ? (
-            <img
+            <Image
               src={content.brand.logoWordmarkUrl}
               alt={content.brand.name}
+              width={400}
+              height={100}
               className="h-8 w-auto max-w-[220px] object-contain"
             />
           ) : (

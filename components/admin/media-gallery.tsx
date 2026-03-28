@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import Image from "next/image";
 import type { MediaAsset } from "@/lib/media-store";
 
 type MediaGalleryProps = {
@@ -52,7 +53,7 @@ export function MediaGallery({ prefix = "", onSelect, refreshKey = 0 }: MediaGal
       {assets.map((asset) => (
         <article key={`${asset.source}-${asset.key}`} className="rounded-[1.5rem] border border-ink/8 bg-white/80 p-3">
           <div className="aspect-[4/3] overflow-hidden rounded-[1rem] bg-stone">
-            <img src={asset.url} alt={asset.filename} className="h-full w-full object-cover" />
+            <Image src={asset.url} alt={asset.filename} width={800} height={600} className="h-full w-full object-cover" />
           </div>
           <div className="mt-3 grid gap-2 text-sm text-slate">
             <p className="font-medium text-ink">{asset.filename}</p>

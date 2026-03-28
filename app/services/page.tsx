@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { FaqAccordion } from "@/components/ui/faq-accordion";
 import { Section } from "@/components/ui/section";
 import { SectionTitle } from "@/components/ui/section-title";
+import Image from "next/image";
 import { readContent } from "@/lib/content-store";
 import { JsonLd, createBreadcrumbSchema, createFaqSchema, createPageMetadata } from "@/lib/seo";
 
@@ -65,7 +66,7 @@ export default async function ServicesPage() {
           {content.services.items.map((item) => (
             <Card key={item.title}>
               {item.imageUrl ? (
-                <img src={item.imageUrl} alt={item.title} className="aspect-[4/3] w-full rounded-[1.6rem] object-cover" />
+                <Image src={item.imageUrl} alt={item.title} width={1600} height={1200} className="aspect-[4/3] w-full rounded-[1.6rem] object-cover" />
               ) : null}
               <h2 className="mt-5 text-[1.45rem] font-medium text-ink">{item.title}</h2>
               <p className="mt-4 text-base text-slate">{item.description}</p>
@@ -81,9 +82,11 @@ export default async function ServicesPage() {
           <div className="grid gap-5 lg:grid-cols-3">
             {content.cases.items.map((item) => (
               <Card key={item.title}>
-                <img
+                <Image
                   src={item.imageUrl || "/sections/strategy-session-01.svg"}
                   alt={item.title}
+                  width={1600}
+                  height={1200}
                   className="aspect-[4/3] w-full rounded-[1.6rem] object-cover"
                 />
                 <p className="mt-5 text-[11px] uppercase tracking-[0.28em] text-bronze">{item.category}</p>
