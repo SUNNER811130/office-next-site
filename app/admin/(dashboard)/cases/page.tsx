@@ -3,7 +3,7 @@ import { getAllCases } from "@/lib/cases";
 import { AdminCaseList } from "@/components/admin/case-list";
 
 export default async function AdminCasesPage() {
-  const posts = await getAllCases();
+  const posts = (await getAllCases()) || [];
 
   return (
     <div className="grid gap-6">

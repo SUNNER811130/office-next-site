@@ -39,9 +39,13 @@ class LocalFileCaseRepository implements ICaseRepository {
   }
 
   async readAll(): Promise<CaseStudy[]> {
-    await this.ensureFile();
-    const raw = await fs.readFile(CASES_FILE, "utf8");
-    return JSON.parse(raw) as CaseStudy[];
+    try {
+      await this.ensureFile();
+      const raw = await fs.readFile(CASES_FILE, "utf8");
+      return (JSON.parse(raw) as CaseStudy[]) || [];
+    } catch {
+      return [];
+    }
   }
 
   async read(slug: string): Promise<CaseStudy | null> {

@@ -11,7 +11,7 @@ export const metadata = {
 };
 
 export default async function CasesPage() {
-  const cases = await getAllCases();
+  const cases = (await getAllCases()) || [];
 
   return (
     <>
