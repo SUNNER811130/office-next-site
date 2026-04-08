@@ -19,7 +19,7 @@ export async function Header() {
               alt={content.brand.name}
               width={400}
               height={100}
-              className="h-14 w-auto max-w-[320px] object-contain"
+              className="h-20 w-auto max-w-[420px] object-contain"
             />
           ) : (
             <div className="text-[0.9rem] font-semibold uppercase tracking-[0.28em] text-midnight">
