@@ -18,6 +18,7 @@ export type BrandContent = {
   positioning: string;
   proposition: string;
   logoWordmarkUrl: string;
+  logoWordmarkHeaderUrl?: string;
   logoMarkUrl: string;
   ogImageUrl: string;
 };
