@@ -19,16 +19,14 @@ export async function Header() {
               alt={content.brand.name}
               width={400}
               height={100}
-              className="h-7 w-auto max-w-[180px] object-contain"
+              className="h-12 w-auto max-w-[300px] object-contain"
             />
           ) : (
             <div className="text-[0.9rem] font-semibold uppercase tracking-[0.28em] text-midnight">
               {content.brand.shortName}
             </div>
           )}
-          <div className="truncate pt-1 text-[11px] tracking-[0.22em] text-slate">
-            {content.navigation.headerTagline}
-          </div>
+
         </Link>
         <nav aria-label="主選單" className="hidden items-center gap-8 text-sm text-slate lg:flex">
           {content.navigation.navItems.map((item) => (
