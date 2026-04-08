@@ -26,7 +26,7 @@ body {
 
 @layer base {
   * {
-    @apply border-ink/8;
+    @apply border-ink/10;
   }
 
   body {
