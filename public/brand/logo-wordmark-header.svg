@@ -1,11 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 48" fill="none">
-  <text
-    x="0"
-    y="36"
-    font-family="'Inter', 'Helvetica Neue', Arial, sans-serif"
-    font-size="38"
-    font-weight="700"
-    letter-spacing="0.32em"
-    fill="#0f172a"
-  >OFFICE NEXT</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 52" fill="#0f172a">
+  <!-- O -->
+  <path d="M0 8.5C0 3.8 3.8 0 8.5 0h17C30.2 0 34 3.8 34 8.5v25C34 38.2 30.2 42 25.5 42h-17C3.8 42 0 38.2 0 33.5v-25ZM7 8.5v25C7 35.4 8.6 37 10.5 37h13c1.9 0 3.5-1.6 3.5-3.5v-25C27 6.6 25.4 5 23.5 5h-13C8.6 5 7 6.6 7 8.5Z"/>
+  <!-- F -->
+  <path d="M42 0h28v5H49v13h18v5H49v19h-7V0Z"/>
+  <!-- F -->
+  <path d="M78 0h28v5H85v13h18v5H85v19h-7V0Z"/>
+  <!-- I -->
+  <path d="M114 0h7v42h-7V0Z"/>
+  <!-- C -->
+  <path d="M130 8.5C130 3.8 133.8 0 138.5 0h17c4.7 0 8.5 3.8 8.5 8.5v3.5h-7V8.5c0-1.9-1.6-3.5-3.5-3.5h-13c-1.9 0-3.5 1.6-3.5 3.5v25c0 1.9 1.6 3.5 3.5 3.5h13c1.9 0 3.5-1.6 3.5-3.5V30h7v3.5c0 4.7-3.8 8.5-8.5 8.5h-17c-4.7 0-8.5-3.8-8.5-8.5v-25Z"/>
+  <!-- E -->
+  <path d="M173 0h28v5h-21v13h18v5h-18v14h21v5h-28V0Z"/>
+  <!-- space -->
+  <!-- N -->
+  <path d="M232 0h7l21 32V0h7v42h-7l-21-32v32h-7V0Z"/>
+  <!-- E -->
+  <path d="M276 0h28v5h-21v13h18v5h-18v14h21v5h-28V0Z"/>
+  <!-- X -->
+  <path d="M312 0h8l11 18 11-18h8l-15 21 16 21h-8l-12-18-12 18h-8l16-21L312 0Z"/>
+  <!-- T -->
+  <path d="M358 0h32v5h-12.5v37h-7V5H358V0Z"/>
 </svg>

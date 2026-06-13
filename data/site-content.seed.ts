@@ -25,6 +25,7 @@ export const siteContentSeed: SiteContent = {
     positioning: "品牌策略、服務設計與 AI 導入顧問",
     proposition: "把抽象方向整理成可執行的決策、內容與提案節奏。",
     logoWordmarkUrl: "/brand/logo-wordmark.svg",
+    logoWordmarkHeaderUrl: "/brand/logo-wordmark-header.svg",
     logoMarkUrl: "/brand/logo-mark.svg",
     ogImageUrl: "/og/og-default.svg"
   },

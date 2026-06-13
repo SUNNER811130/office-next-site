@@ -18,10 +18,11 @@ export async function Header() {
             <Image
               src={headerLogo}
               alt={content.brand.name}
-              width={520}
-              height={48}
-              className="h-10 w-auto max-w-[360px] object-contain"
+              width={600}
+              height={52}
+              className="h-9 w-auto max-w-[320px] object-contain md:h-11 md:max-w-[400px]"
               priority
+              unoptimized
             />
           ) : (
             <div className="text-[1.1rem] font-bold uppercase tracking-[0.32em] text-midnight">
