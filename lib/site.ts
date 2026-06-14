@@ -26,6 +26,7 @@ function buildBrandEntity(content = siteContentSeed) {
       content.social.x,
       ...content.social.other.map((item) => item.url)
     ].filter(Boolean),
+    logo: content.brand.logoMarkUrl || content.brand.logoWordmarkUrl,
     ogImage: content.brand.ogImageUrl
   };
 }

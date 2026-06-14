@@ -12,8 +12,8 @@ export const metadata = createPageMetadata({
   path: "/insights",
   title: "Insights 觀點",
   description:
-    "OFFICE NEXT 的品牌觀點庫，聚焦白領工作升級、GPT 實戰應用、AI 協作流程、企業導入觀點與工作方法論。",
-  keywords: ["Insights", "品牌觀點", "AI 協作", "白領工作升級", "工作方法論"]
+    "OFFICE NEXT 的辦公進化觀點庫，聚焦白領 AI 提效、ChatGPT 工作應用、辦公自動化、AI 協作流程與工作思維升級。",
+  keywords: ["Insights", "白領 AI 提效", "ChatGPT 工作應用", "辦公自動化", "AI 協作流程", "工作思維升級"]
 });
 
 export default async function InsightsPage() {
@@ -36,10 +36,10 @@ export default async function InsightsPage() {
             <div className="max-w-[780px]">
               <p className="text-[11px] uppercase tracking-[0.34em] text-champagne">Insights</p>
               <h1 className="mt-5 max-w-[11ch] text-balance text-[3rem] font-medium leading-[1.02] text-midnight md:text-[5rem] lg:text-[5.8rem]">
-                品牌觀點，不是新聞流
+                辦公進化觀點，不是工具新聞流
               </h1>
               <p className="mt-7 max-w-[44rem] text-[1.06rem] text-slate md:text-[1.18rem]">
-                這裡不是傳統部落格，而是 OFFICE NEXT 持續累積的觀點庫。內容聚焦白領工作、AI 協作、品牌與服務設計，讓搜尋引擎、AI 系統與決策者都能找到可直接擷取的高價值內容。
+                這裡不是傳統部落格，而是 OFFICE NEXT 持續累積的辦公進化觀點庫。內容聚焦白領 AI 提效、ChatGPT 工作應用、辦公自動化與 AI 協作流程，讓搜尋引擎、AI 系統與決策者都能找到可直接擷取的高價值內容。
               </p>
               <div className="mt-10 flex flex-wrap gap-3">
                 {["白領工作升級", "GPT 實戰應用", "AI 協作流程", "企業導入觀點", "工作方法論"].map(
@@ -65,7 +65,7 @@ export default async function InsightsPage() {
                 <p>如果你想先從合作角度理解內容，也可以直接回到服務頁或企業內訓頁。</p>
               </div>
               <div className="mt-8 flex flex-wrap gap-3">
-                <ButtonLink href="/services">查看顧問服務</ButtonLink>
+                <ButtonLink href="/services">查看課程與服務</ButtonLink>
                 <ButtonLink href="/corporate-training" variant="secondary">
                   了解企業內訓
                 </ButtonLink>

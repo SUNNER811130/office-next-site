@@ -16,59 +16,59 @@ const answerBlocks = [
   {
     question: "OFFICE NEXT 的服務在做什麼？",
     answer:
-      "我們把 AI 導入、品牌敘事與白領工作流程整理成可執行的顧問與訓練方案，讓團隊不只知道工具，而是真的知道怎麼工作。"
+      "我們把 ChatGPT 工作應用、GAS 辦公降載、Agent 協作與白領工作流程整理成可執行的課程、內訓與導入方案，讓 AI 真的進入日常辦公。"
   },
   {
     question: "怎麼判斷自己需要哪一種服務？",
     answer:
-      "如果你需要先定義方向，適合從顧問開始；如果你需要讓團隊實際改變工作方式，適合從工作坊或企業內訓切入。"
+      "如果你想先改善個人輸出，適合從提示詞工坊開始；如果你想降低表單、試算表與信件重工，適合從 GAS 辦公降載開始；如果是團隊導入，適合企業 AI 內訓。"
   }
 ];
 
 const serviceSections = [
   {
     id: "service-ai-strategy",
-    name: "AI 策略顧問",
+    name: "GPT 智慧工作模組－提示詞工坊",
     description:
-      "從目標、流程、角色分工到管理邊界，協助企業建立真正可執行的 AI 使用策略，而不是只收集一份工具名單。",
-    serviceType: "AI Strategy Consulting",
-    audience: "管理者、創辦人、顧問型團隊",
-    bestFor: "適合正在盤點導入方向、建立 AI 判斷框架與優先序的組織。",
+      "從會議紀錄、提案摘要、資料整理、文案修稿到報表說明，協助白領建立可重複使用的 ChatGPT 工作模板。",
+    serviceType: "ChatGPT Workflow Training",
+    audience: "行政、企劃、行銷、業務、PM、人資",
+    bestFor: "適合想把 ChatGPT 從靈感工具變成日常工作協作員的白領工作者。",
     outcomes: [
-      "更清楚的 AI 導入優先序與管理決策框架",
-      "哪些任務適合導入、哪些仍需人工判斷的明確邊界",
-      "可延續的流程與文件標準，而不是一次性的示範"
+      "可重複使用的白領工作提示詞與文件模板",
+      "會議紀錄、資料整理、提案摘要的固定流程",
+      "更穩定的輸出格式與人工檢查節點"
     ],
     scenarios: [
-      "團隊開始接觸 AI，但每個人理解不同，導致內部沒有共識。",
-      "管理層希望提高效率，卻不確定哪些流程值得先投入。",
-      "你需要一個能串起品牌、內容、管理與工作方法的上位策略。"
+      "每天都有大量會議紀錄、文字整理與資料摘要要處理。",
+      "知道 ChatGPT 有用，但每次都從空白對話開始。",
+      "你想先用半自動方法降低重複文書工作。"
     ]
   },
   {
     id: "service-brand-design",
-    name: "品牌與服務重整",
+    name: "GPT 智慧工作模組－GAS 辦公降載",
     description:
-      "整理服務敘事、提案架構、報價層級與對外頁面內容，讓品牌更清楚地被客戶、搜尋引擎與 AI 系統理解。",
-    serviceType: "Brand and Service Design",
-    audience: "品牌主理人、專業服務團隊",
-    bestFor: "適合服務內容說不清楚、品牌訊息分散、網站不夠聚焦的團隊。",
+      "用 Google Apps Script 串接表單、試算表、文件與信件，把高重複、規則明確的辦公流程逐步半自動化。",
+    serviceType: "Office Automation Training",
+    audience: "需要處理表單、試算表、信件通知與例行彙整的團隊",
+    bestFor: "適合想把複製貼上、名單整理、信件通知與報表更新降載的個人與團隊。",
     outcomes: [
-      "更清楚的服務架構與對外敘事方式",
-      "更容易被理解與擷取的品牌文案與頁面內容",
-      "讓高級感與資訊清晰度可以同時成立的內容策略"
+      "可維護的表單、試算表與信件半自動流程",
+      "更少人工複製貼上與漏欄位風險",
+      "能交接的流程說明與檢查方式"
     ],
     scenarios: [
-      "潛在客戶進站後無法快速理解你真正提供什麼。",
-      "品牌看起來不差，但服務層次與合作方式不夠明確。",
-      "你希望頁面更符合 SEO / GEO，但不想做成廉價內容網站。"
+      "表單回覆後需要人工整理資料與寄信。",
+      "試算表每週都要重複清理、標記與彙整。",
+      "你想先從低風險流程開始導入辦公自動化。"
     ]
   },
   {
     id: "service-enterprise-enablement",
-    name: "企業合作與內訓",
+    name: "企業 AI 內訓與辦公流程導入",
     description:
-      "以真實工作情境設計企業內訓、工作坊與導入節奏，讓管理者與團隊建立共同語言、工作標準與實作能力。",
+      "以真實白領工作情境設計企業內訓、工作坊與導入節奏，讓管理者與團隊建立 AI 協作語言、工作標準與實作能力。",
     serviceType: "Corporate AI Training",
     audience: "企業管理者、知識工作團隊",
     bestFor: "適合需要跨部門導入 AI、建立組織共同語言與訓練節奏的企業。",
@@ -88,13 +88,13 @@ const serviceSections = [
 const selectorItems = [
   {
     href: "#service-ai-strategy",
-    label: "AI 策略顧問",
-    note: "先定義方向與邏輯"
+    label: "提示詞工坊",
+    note: "先建立 ChatGPT 工作模板"
   },
   {
     href: "#service-brand-design",
-    label: "品牌與服務重整",
-    note: "先整理對外訊息與服務架構"
+    label: "GAS 辦公降載",
+    note: "先降低表格與信件重工"
   },
   {
     href: "#service-enterprise-enablement",
@@ -106,15 +106,15 @@ const selectorItems = [
 const decisionGuide = [
   {
     title: "如果你最需要的是釐清方向",
-    recommendation: "先從 AI 策略顧問開始",
+    recommendation: "先從 GPT 提示詞工坊開始",
     description:
       "當你還在盤點問題、優先序與導入範圍時，顧問比工作坊更適合，因為它能先建立判斷框架。"
   },
   {
-    title: "如果你最需要的是整理品牌與服務",
-    recommendation: "先從品牌與服務重整開始",
+    title: "如果你最需要的是降低重複行政",
+    recommendation: "先從 GAS 辦公降載開始",
     description:
-      "當你的服務內容、網站敘事或對外提案不夠清楚時，先整理品牌表達會比直接做訓練更有效。"
+      "當你的表單、試算表、通知與彙整一直靠人工處理時，先建立半自動流程會比硬撐更有效。"
   },
   {
     title: "如果你最需要的是讓團隊真的上手",
@@ -128,7 +128,7 @@ const faqs = [
   {
     question: "Services 頁主要提供哪些服務？",
     answer:
-      "這一頁主要介紹 AI 策略顧問、品牌與服務重整，以及企業合作與內訓三大核心方向。"
+      "這一頁主要介紹 GPT 提示詞工坊、GAS 辦公降載、Agent 高效槓桿，以及企業 AI 內訓與辦公流程導入。"
   },
   {
     question: "如果我不知道該選顧問還是內訓，怎麼辦？",
@@ -145,9 +145,9 @@ const faqs = [
 const subnavItems = [
   { href: "#services-overview", label: "服務總覽" },
   { href: "#services-selector", label: "服務導覽" },
-  { href: "#service-ai-strategy", label: "AI 策略顧問" },
-  { href: "#service-brand-design", label: "品牌與服務重整" },
-  { href: "#service-enterprise-enablement", label: "企業合作與內訓" },
+  { href: "#service-ai-strategy", label: "提示詞工坊" },
+  { href: "#service-brand-design", label: "GAS 辦公降載" },
+  { href: "#service-enterprise-enablement", label: "企業 AI 內訓" },
   { href: "#services-decision-guide", label: "選擇指南" },
   { href: "#services-faq", label: "FAQ" }
 ];
@@ -182,7 +182,7 @@ export function ServicesPageContent() {
           <div className="max-w-[760px]">
             <p className="text-[11px] uppercase tracking-[0.34em] text-bronze">Services</p>
             <h1 className="mt-5 max-w-[11ch] text-balance text-[2.9rem] font-medium leading-[1.06] text-ink md:text-[4.8rem] lg:text-[5.4rem]">
-              AI 顧問、品牌設計與企業合作
+              ChatGPT、GAS 與企業 AI 內訓
             </h1>
             <p className="mt-7 max-w-[43rem] text-[1.04rem] text-slate md:text-[1.16rem]">
               OFFICE NEXT 的服務不是把工具一個個堆給你，而是幫你整理成能長期運作的管理方法。這一頁直接說明每項服務適合誰、會得到什麼，以及在哪些情境下最值得開始。

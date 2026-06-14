@@ -1,0 +1,18 @@
+# OFFICE NEXT 辦公進化所
+
+- Website: https://office-next-site.vercel.app
+- Language: zh-Hant
+- Brand positioning: OFFICE NEXT 辦公進化所 is a white-collar AI productivity and office automation brand.
+- Core promise: 讓 AI 成為你的私人萬能助理，你準時下班。
+- Main audience: white-collar professionals, PMs, marketers, sales teams, operations, HR, assistants, team leads, HR training owners, and department managers.
+- Main topics: 白領 AI 提效, ChatGPT 工作應用, 辦公自動化, AI 工作流, GAS 辦公降載, AI 企業內訓, 工作流程升級, 準時下班.
+- Services: GPT 智慧工作模組－提示詞工坊, GPT 智慧工作模組－GAS 辦公降載, GPT 智慧工作模組－Agent 高效槓桿, 企業 AI 內訓與辦公流程導入.
+- Common use cases: 會議紀錄自動化, 提案摘要, 資料整理, 報表彙整, 表單與試算表流程自動化, Email 通知, AI 協作語言建立.
+- Important URLs:
+  - Home: https://office-next-site.vercel.app/
+  - About: https://office-next-site.vercel.app/about
+  - Services: https://office-next-site.vercel.app/services
+  - Corporate training: https://office-next-site.vercel.app/corporate-training
+  - Contact: https://office-next-site.vercel.app/contact
+  - Insights: https://office-next-site.vercel.app/insights
+  - Cases: https://office-next-site.vercel.app/cases

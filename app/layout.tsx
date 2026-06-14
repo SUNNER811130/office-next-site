@@ -9,6 +9,23 @@ import { getDynamicSiteConfig } from "@/lib/site";
 
 import "./globals.css";
 
+const brandKeywords = [
+  "OFFICE NEXT 辦公進化所",
+  "白領 AI 提效",
+  "辦公自動化",
+  "工作流程升級",
+  "ChatGPT 工作應用",
+  "AI 工作流",
+  "GAS 辦公降載",
+  "AI 企業內訓",
+  "準時下班",
+  "會議紀錄自動化",
+  "提案摘要",
+  "資料整理",
+  "報表彙整",
+  "工作思維升級"
+];
+
 const bodyFont = Noto_Sans_TC({
   subsets: ["latin"],
   variable: "--font-body",
@@ -25,7 +42,9 @@ const displayFont = Instrument_Serif({
 
 export async function generateMetadata(): Promise<Metadata> {
   const siteConfig = await getDynamicSiteConfig();
-  const defaultTitle = `${siteConfig.shortName} | ${siteConfig.brandEntity.positioning}`;
+  const defaultTitle = "OFFICE NEXT 辦公進化所｜白領 AI 提效與辦公自動化";
+  const description =
+    "OFFICE NEXT 辦公進化所協助白領把 AI 用進日常辦公，讓會議紀錄、資料整理、提案摘要、報表彙整等重複事務降載，升級工作流程並準時下班。";
 
   return {
     metadataBase: new URL(siteConfig.url),
@@ -33,8 +52,8 @@ export async function generateMetadata(): Promise<Metadata> {
       default: defaultTitle,
       template: `%s | ${siteConfig.shortName}`
     },
-    description: siteConfig.description,
-    keywords: ["AI 顧問", "品牌策略", "服務設計", "工作坊設計"],
+    description,
+    keywords: brandKeywords,
     alternates: {
       canonical: "/"
     },
@@ -49,7 +68,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     openGraph: {
       title: defaultTitle,
-      description: siteConfig.description,
+      description,
       url: siteConfig.url,
       siteName: siteConfig.name,
       locale: "zh_TW",
@@ -64,7 +83,7 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
       title: defaultTitle,
-      description: siteConfig.description,
+      description,
       images: [siteConfig.ogImage]
     }
   };

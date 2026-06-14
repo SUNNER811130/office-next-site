@@ -28,7 +28,7 @@ export async function Footer() {
           {content.brand.logoWordmarkUrl ? (
             <Image
               src={content.brand.logoWordmarkUrl}
-              alt={content.brand.name}
+              alt="OFFICE NEXT 辦公進化所 Logo"
               width={400}
               height={100}
               className="h-8 w-auto max-w-[220px] object-contain"

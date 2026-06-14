@@ -17,7 +17,7 @@ export async function Header() {
           {headerLogo ? (
             <Image
               src={headerLogo}
-              alt={content.brand.name}
+              alt="OFFICE NEXT 辦公進化所 Logo"
               width={520}
               height={48}
               className="h-10 w-auto max-w-[360px] object-contain"
@@ -38,7 +38,7 @@ export async function Header() {
           ))}
         </nav>
         <ButtonLink href="/contact" variant="secondary" className="shrink-0 px-6 py-3 text-[11px] tracking-[0.22em]">
-          {content.contact.mailtoLabel}
+          開始辦公進化
         </ButtonLink>
       </Container>
     </header>

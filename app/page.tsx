@@ -10,12 +10,22 @@ import { readContent } from "@/lib/content-store";
 import { JsonLd, createFaqSchema, createPageMetadata } from "@/lib/seo";
 
 export async function generateMetadata() {
-  const content = await readContent();
   return createPageMetadata({
     path: "/",
-    title: content.brand.positioning,
-    description: content.brand.summary,
-    keywords: [content.brand.name, "AI 顧問", "品牌策略", "服務設計"]
+    title: "白領 AI 提效與辦公自動化",
+    description:
+      "OFFICE NEXT 辦公進化所聚焦 ChatGPT 工作應用、辦公自動化與 AI 工作流程，協助白領把重複工作交給 AI，升級日常流程並準時下班。",
+    keywords: [
+      "白領 AI 提效",
+      "辦公自動化",
+      "ChatGPT 工作應用",
+      "AI 工作流程",
+      "準時下班",
+      "會議紀錄自動化",
+      "資料整理",
+      "提案摘要",
+      "報表彙整"
+    ]
   });
 }
 
@@ -27,8 +37,8 @@ export default async function HomePage() {
       <JsonLd data={createFaqSchema(content.faq.items)} />
 
       <section className="relative overflow-hidden bg-oat">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.82),transparent_38%)]" />
-        <div className="absolute inset-y-0 right-0 w-[44%] bg-[radial-gradient(circle_at_center,rgba(212,197,169,0.14),transparent_62%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(8,22,42,0.08),transparent_42%),radial-gradient(circle_at_top,rgba(255,255,255,0.9),transparent_38%)]" />
+        <div className="absolute inset-y-0 right-0 w-[44%] bg-[radial-gradient(circle_at_center,rgba(120,183,204,0.16),transparent_62%)]" />
         <Container className="relative grid gap-12 py-20 md:py-28 lg:grid-cols-[1fr_0.94fr] lg:items-center">
           <FadeUp>
             <p className="text-[11px] uppercase tracking-[0.34em] text-champagne">{content.home.hero.eyebrow}</p>
@@ -82,8 +92,8 @@ export default async function HomePage() {
         <div className="grid gap-10 lg:grid-cols-[0.92fr_1.08fr]">
           <FadeUp>
             <SectionTitle
-              eyebrow="Brand Proposition"
-              title="把抽象方向整理成可執行的前台與後台"
+              eyebrow="Work Upgrade"
+              title="讓 AI 接手重複環節，把人留給更高價值的判斷"
               description={<div className="prose prose-slate prose-sm" dangerouslySetInnerHTML={{ __html: content.brand.proposition }} />}
             />
           </FadeUp>
@@ -105,8 +115,8 @@ export default async function HomePage() {
           <FadeUp>
             <SectionTitle
               eyebrow="Pain Points"
-              title="常見的斷點通常不是缺工具，而是缺一條清楚主線"
-              description="以下內容會直接由後台管理，首頁與其他頁面共用同一份 content store。"
+              title="白領每天最耗損的，通常不是大事，而是做不完的小事"
+              description="會議紀錄、資料整理、提案摘要、報表彙整與反覆修稿，都是 AI 可以協作、流程可以升級的工作。"
             />
           </FadeUp>
           <StaggerContainer className="grid gap-5 md:grid-cols-3">
@@ -151,8 +161,8 @@ export default async function HomePage() {
           <FadeUp>
             <SectionTitle
               eyebrow="Flagship Modules"
-              title="首頁模組與區塊圖全部由同一份內容資料驅動"
-              description="上傳新的區塊圖後，只要把 URL 寫回內容資料，前台會直接吃到最新版本。"
+              title="從提示詞、GAS 到 Agent，逐步建立你的 AI 工作流"
+              description="先讓 AI 幫你少做一段重複事，再把高頻流程整理成可維護、可交接、可擴充的辦公系統。"
             />
           </FadeUp>
           <StaggerContainer className="grid gap-5 lg:grid-cols-3">
@@ -182,8 +192,8 @@ export default async function HomePage() {
           <FadeUp>
             <SectionTitle
               eyebrow="Cases"
-              title="案例摘要與配圖同樣走 content store"
-              description="這裡的圖片、問題、方法與結果，都能直接在後台更新。"
+              title="辦公 AI 提效案例：從一個痛點開始，改掉一段重複流程"
+              description="OFFICE NEXT 的案例聚焦白領真實工作場景，包含會議、表單、試算表、信件與團隊協作。"
             />
           </FadeUp>
           <StaggerContainer className="grid gap-5 lg:grid-cols-3">
@@ -200,13 +210,13 @@ export default async function HomePage() {
                   <p className="mt-5 text-[11px] uppercase tracking-[0.28em] text-champagne">{item.category}</p>
                   <h3 className="mt-4 text-[1.35rem] font-medium text-midnight">{item.title}</h3>
                   <p className="mt-4 text-sm text-slate">
-                    <strong className="text-midnight">Problem:</strong> {item.problem}
+                    <strong className="text-midnight">問題：</strong> {item.problem}
                   </p>
                   <p className="mt-3 text-sm text-slate">
-                    <strong className="text-midnight">Approach:</strong> {item.approach}
+                    <strong className="text-midnight">做法：</strong> {item.approach}
                   </p>
                   <p className="mt-3 text-sm text-slate">
-                    <strong className="text-midnight">Result:</strong> {item.result}
+                    <strong className="text-midnight">成果：</strong> {item.result}
                   </p>
                 </Card>
               </StaggerItem>
@@ -219,7 +229,7 @@ export default async function HomePage() {
         <Section surface="muted">
           <div className="grid gap-8">
             <FadeUp>
-              <SectionTitle eyebrow="Client Logos" title="客戶標識區塊可隨內容資料隱藏或更新" />
+              <SectionTitle eyebrow="Trusted by Teams" title="和重視效率與流程品質的團隊一起升級辦公方式" />
             </FadeUp>
             <StaggerContainer className="grid gap-4 md:grid-cols-3">
               {content.clientLogos.map((logo) => (
@@ -245,8 +255,8 @@ export default async function HomePage() {
           <FadeUp>
             <SectionTitle
               eyebrow="Testimonials"
-              title="見證與 logo 也走同一套內容來源"
-              description="如果 logo 或 avatar 留空，前台會自動退回純文字呈現，不顯示多餘 placeholder。"
+              title="真正的 AI 提效，是讓日常工作變輕、輸出變穩"
+              description="從個人模板到團隊共識，OFFICE NEXT 協助白領把 AI 變成可落地的工作協作員。"
             />
           </FadeUp>
           <StaggerContainer className="grid gap-5">

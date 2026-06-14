@@ -7,7 +7,7 @@ export const contentType = ogImageContentType;
 export default function OpenGraphImage() {
   return createBrandImageResponse({
     eyebrow: "OFFICE NEXT",
-    title: "白領工作與 AI 策略顧問",
+    title: "白領 AI 提效與辦公自動化",
     description: brandEntity.shortDescription
   });
 }
