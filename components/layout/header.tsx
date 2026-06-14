@@ -11,8 +11,8 @@ export async function Header() {
   const headerLogo = content.brand.logoWordmarkHeaderUrl || content.brand.logoWordmarkUrl;
 
   return (
-    <header className="sticky top-0 z-50 bg-white/60 backdrop-blur-xl shadow-glass">
-      <Container className="flex h-[96px] items-center justify-between gap-8">
+    <header className="sticky top-0 z-50 border-b border-white/60 bg-white/72 backdrop-blur-xl shadow-glass">
+      <Container className="flex h-[88px] items-center justify-between gap-5 md:gap-8">
         <Link href="/" className="min-w-0 shrink-0" aria-label={`返回 ${content.brand.name} 首頁`}>
           {headerLogo ? (
             <Image
@@ -32,12 +32,12 @@ export async function Header() {
         </Link>
         <nav aria-label="主選單" className="hidden items-center gap-8 text-sm text-slate lg:flex">
           {content.navigation.navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="transition hover:text-midnight">
+            <Link key={item.href} href={item.href} className="relative transition hover:text-midnight after:absolute after:-bottom-2 after:left-0 after:h-px after:w-0 after:bg-champagne after:transition-all after:duration-300 hover:after:w-full motion-reduce:after:transition-none">
               {item.label}
             </Link>
           ))}
         </nav>
-        <ButtonLink href="/contact" variant="secondary" className="shrink-0 px-6 py-3 text-[11px] tracking-[0.22em]">
+        <ButtonLink href="/contact" variant="secondary" className="shrink-0 px-4 py-3 text-[10px] tracking-[0.18em] sm:px-6 sm:text-[11px] sm:tracking-[0.22em]">
           開始辦公進化
         </ButtonLink>
       </Container>

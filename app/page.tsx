@@ -2,6 +2,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { FaqAccordion } from "@/components/ui/faq-accordion";
+import { DataStream, GlowCard, ProcessRail, ScrollSignal, TechGrid, WorkflowConsole } from "@/components/home/tech-interactions";
 import { FadeUp, StaggerContainer, StaggerItem } from "@/components/ui/motion";
 import { Section } from "@/components/ui/section";
 import { SectionTitle } from "@/components/ui/section-title";
@@ -36,10 +37,11 @@ export default async function HomePage() {
     <>
       <JsonLd data={createFaqSchema(content.faq.items)} />
 
-      <section className="relative overflow-hidden bg-oat">
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(8,22,42,0.08),transparent_42%),radial-gradient(circle_at_top,rgba(255,255,255,0.9),transparent_38%)]" />
-        <div className="absolute inset-y-0 right-0 w-[44%] bg-[radial-gradient(circle_at_center,rgba(120,183,204,0.16),transparent_62%)]" />
-        <Container className="relative grid gap-12 py-20 md:py-28 lg:grid-cols-[1fr_0.94fr] lg:items-center">
+      <section className="relative overflow-hidden border-b border-white/70 bg-[linear-gradient(135deg,#F8FAFC_0%,#EEF4F8_52%,#E7EEF3_100%)]">
+        <TechGrid />
+        <DataStream className="opacity-40" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(110,167,191,0.24),transparent_34%),radial-gradient(circle_at_82%_20%,rgba(7,26,47,0.10),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.74),transparent_48%)]" />
+        <Container className="relative grid gap-12 py-16 md:py-24 lg:min-h-[calc(100vh-88px)] lg:grid-cols-[1fr_0.94fr] lg:items-center lg:py-20">
           <FadeUp>
             <p className="text-[11px] uppercase tracking-[0.34em] text-champagne">{content.home.hero.eyebrow}</p>
             <h1 className="mt-6 max-w-[11ch] text-balance text-[3rem] font-medium leading-[0.98] text-midnight md:text-[5.2rem]">
@@ -69,21 +71,11 @@ export default async function HomePage() {
                 <p className="mt-2 text-sm leading-7 text-slate">{content.founder.tagline}</p>
               </div>
             </div>
+            <ScrollSignal className="mt-9" />
           </FadeUp>
 
           <FadeUp delay={0.2}>
-            <div className="relative">
-              <div className="absolute inset-0 translate-x-4 translate-y-4 rounded-[2.8rem] bg-champagne/20" />
-              <div className="relative overflow-hidden rounded-[2.8rem] bg-white/70 p-4 shadow-elegant backdrop-blur-md">
-                <Image
-                  src={content.home.hero.imageUrl || "/sections/advisory-01.svg"}
-                  alt={content.home.hero.title}
-                  width={1200}
-                  height={1500}
-                  className="aspect-[4/5] w-full rounded-[2rem] object-cover"
-                />
-              </div>
-            </div>
+            <WorkflowConsole />
           </FadeUp>
         </Container>
       </section>
@@ -100,17 +92,18 @@ export default async function HomePage() {
           <StaggerContainer className="grid gap-5">
             {content.home.propositionCards.map((item) => (
               <StaggerItem key={item.title}>
-                <Card>
+                <GlowCard>
                   <h3 className="text-[1.3rem] font-medium text-midnight">{item.title}</h3>
                   <p className="mt-4 text-base text-slate">{item.description}</p>
-                </Card>
+                </GlowCard>
               </StaggerItem>
             ))}
           </StaggerContainer>
         </div>
       </Section>
 
-      <Section surface="muted">
+      <Section surface="muted" className="relative overflow-hidden">
+        <TechGrid className="opacity-[0.08]" />
         <div className="grid gap-10 lg:grid-cols-[0.86fr_1.14fr]">
           <FadeUp>
             <SectionTitle
@@ -122,10 +115,18 @@ export default async function HomePage() {
           <StaggerContainer className="grid gap-5 md:grid-cols-3">
             {content.home.painPoints.map((item, index) => (
               <StaggerItem key={item}>
-                <Card>
-                  <p className="font-serif text-3xl italic leading-none text-champagne">0{index + 1}</p>
-                  <p className="mt-8 text-[1.05rem] text-slate">{item}</p>
-                </Card>
+                <GlowCard className="min-h-[300px]">
+                  <div className="relative z-10 flex h-full flex-col justify-between">
+                    <div className="relative h-24">
+                      <div className="absolute left-0 top-0 h-24 w-24 rounded-full border border-champagne/20" />
+                      <div className="absolute left-4 top-4 h-16 w-16 rounded-full border border-champagne/30" />
+                      <div className="absolute left-9 top-9 h-6 w-6 rounded-full bg-champagne/15 shadow-[0_0_24px_rgba(110,167,191,0.32)]" />
+                      <div className="absolute left-24 top-10 h-px w-20 bg-[linear-gradient(90deg,rgba(110,167,191,0.7),transparent)]" />
+                      <p className="absolute right-0 top-0 text-[11px] uppercase tracking-[0.26em] text-champagne">Drain 0{index + 1}</p>
+                    </div>
+                    <p className="mt-7 text-[1.05rem] text-slate">{item}</p>
+                  </div>
+                </GlowCard>
               </StaggerItem>
             ))}
           </StaggerContainer>
@@ -133,31 +134,35 @@ export default async function HomePage() {
       </Section>
 
       <Section>
-        <StaggerContainer className="grid gap-5 lg:grid-cols-3">
-          {content.services.items.map((service) => (
+        <StaggerContainer className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {content.services.items.map((service, index) => (
             <StaggerItem key={service.title}>
-              <Card>
+              <GlowCard className="min-h-full">
                 {service.imageUrl ? (
                   <Image
                     src={service.imageUrl}
                     alt={service.title}
                     width={1600}
                     height={1200}
-                    className="aspect-[4/3] w-full rounded-2xl object-cover"
+                    className="aspect-[4/3] w-full rounded-xl border border-white/70 object-cover"
                   />
                 ) : null}
-                <p className="mt-5 text-[11px] uppercase tracking-[0.28em] text-champagne">Service Direction</p>
+                <div className="mt-5 flex items-center justify-between gap-4">
+                  <p className="text-[11px] uppercase tracking-[0.28em] text-champagne">Module 0{index + 1}</p>
+                  <span className="h-2 w-2 rounded-full bg-champagne shadow-[0_0_18px_rgba(110,167,191,0.6)]" />
+                </div>
                 <h3 className="mt-4 text-[1.45rem] font-medium text-midnight">{service.title}</h3>
                 <p className="mt-4 text-base text-slate">{service.description}</p>
                 <p className="mt-5 border-t border-midnight/8 pt-5 text-sm text-slate">{service.audience}</p>
-              </Card>
+              </GlowCard>
             </StaggerItem>
           ))}
         </StaggerContainer>
       </Section>
 
-      <Section surface="muted">
-        <div className="grid gap-10">
+      <Section surface="muted" className="relative overflow-hidden">
+        <TechGrid className="opacity-[0.08]" />
+        <div className="relative grid gap-10">
           <FadeUp>
             <SectionTitle
               eyebrow="Flagship Modules"
@@ -165,25 +170,15 @@ export default async function HomePage() {
               description="先讓 AI 幫你少做一段重複事，再把高頻流程整理成可維護、可交接、可擴充的辦公系統。"
             />
           </FadeUp>
-          <StaggerContainer className="grid gap-5 lg:grid-cols-3">
-            {content.home.flagshipModules.map((module) => (
-              <StaggerItem key={module.title}>
-                <Card>
-                  <Image
-                    src={module.imageUrl || "/sections/strategy-session-01.svg"}
-                    alt={module.title}
-                    width={1600}
-                    height={1200}
-                    className="aspect-[4/3] w-full rounded-2xl object-cover"
-                  />
-                  <p className="mt-5 text-[11px] uppercase tracking-[0.28em] text-champagne">{module.eyebrow}</p>
-                  <h3 className="mt-4 text-[1.35rem] font-medium text-midnight">{module.title}</h3>
-                  <p className="mt-3 text-sm uppercase tracking-[0.12em] text-slate">{module.summary}</p>
-                  <p className="mt-4 text-base text-slate">{module.description}</p>
-                </Card>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
+          <FadeUp delay={0.08}>
+            <ProcessRail
+              items={content.home.flagshipModules.map((module) => ({
+                label: module.eyebrow,
+                title: module.title,
+                description: `${module.summary}。${module.description}`
+              }))}
+            />
+          </FadeUp>
         </div>
       </Section>
 
@@ -199,26 +194,31 @@ export default async function HomePage() {
           <StaggerContainer className="grid gap-5 lg:grid-cols-3">
             {content.cases.items.map((item) => (
               <StaggerItem key={item.title}>
-                <Card>
+                <GlowCard className="min-h-full">
                   <Image
                     src={item.imageUrl || "/sections/advisory-01.svg"}
                     alt={item.title}
                     width={1600}
                     height={1200}
-                    className="aspect-[4/3] w-full rounded-2xl object-cover"
+                    className="aspect-[4/3] w-full rounded-xl border border-white/70 object-cover"
                   />
                   <p className="mt-5 text-[11px] uppercase tracking-[0.28em] text-champagne">{item.category}</p>
                   <h3 className="mt-4 text-[1.35rem] font-medium text-midnight">{item.title}</h3>
-                  <p className="mt-4 text-sm text-slate">
-                    <strong className="text-midnight">問題：</strong> {item.problem}
-                  </p>
-                  <p className="mt-3 text-sm text-slate">
-                    <strong className="text-midnight">做法：</strong> {item.approach}
-                  </p>
-                  <p className="mt-3 text-sm text-slate">
-                    <strong className="text-midnight">成果：</strong> {item.result}
-                  </p>
-                </Card>
+                  <div className="mt-5 grid gap-3">
+                    <div className="rounded-xl border border-midnight/8 bg-white/58 p-4">
+                      <p className="text-[10px] uppercase tracking-[0.22em] text-champagne">Problem</p>
+                      <p className="mt-2 text-sm text-slate">{item.problem}</p>
+                    </div>
+                    <div className="rounded-xl border border-midnight/8 bg-white/58 p-4">
+                      <p className="text-[10px] uppercase tracking-[0.22em] text-champagne">Approach</p>
+                      <p className="mt-2 text-sm text-slate">{item.approach}</p>
+                    </div>
+                    <div className="rounded-xl border border-champagne/20 bg-champagne/10 p-4">
+                      <p className="text-[10px] uppercase tracking-[0.22em] text-midnight">Result</p>
+                      <p className="mt-2 text-sm text-slate">{item.result}</p>
+                    </div>
+                  </div>
+                </GlowCard>
               </StaggerItem>
             ))}
           </StaggerContainer>
