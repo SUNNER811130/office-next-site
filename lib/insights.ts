@@ -95,7 +95,7 @@ export const insightPostsSeed: InsightPost[] = [
       }
     ],
     relatedLinks: [
-      { href: "/services", label: "查看 AI 策略顧問如何協助團隊建立工作規則" },
+      { href: "/services", label: "查看 OFFICE NEXT 如何協助團隊建立 AI 工作流程" },
       { href: "/corporate-training", label: "了解企業如何透過內訓建立 AI 協作標準" }
     ],
     cta: {
@@ -103,7 +103,7 @@ export const insightPostsSeed: InsightPost[] = [
       description: "OFFICE NEXT 協助團隊把導入焦慮轉成流程、標準與可持續的工作規則。",
       primary: {
         href: "/services",
-        label: "查看 AI 策略顧問服務"
+        label: "查看課程與服務"
       },
       secondary: {
         href: "/contact",
@@ -113,20 +113,20 @@ export const insightPostsSeed: InsightPost[] = [
   },
   {
     slug: "gpt-workflows-for-brand-and-service-teams",
-    title: "GPT 實戰應用，不是生成更多字，而是讓品牌與服務團隊更穩",
+    title: "GPT 實戰應用，不是生成更多字，而是讓白領工作流程更穩",
     summary:
-      "對品牌與服務型團隊來說，GPT 的真正價值不是大量生成，而是建立更穩定的研究、提案與修訂流程。",
+      "對白領團隊來說，GPT 的真正價值不是大量生成，而是建立更穩定的研究、提案摘要、資料整理與修訂流程。",
     category: "GPT 實戰應用",
     publishedAt: "2026-03-17",
     updatedAt: "2026-03-17",
     author: "OFFICE NEXT",
     readingTime: "5 min read",
     heroText:
-      "當團隊把 GPT 當成流程模組而不是文案魔法，內容品質反而更容易穩定，品牌辨識也更容易被保住。",
+      "當團隊把 GPT 當成流程模組而不是文案魔法，提案、資料與報表輸出反而更容易穩定，人工判斷也更清楚。",
     keyTakeaways: [
       "GPT 最適合先放進研究、整理、初稿與修訂流程。",
       "成熟團隊會把 GPT 視為流程模組，而不是一次性的生成工具。",
-      "品牌內容若要穩定，仍需要人工判斷與語氣校準。"
+      "白領工作輸出若要穩定，仍需要人工判斷、資料邊界與品質檢查。"
     ],
     quickAnswers: [
       {
@@ -134,7 +134,7 @@ export const insightPostsSeed: InsightPost[] = [
         answer: "最適合先放進研究摘要、提案初稿與內容修訂等流程性工作。"
       },
       {
-        question: "GPT 會不會稀釋品牌感？",
+        question: "GPT 會不會讓工作品質變得不穩？",
         answer: "如果直接把生成結果當最終稿，風險很高；但若放在流程中使用，反而能提升穩定度。"
       }
     ],
@@ -143,27 +143,27 @@ export const insightPostsSeed: InsightPost[] = [
         title: "從文案生成轉向流程設計",
         content: [
           "許多團隊第一次使用 GPT，都是希望它能快速產出貼文、提案或說明文字。但真正成熟的做法，通常不是直接拿生成結果上線，而是把它放進研究、整理、重組與初稿階段。",
-          "這會讓 GPT 的角色更清楚，也能避免品牌語氣、服務細節與判斷責任被模糊掉。"
+          "這會讓 GPT 的角色更清楚，也能避免資料邊界、工作細節與判斷責任被模糊掉。"
         ]
       },
       {
         title: "最值得先建立的三種工作模組",
         content: [
-          "第一種是研究摘要模組，幫團隊快速整理資料來源與觀點差異。第二種是提案初稿模組，幫顧問與服務團隊建立更穩定的草稿起點。第三種是修訂輔助模組，協助內容團隊確認語氣一致性與資訊完整度。",
-          "這三種模組的共同點是，它們都能大幅減少重複勞動，卻不會直接取代品牌與專業判斷。"
+          "第一種是研究摘要模組，幫團隊快速整理資料來源與觀點差異。第二種是提案初稿模組，幫白領工作者建立更穩定的草稿起點。第三種是修訂輔助模組，協助確認語氣一致性與資訊完整度。",
+          "這三種模組的共同點是，它們都能大幅減少重複勞動，卻不會直接取代人的專業判斷。"
         ]
       }
     ],
     relatedLinks: [
       { href: "/insights/white-collar-ai-upgrade-is-about-rules-not-tools", label: "延伸閱讀白領 AI 升級的核心邏輯" },
-      { href: "/services", label: "查看品牌與服務重整如何結合 GPT 工作模組" }
+      { href: "/services", label: "查看提示詞工坊如何建立 GPT 工作模組" }
     ],
     cta: {
       title: "如果你想讓 GPT 進入真實工作流程，而不是停留在示範",
-      description: "OFFICE NEXT 可協助品牌與服務團隊建立更穩定的 GPT 工作模組。",
+      description: "OFFICE NEXT 可協助白領與企業團隊建立更穩定的 GPT 工作模組。",
       primary: {
         href: "/services",
-        label: "查看品牌與服務重整服務"
+        label: "查看 GPT 智慧工作模組"
       },
       secondary: {
         href: "/contact",

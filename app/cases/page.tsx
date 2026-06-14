@@ -7,8 +7,8 @@ import { getAllCases } from "@/lib/cases";
 
 
 export const metadata = {
-  title: "客戶案例 Case Studies - OFFICE NEXT",
-  description: "了解 OFFICE NEXT 如何協助頂尖企業成功導入 AI 與自動化流程，解決痛點並放大百倍效益。",
+  title: "辦公 AI 提效案例 - OFFICE NEXT",
+  description: "了解 OFFICE NEXT 如何協助白領與企業團隊導入 ChatGPT 工作應用、辦公自動化與 AI 工作流程，降低重複工作並提升流程品質。",
 };
 
 export default async function CasesPage() {
@@ -38,8 +38,8 @@ export default async function CasesPage() {
           <FadeUp>
             <SectionTitle 
               eyebrow="Case Studies"
-              title="成功案例與導入實績"
-              description="透過真實數據與執行框架，解答您對於引入創新工作流程的疑慮與期待。"
+              title="辦公 AI 提效案例"
+              description="透過會議紀錄、資料整理、表單流程、報表彙整與團隊協作案例，理解 AI 如何回到白領日常工作流程。"
               align="center"
             />
           </FadeUp>
@@ -67,7 +67,7 @@ export default async function CasesPage() {
                     <h3 className="mt-3 text-xl font-medium leading-normal text-midnight">{post.title}</h3>
                     <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate">{post.executiveSummary}</p>
                     <div className="mt-auto pt-6 flex w-fit items-center gap-2 text-sm font-medium text-midnight transition group-hover:text-champagne">
-                      閱讀案例範本 &rarr;
+                      閱讀案例 &rarr;
                     </div>
                   </div>
                 </Link>

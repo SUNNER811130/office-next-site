@@ -1,7 +1,7 @@
 {
   "siteUrl": "https://office-next-site.vercel.app",
   "navigation": {
-    "headerTagline": "White-Collar Strategy and AI Advisory",
+    "headerTagline": "White-Collar AI Productivity and Office Automation",
     "navItems": [
       {
         "label": "首頁",
@@ -14,6 +14,10 @@
       {
         "label": "服務",
         "href": "/services"
+      },
+      {
+        "label": "企業內訓",
+        "href": "/corporate-training"
       },
       {
         "label": "聯絡",
@@ -30,8 +34,12 @@
         "href": "/about"
       },
       {
-        "label": "服務方向",
+        "label": "課程與服務",
         "href": "/services"
+      },
+      {
+        "label": "企業 AI 內訓",
+        "href": "/corporate-training"
       },
       {
         "label": "聯絡 OFFICE NEXT",
@@ -43,9 +51,9 @@
     "name": "OFFICE NEXT 辦公進化所",
     "legalName": "OFFICE NEXT",
     "shortName": "OFFICE NEXT",
-    "summary": "專注白領工作者與決策者的品牌、辦公服務與 AI 自動化。",
-    "positioning": "品牌策略、服務設計與 AI 導入顧問",
-    "proposition": "把抽象方向整理成可執行的決策、內容與提案節奏。",
+    "summary": "OFFICE NEXT 辦公進化所專注白領 AI 提效、自動化與工作流程升級，協助個人與團隊把 AI 用進日常辦公，讓重複事務降載，準時下班。",
+    "positioning": "白領 AI 提效、辦公自動化與工作流程升級品牌",
+    "proposition": "讓 AI 成為你的私人萬能助理，你準時下班。",
     "logoWordmarkUrl": "/brand/logo-wordmark.svg",
     "logoWordmarkHeaderUrl": "/brand/logo-wordmark-header.svg",
     "logoMarkUrl": "/brand/logo-mark.svg",
@@ -53,84 +61,90 @@
   },
   "home": {
     "hero": {
-      "eyebrow": "OFFICE NEXT",
-      "title": "把品牌、服務與 AI 導入整理成下一步",
-      "description": "OFFICE NEXT 協助品牌主理人、專業服務團隊與企業內部單位，釐清定位、重整服務模組，並透過 AI 降載重複性工作。",
+      "eyebrow": "OFFICE NEXT 辦公進化所",
+      "title": "把重複工作交給 AI，讓你準時下班。",
+      "description": "專為白領打造的 AI 提效與辦公自動化品牌。從 ChatGPT 工作應用、AI 工作流程設計，到會議紀錄、資料整理、提案摘要與報表彙整，OFFICE NEXT 協助你把重複工作交給 AI，升級日常辦公流程，把時間留給更有價值的判斷與準時下班。",
       "imageUrl": "/sections/advisory-01.svg",
-      "ctaPrimaryLabel": "查看服務方向",
-      "ctaPrimaryHref": "/services",
-      "ctaSecondaryLabel": "直接談需求",
-      "ctaSecondaryHref": "/contact"
+      "ctaPrimaryLabel": "開始辦公進化",
+      "ctaPrimaryHref": "/contact",
+      "ctaSecondaryLabel": "查看課程與服務",
+      "ctaSecondaryHref": "/services"
     },
     "painPoints": [
-      "品牌說法很多，但外部看不出真正的價值主張。",
-      "知道 AI 很重要，卻不知道該先落在哪個工作環節。",
-      "服務內容與案例分散，無法快速整理成提案與銷售節奏。"
+      "每天都在整理會議紀錄、訊息重點、待辦追蹤與跨部門回覆，時間被零碎工作切碎。",
+      "資料整理、提案摘要、報表彙整與格式重整看起來不難，卻反覆消耗專注力。",
+      "用過 ChatGPT，卻不知道怎麼把它放進真實工作流程，最後還是自己加班收尾。"
     ],
     "propositionCards": [
       {
-        "title": "先整理決策，再放大產出",
-        "description": "先把定位、受眾與優先順序整理清楚，再設計內容與執行方針。"
+        "title": "不是你效率差，是流程沒有升級",
+        "description": "很多白領累，不是能力不夠，而是一直用人工方式處理 AI 可以協作的重複環節。"
       },
       {
-        "title": "AI 不只是工具清單",
-        "description": "把 AI 放進實際流程，落實真正降載業務。"
+        "title": "先做半自動，再做全自動",
+        "description": "從提示詞、文件模板、表格整理與審稿流程開始，先讓 AI 接手一段，再逐步串成穩定流程。"
       },
       {
-        "title": "讓前台敘事與後台運作對齊",
-        "description": "品牌話語、服務設計與內部工作流同步更新，減少斷裂。"
+        "title": "讓 AI 成為工作協作員",
+        "description": "把 ChatGPT、GAS 與 Agent 放回會議、提案、資料與報表場景，讓 AI 真的幫你完成工作。"
       }
     ],
     "flagshipModules": [
       {
         "eyebrow": "Module 01",
-        "title": "Brand Advisory",
-        "summary": "釐清品牌定位與市場敘事",
-        "description": "適合正在重整品牌說法、服務結構與對外提案節奏的主理人與團隊。",
+        "title": "GPT 智慧工作模組",
+        "summary": "提示詞工坊與白領工作模板",
+        "description": "從會議紀錄、提案摘要、資料整理、文案修稿到報表說明，建立能反覆使用的 ChatGPT 工作方法。",
         "imageUrl": "/sections/advisory-01.svg"
       },
       {
         "eyebrow": "Module 02",
-        "title": "Workshop Design",
-        "summary": "把複雜議題整理成能推動共識的工作坊",
-        "description": "適合需要跨部門對焦、建立共同語言與下一步行動的案型。",
+        "title": "GAS 辦公降載",
+        "summary": "表單、試算表、信件與排程自動化",
+        "description": "把日常辦公中最耗時的複製、整理、通知與彙整工作，轉成可維護的半自動化流程。",
         "imageUrl": "/sections/workshop-01.svg"
       },
       {
         "eyebrow": "Module 03",
-        "title": "Strategy Session",
-        "summary": "把想法變成可交付的行動清單",
-        "description": "適合需要短時間整理決策、案例與執行優先序的專案啟動階段。",
+        "title": "Agent 高效槓桿",
+        "summary": "讓 AI 協助追蹤、彙整與跨工具執行",
+        "description": "為高頻工作設計更清楚的任務分工、輸入輸出與檢查節點，讓 AI 從聊天工具變成協作員。",
         "imageUrl": "/sections/strategy-session-01.svg"
       }
     ]
   },
   "founder": {
     "name": "SUN",
-    "role": "OFFICE NEXT 主理人",
-    "tagline": "擅長把品牌語言、服務設計與 AI 導入整理成能落地的決策。",
-    "bio": "長期協助專業服務、顧問型品牌與企業團隊處理定位、內容、提案與工作流程重整，重視清楚、節制與可持續的執行方式。",
+    "role": "OFFICE NEXT 辦公進化所主理人",
+    "tagline": "白領 AI 工作升級教練，協助團隊把 AI 用進日常流程，減少重工並準時下班。",
+    "bio": "長期關注白領工作現場、AI 協作流程與辦公自動化導入。OFFICE NEXT 不追求炫技工具清單，而是從會議、文件、資料、提案、表單與跨部門協作出發，陪個人與團隊建立可落地、可維護、能降低工作耗損的 AI 工作方法。",
     "heroImageUrl": "/people/founder-hero.svg",
     "portraitImageUrl": "/people/founder-portrait.svg"
   },
   "services": {
     "items": [
       {
-        "title": "品牌與定位整理",
-        "audience": "主理人品牌、顧問型服務、正在調整市場說法的團隊",
-        "description": "整理品牌核心、受眾與服務主張，讓首頁、簡介與提案說法一致。",
+        "title": "GPT 智慧工作模組－提示詞工坊",
+        "audience": "行政、企劃、行銷、業務、PM、人資與需要大量文件輸出的白領工作者",
+        "description": "學會把 ChatGPT 用在會議紀錄、提案摘要、資料整理、文案修稿與報表說明，建立可複製的提示詞與工作模板。",
         "imageUrl": "/sections/advisory-01.svg"
       },
       {
-        "title": "AI 導入策略",
-        "audience": "想把 AI 接進實際工作流程的專業服務團隊",
-        "description": "盤點高重複、高摩擦的工作節點，安排 AI 在內容、分析與協作中的位置。",
+        "title": "GPT 智慧工作模組－GAS 辦公降載",
+        "audience": "需要處理表單、試算表、信件通知、名單整理與例行彙整的個人與團隊",
+        "description": "用 Google Apps Script 串起表單、試算表、文件與信件，先做半自動，再把高重複流程逐步變成穩定自動化。",
+        "imageUrl": "/sections/workshop-01.svg"
+      },
+      {
+        "title": "GPT 智慧工作模組－Agent 高效槓桿",
+        "audience": "小主管、Team Lead、營運與需要跨工具追蹤任務的知識工作團隊",
+        "description": "設計 AI Agent 可協作的任務邏輯、資料輸入、檢查節點與交付格式，讓 AI 協助追蹤、彙整與初步執行。",
         "imageUrl": "/sections/strategy-session-01.svg"
       },
       {
-        "title": "工作坊與內訓設計",
-        "audience": "企業內部專案、跨部門協作與轉型溝通場景",
-        "description": "設計能產出共識與下一步任務的工作坊、培訓與管理層對焦節奏。",
+        "title": "企業 AI 內訓與辦公流程導入",
+        "audience": "HR、培訓窗口、部門主管與想建立 AI 共識的企業白領團隊",
+        "description": "依照團隊角色與日常流程客製內訓內容，建立 ChatGPT 工作應用、辦公自動化與 AI 協作語言。",
         "imageUrl": "/sections/workshop-01.svg"
       }
     ]
@@ -138,52 +152,52 @@
   "cases": {
     "items": [
       {
-        "category": "Brand Refresh",
-        "title": "重整顧問型品牌首頁與服務結構",
-        "problem": "網站內容分散，潛在客戶看不懂差異與強項。",
-        "approach": "整理品牌定位、首頁模組與案例摘要，建立一致的服務主線。",
-        "result": "首頁訊息更聚焦，提案時可直接引用同一套敘事與案例。",
+        "category": "Meeting Workflow",
+        "title": "會議紀錄與摘要流程降載",
+        "problem": "每次會後都要重聽錄音、整理重點、補待辦與追進度，會議越多越難準時收尾。",
+        "approach": "建立會議輸入格式、ChatGPT 摘要提示詞、決議與待辦欄位，並設計會後檢查與分派流程。",
+        "result": "會議整理時間明顯下降，主管與成員更快取得摘要、決議、負責人與下一步。",
         "imageUrl": "/sections/advisory-01.svg"
       },
       {
-        "category": "AI Enablement",
-        "title": "把 AI 接進提案與內容產線",
-        "problem": "團隊知道要導入 AI，但每個人用法分散、難以複製。",
-        "approach": "先定義流程節點，再建立範本、提示與審稿節奏。",
-        "result": "重複性工作下降，內容產出速度與一致性同步提升。",
-        "imageUrl": "/sections/strategy-session-01.svg"
+        "category": "Office Automation",
+        "title": "表單 / 試算表 / 信件流程自動化",
+        "problem": "名單、回覆、通知與彙整都靠人工複製貼上，容易漏信、漏欄位與重複確認。",
+        "approach": "用 GAS 串接表單、試算表與信件模板，讓資料進來後自動整理、標記、通知與產出摘要。",
+        "result": "例行行政作業降載，團隊把時間轉回確認品質、客戶回覆與重要判斷。",
+        "imageUrl": "/sections/workshop-01.svg"
       },
       {
-        "category": "Workshop",
-        "title": "企業內部共識工作坊",
-        "problem": "跨部門對品牌與 AI 專案的期待不一致，決策常延誤。",
-        "approach": "設計會前材料、現場工作坊與會後行動清單。",
-        "result": "建立共同語言與優先順序，後續執行成本更低。",
-        "imageUrl": "/sections/workshop-01.svg"
+        "category": "Team Enablement",
+        "title": "企業團隊建立 AI 協作語言",
+        "problem": "每個人都在用 AI，但提示詞、審稿標準、資料邊界與交付格式不一致。",
+        "approach": "透過企業內訓整理共同用語、工作場景、範本與檢查清單，讓 AI 應用回到真實流程。",
+        "result": "團隊不再各自摸索，能用一致方法處理會議、提案、資料與跨部門協作。",
+        "imageUrl": "/sections/strategy-session-01.svg"
       }
     ]
   },
   "testimonials": {
     "items": [
       {
-        "quote": "OFFICE NEXT 不是只給靈感，而是幫我們把說法與下一步整理出來。",
+        "quote": "以前會議後最怕整理紀錄，現在有固定提示詞和檢查流程，待辦整理快很多，也比較不會漏。",
         "name": "Ariel Chen",
-        "role": "Founder",
-        "company": "Consulting Studio",
+        "role": "Project Manager",
+        "company": "B2B Service Team",
         "logoUrl": "/logos/client-01.svg"
       },
       {
-        "quote": "最有價值的是把 AI 放回流程，而不是額外增加一套負擔。",
+        "quote": "GAS 辦公降載讓我們把表單、試算表和通知串起來，行政同仁不用一直複製貼上。",
         "name": "Marcus Lin",
-        "role": "Head of Strategy",
+        "role": "Operations Lead",
         "company": "Growth Team",
         "logoUrl": "/logos/client-02.svg"
       },
       {
-        "quote": "工作坊後不只共識更清楚，連提案與內容也一起被整理好了。",
+        "quote": "內訓後大家終於用同一套語言討論 AI，不是比誰知道更多工具，而是回到流程怎麼升級。",
         "name": "Ivy Wu",
-        "role": "Brand Lead",
-        "company": "Service Business",
+        "role": "HR Business Partner",
+        "company": "Enterprise Team",
         "logoUrl": "/logos/client-03.svg"
       }
     ]
@@ -191,30 +205,43 @@
   "faq": {
     "items": [
       {
-        "question": "OFFICE NEXT 適合哪一類合作？",
-        "answer": "適合正在整理品牌定位、服務敘事、提案節奏，或需要把 AI 接進既有工作流的團隊與主理人。"
+        "question": "OFFICE NEXT 辦公進化所是什麼？",
+        "answer": "OFFICE NEXT 辦公進化所是專為白領打造的 AI 工作升級品牌，專注 ChatGPT 工作應用、辦公自動化、AI 工作流程與準時下班的實戰方法。"
       },
       {
-        "question": "可以只做短期策略討論嗎？",
-        "answer": "可以。可從單次策略 session、首頁內容整理或工作坊開始，再決定是否延伸。"
+        "question": "OFFICE NEXT 適合誰？",
+        "answer": "適合行政、企劃、行銷、業務、PM、人資、營運、助理、小主管、Team Lead，以及想導入 AI 內訓的 HR 與企業部門主管。"
       },
       {
-        "question": "AI 顧問會只談工具嗎？",
-        "answer": "不會。重點是流程、角色、審核與交付品質，不是單純列出工具清單。"
+        "question": "不會寫程式也能學辦公自動化嗎？",
+        "answer": "可以。OFFICE NEXT 會先從白領能理解的工作流程、提示詞、表格邏輯與半自動化開始，再逐步銜接 GAS 或 Agent。"
+      },
+      {
+        "question": "ChatGPT 可以怎麼幫助白領工作？",
+        "answer": "ChatGPT 可以協助整理會議紀錄、摘要提案、重寫文案、歸納資料、產生報表說明、建立檢查清單，並把重複文字工作變成可複製流程。"
+      },
+      {
+        "question": "GAS 辦公降載適合哪些工作？",
+        "answer": "GAS 適合表單回覆整理、試算表資料清理、Email 通知、名單彙整、排程提醒、報表更新等高重複、規則明確的辦公流程。"
+      },
+      {
+        "question": "企業內訓可以客製化嗎？",
+        "answer": "可以。企業 AI 內訓會依照部門角色、工作流程、AI 使用成熟度與資料安全邊界，客製課程範例、實作任務與導入建議。"
       }
     ]
   },
   "contact": {
     "email": "hello@officenext.tw",
-    "intro": "如果你正在整理品牌方向、服務內容或 AI 導入節奏，這裡可以直接開始。",
-    "responseExpectation": "通常會在 2 個工作天內回覆，必要時再安排進一步討論。",
+    "intro": "如果你想把 ChatGPT、辦公自動化或 AI 工作流程導入日常工作，歡迎告訴我們目前最耗時的重複任務。",
+    "responseExpectation": "通常會在 2 個工作天內回覆，必要時再安排需求訪談或企業內訓討論。",
     "inquiryOptions": [
-      "品牌與定位整理",
-      "AI 導入策略",
-      "工作坊 / 內訓",
-      "其他合作"
+      "GPT 提示詞工坊",
+      "GAS 辦公降載",
+      "Agent 高效槓桿",
+      "企業 AI 內訓",
+      "一對一 AI 辦公導入"
     ],
-    "mailtoLabel": "直接寄信提出需求"
+    "mailtoLabel": "開始辦公進化"
   },
   "social": {
     "linkedin": "",

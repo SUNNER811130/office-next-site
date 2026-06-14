@@ -9,12 +9,19 @@ import { readContent } from "@/lib/content-store";
 import { JsonLd, createBreadcrumbSchema, createFaqSchema, createPageMetadata } from "@/lib/seo";
 
 export async function generateMetadata() {
-  const content = await readContent();
   return createPageMetadata({
     path: "/services",
-    title: "服務方向",
-    description: content.brand.proposition,
-    keywords: ["服務方向", "AI 導入", "品牌策略", "工作坊"]
+    title: "課程與服務｜ChatGPT 工作應用、GAS 辦公降載與 Agent 高效槓桿",
+    description:
+      "OFFICE NEXT 課程與服務包含 GPT 提示詞工坊、GAS 辦公降載、Agent 高效槓桿與企業 AI 內訓，協助白領升級日常辦公流程。",
+    keywords: [
+      "GPT 智慧工作模組",
+      "ChatGPT 工作應用",
+      "GAS 辦公降載",
+      "Agent 高效槓桿",
+      "企業 AI 內訓",
+      "辦公自動化"
+    ]
   });
 }
 
@@ -37,8 +44,8 @@ export default async function ServicesPage() {
         <div className="grid gap-12 lg:grid-cols-[1fr_0.92fr] lg:items-end">
           <FadeUp>
             <p className="text-[11px] uppercase tracking-[0.34em] text-champagne">Services</p>
-            <h1 className="mt-5 max-w-[11ch] text-balance text-[2.9rem] font-medium leading-[1.06] text-midnight md:text-[4.8rem]">
-              服務方向與案例摘要由後台統一管理
+            <h1 className="mt-5 max-w-[12ch] text-balance text-[2.9rem] font-medium leading-[1.06] text-midnight md:text-[4.8rem]">
+              從 ChatGPT 到自動化，建立你的 AI 辦公流程
             </h1>
             <p className="mt-7 max-w-[43rem] text-[1.06rem] text-slate">{content.brand.proposition}</p>
             <div className="mt-10 flex gap-3">
@@ -84,7 +91,10 @@ export default async function ServicesPage() {
       <Section surface="muted">
         <div className="grid gap-10">
           <FadeUp>
-            <SectionTitle eyebrow="Case Snapshots" title="每個服務方向都可以被案例摘要與圖像支撐" />
+            <SectionTitle
+              eyebrow="Case Snapshots"
+              title="服務會回到真實辦公場景，從會議、資料、表單與團隊協作開始"
+            />
           </FadeUp>
           <StaggerContainer className="grid gap-5 lg:grid-cols-3">
             {content.cases.items.map((item) => (

@@ -12,9 +12,16 @@ export async function generateMetadata() {
   const content = await readContent();
   return createPageMetadata({
     path: "/about",
-    title: `About ${content.brand.name}`,
+    title: "關於 OFFICE NEXT 辦公進化所",
     description: `${content.brand.summary} ${content.founder.tagline}`,
-    keywords: [content.brand.name, content.founder.name, "主理人", "品牌顧問"]
+    keywords: [
+      content.brand.name,
+      content.founder.name,
+      "白領 AI 工作升級教練",
+      "辦公自動化",
+      "ChatGPT 工作應用",
+      "工作流程升級"
+    ]
   });
 }
 
@@ -27,7 +34,7 @@ export default async function AboutPage() {
         data={[
           createBreadcrumbSchema([
             { name: "首頁", path: "/" },
-            { name: `About ${content.brand.name}`, path: "/about" }
+            { name: "關於 OFFICE NEXT 辦公進化所", path: "/about" }
           ]),
           createFaqSchema(content.faq.items)
         ]}
@@ -98,8 +105,8 @@ export default async function AboutPage() {
           <FadeUp>
             <SectionTitle
               eyebrow="Founder"
-              title="主理人資料與照片會直接從後台回寫到前台"
-              description="如果照片欄位留空，前台會退回到 public fallback placeholder，不會讓版面壞掉。"
+              title="用白領能理解的語言，把 AI 變成每天用得到的工作方法"
+              description="OFFICE NEXT 從實際辦公場景出發，協助個人與團隊辨識可降載流程、建立提示詞模板與自動化步驟。"
             />
           </FadeUp>
           <FadeUp delay={0.15}>
@@ -128,7 +135,7 @@ export default async function AboutPage() {
       <Section>
         <div className="grid gap-10 lg:grid-cols-[0.88fr_1.12fr]">
           <FadeUp>
-            <SectionTitle eyebrow="Testimonials" title="合作後留下的三則摘要見證" />
+            <SectionTitle eyebrow="Testimonials" title="白領工作流程升級後的真實回饋" />
           </FadeUp>
           <StaggerContainer className="grid gap-5">
             {content.testimonials.items.map((item) => (

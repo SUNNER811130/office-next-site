@@ -25,9 +25,17 @@ export async function generateMetadata() {
   const content = await readContent();
   return createPageMetadata({
     path: "/contact",
-    title: "聯絡 OFFICE NEXT",
-    description: content.contact.intro,
-    keywords: ["聯絡", "OFFICE NEXT", content.contact.email]
+    title: "聯絡 OFFICE NEXT｜開始辦公進化",
+    description:
+      "聯絡 OFFICE NEXT 辦公進化所，討論 ChatGPT 工作應用、GAS 辦公降載、Agent 高效槓桿、企業 AI 內訓與辦公自動化導入。",
+    keywords: [
+      "聯絡 OFFICE NEXT",
+      "AI 辦公導入",
+      "ChatGPT 工作應用",
+      "GAS 辦公降載",
+      "企業 AI 內訓",
+      content.contact.email
+    ]
   });
 }
 
@@ -105,7 +113,7 @@ export default async function ContactPage() {
           <StaggerContainer className="grid gap-5">
             <StaggerItem>
               <Card>
-                <p className="text-sm uppercase tracking-[0.3em] text-champagne">Brand Entity Note</p>
+                <p className="text-sm uppercase tracking-[0.3em] text-champagne">Office Upgrade Note</p>
                 <div className="mt-6 space-y-4 text-base text-slate">
                   <p>{content.brand.summary}</p>
                   <p>{content.brand.positioning}</p>

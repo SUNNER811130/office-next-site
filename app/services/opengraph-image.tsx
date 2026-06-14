@@ -6,7 +6,7 @@ export const contentType = ogImageContentType;
 export default function OpenGraphImage() {
   return createBrandImageResponse({
     eyebrow: "Services",
-    title: "服務項目",
-    description: "AI 顧問、品牌設計與企業合作"
+    title: "課程與服務",
+    description: "ChatGPT 工作應用、GAS 辦公降載、Agent 高效槓桿與企業 AI 內訓"
   });
 }

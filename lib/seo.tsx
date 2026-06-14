@@ -7,6 +7,9 @@ type MetadataInput = {
   title: string;
   description: string;
   keywords?: string[];
+  canonical?: string;
+  openGraph?: Partial<NonNullable<Metadata["openGraph"]>>;
+  twitter?: Partial<NonNullable<Metadata["twitter"]>>;
 };
 
 type BreadcrumbItem = {
@@ -41,17 +44,21 @@ export function createPageMetadata({
   path,
   title,
   description,
-  keywords = []
+  keywords = [],
+  canonical,
+  openGraph,
+  twitter
 }: MetadataInput): Metadata {
   const url = absoluteUrl(path);
   const fullTitle = `${title} | ${siteConfig.shortName}`;
+  const canonicalPath = canonical ?? path;
 
   return {
     title,
     description,
     keywords,
     alternates: {
-      canonical: path
+      canonical: canonicalPath
     },
     robots: {
       index: true,
@@ -67,15 +74,17 @@ export function createPageMetadata({
       images: [
         {
           url: siteConfig.ogImage,
-          alt: `${siteConfig.shortName} Open Graph Image`
+          alt: `${siteConfig.name} Open Graph Image`
         }
-      ]
+      ],
+      ...openGraph
     },
     twitter: {
       card: "summary_large_image",
       title: fullTitle,
       description,
-      images: [siteConfig.ogImage]
+      images: [siteConfig.ogImage],
+      ...twitter
     }
   };
 }
@@ -92,13 +101,24 @@ export function JsonLd({ data }: { data: object | object[] }) {
 export function createOrganizationSchema() {
   return {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": "ProfessionalService",
     name: siteConfig.name,
     legalName: siteConfig.legalName,
+    alternateName: siteConfig.shortName,
     url: siteConfig.url,
     email: siteConfig.contactEmail,
     description: siteConfig.description,
     slogan: brandEntity.proposition,
+    image: absoluteUrl(siteConfig.ogImage),
+    logo: absoluteUrl(brandEntity.logo || siteConfig.ogImage),
+    areaServed: "Taiwan",
+    serviceType: [
+      "白領 AI 提效",
+      "辦公自動化",
+      "ChatGPT 工作應用",
+      "AI 企業內訓",
+      "GAS 辦公降載"
+    ],
     sameAs: brandEntity.sameAs.length > 0 ? brandEntity.sameAs : undefined,
     contactPoint: [
       {
@@ -125,7 +145,12 @@ export function createWebsiteSchema() {
     name: siteConfig.name,
     url: siteConfig.url,
     description: siteConfig.description,
-    inLanguage: "zh-Hant"
+    inLanguage: "zh-Hant",
+    publisher: {
+      "@type": "Organization",
+      name: siteConfig.name,
+      url: siteConfig.url
+    }
   };
 }
 
