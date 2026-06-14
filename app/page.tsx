@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { FaqAccordion } from "@/components/ui/faq-accordion";
 import { DataStream, GlowCard, ProcessRail, ScrollSignal, TechGrid, WorkflowConsole } from "@/components/home/tech-interactions";
-import { FadeUp, StaggerContainer, StaggerItem } from "@/components/ui/motion";
+import { DepthReveal, FadeUp, FlyInPanel, StaggerContainer, StaggerItem } from "@/components/ui/motion";
 import { Section } from "@/components/ui/section";
 import { SectionTitle } from "@/components/ui/section-title";
 import Image from "next/image";
@@ -37,14 +37,16 @@ export default async function HomePage() {
     <>
       <JsonLd data={createFaqSchema(content.faq.items)} />
 
-      <section className="relative overflow-hidden border-b border-white/70 bg-[linear-gradient(135deg,#F8FAFC_0%,#EEF4F8_52%,#E7EEF3_100%)]">
-        <TechGrid />
-        <DataStream className="opacity-40" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(110,167,191,0.24),transparent_34%),radial-gradient(circle_at_82%_20%,rgba(7,26,47,0.10),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.74),transparent_48%)]" />
+      <section className="relative overflow-hidden border-b border-white/70 bg-[linear-gradient(135deg,#F8FAFC_0%,#EAF2F7_45%,#DDE9F0_100%)]">
+        <TechGrid intensity="strong" className="opacity-[0.18]" />
+        <DataStream className="opacity-70" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(110,167,191,0.34),transparent_32%),radial-gradient(circle_at_78%_24%,rgba(7,26,47,0.18),transparent_36%),linear-gradient(115deg,rgba(255,255,255,0.86)_0%,rgba(255,255,255,0.56)_42%,rgba(231,241,247,0.72)_100%)]" />
+        <div aria-hidden="true" className="absolute -right-32 top-20 h-[32rem] w-[32rem] rounded-full border border-champagne/20 bg-[radial-gradient(circle,rgba(110,167,191,0.22),transparent_58%)] blur-sm" />
+        <div aria-hidden="true" className="absolute left-[8%] top-[18%] h-px w-[46%] rotate-[-16deg] bg-[linear-gradient(90deg,transparent,rgba(110,167,191,0.64),transparent)]" />
         <Container className="relative grid gap-12 py-16 md:py-24 lg:min-h-[calc(100vh-88px)] lg:grid-cols-[1fr_0.94fr] lg:items-center lg:py-20">
           <FadeUp>
             <p className="text-[11px] uppercase tracking-[0.34em] text-champagne">{content.home.hero.eyebrow}</p>
-            <h1 className="mt-6 max-w-[11ch] text-balance text-[3rem] font-medium leading-[0.98] text-midnight md:text-[5.2rem]">
+            <h1 className="title-scan mt-6 max-w-[11ch] text-balance text-[3rem] font-medium leading-[0.98] text-midnight md:text-[5.2rem]">
               {content.home.hero.title}
             </h1>
             <div 
@@ -74,14 +76,14 @@ export default async function HomePage() {
             <ScrollSignal className="mt-9" />
           </FadeUp>
 
-          <FadeUp delay={0.2}>
+          <FlyInPanel delay={0.16}>
             <WorkflowConsole />
-          </FadeUp>
+          </FlyInPanel>
         </Container>
       </section>
 
-      <Section>
-        <div className="grid gap-10 lg:grid-cols-[0.92fr_1.08fr]">
+      <Section className="section-portal">
+        <DepthReveal className="grid gap-10 lg:grid-cols-[0.92fr_1.08fr]">
           <FadeUp>
             <SectionTitle
               eyebrow="Work Upgrade"
@@ -99,11 +101,11 @@ export default async function HomePage() {
               </StaggerItem>
             ))}
           </StaggerContainer>
-        </div>
+        </DepthReveal>
       </Section>
 
-      <Section surface="muted" className="relative overflow-hidden">
-        <TechGrid className="opacity-[0.08]" />
+      <Section surface="muted" className="section-portal relative overflow-hidden">
+        <TechGrid intensity="strong" className="opacity-[0.12]" />
         <div className="grid gap-10 lg:grid-cols-[0.86fr_1.14fr]">
           <FadeUp>
             <SectionTitle
@@ -117,12 +119,14 @@ export default async function HomePage() {
               <StaggerItem key={item}>
                 <GlowCard className="min-h-[300px]">
                   <div className="relative z-10 flex h-full flex-col justify-between">
-                    <div className="relative h-24">
-                      <div className="absolute left-0 top-0 h-24 w-24 rounded-full border border-champagne/20" />
-                      <div className="absolute left-4 top-4 h-16 w-16 rounded-full border border-champagne/30" />
-                      <div className="absolute left-9 top-9 h-6 w-6 rounded-full bg-champagne/15 shadow-[0_0_24px_rgba(110,167,191,0.32)]" />
-                      <div className="absolute left-24 top-10 h-px w-20 bg-[linear-gradient(90deg,rgba(110,167,191,0.7),transparent)]" />
+                    <div className="relative h-28">
+                      <div className="orbit-node absolute left-0 top-0 h-28 w-28 rounded-full border border-champagne/28" />
+                      <div className="absolute left-4 top-4 h-20 w-20 rounded-full border border-champagne/42" />
+                      <div className="absolute left-9 top-9 h-10 w-10 rounded-full border border-champagne/28 bg-champagne/12 shadow-[0_0_28px_rgba(110,167,191,0.34)]" />
+                      <div className="node-pulse absolute left-[3.1rem] top-[3.1rem] h-3 w-3 rounded-full bg-champagne shadow-[0_0_22px_rgba(110,167,191,0.7)]" />
+                      <div className="absolute left-28 top-12 h-px w-24 bg-[linear-gradient(90deg,rgba(110,167,191,0.82),transparent)]" />
                       <p className="absolute right-0 top-0 text-[11px] uppercase tracking-[0.26em] text-champagne">Drain 0{index + 1}</p>
+                      <p className="absolute bottom-0 left-0 rounded-full border border-champagne/20 bg-white/70 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-slate">Load Alert</p>
                     </div>
                     <p className="mt-7 text-[1.05rem] text-slate">{item}</p>
                   </div>
@@ -133,7 +137,7 @@ export default async function HomePage() {
         </div>
       </Section>
 
-      <Section>
+      <Section className="section-portal">
         <StaggerContainer className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {content.services.items.map((service, index) => (
             <StaggerItem key={service.title}>
@@ -149,7 +153,7 @@ export default async function HomePage() {
                 ) : null}
                 <div className="mt-5 flex items-center justify-between gap-4">
                   <p className="text-[11px] uppercase tracking-[0.28em] text-champagne">Module 0{index + 1}</p>
-                  <span className="h-2 w-2 rounded-full bg-champagne shadow-[0_0_18px_rgba(110,167,191,0.6)]" />
+                  <span className="live-badge rounded-full border border-champagne/28 bg-champagne/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-champagne">Unlock</span>
                 </div>
                 <h3 className="mt-4 text-[1.45rem] font-medium text-midnight">{service.title}</h3>
                 <p className="mt-4 text-base text-slate">{service.description}</p>
@@ -160,8 +164,8 @@ export default async function HomePage() {
         </StaggerContainer>
       </Section>
 
-      <Section surface="muted" className="relative overflow-hidden">
-        <TechGrid className="opacity-[0.08]" />
+      <Section surface="muted" className="section-portal relative overflow-hidden">
+        <TechGrid intensity="strong" className="opacity-[0.12]" />
         <div className="relative grid gap-10">
           <FadeUp>
             <SectionTitle
@@ -182,7 +186,7 @@ export default async function HomePage() {
         </div>
       </Section>
 
-      <Section>
+      <Section className="section-portal">
         <div className="grid gap-10">
           <FadeUp>
             <SectionTitle
@@ -205,16 +209,19 @@ export default async function HomePage() {
                   <p className="mt-5 text-[11px] uppercase tracking-[0.28em] text-champagne">{item.category}</p>
                   <h3 className="mt-4 text-[1.35rem] font-medium text-midnight">{item.title}</h3>
                   <div className="mt-5 grid gap-3">
-                    <div className="rounded-xl border border-midnight/8 bg-white/58 p-4">
+                    <div className="rounded-xl border border-midnight/8 bg-white/68 p-4">
                       <p className="text-[10px] uppercase tracking-[0.22em] text-champagne">Problem</p>
                       <p className="mt-2 text-sm text-slate">{item.problem}</p>
                     </div>
-                    <div className="rounded-xl border border-midnight/8 bg-white/58 p-4">
+                    <div className="rounded-xl border border-midnight/8 bg-white/68 p-4">
                       <p className="text-[10px] uppercase tracking-[0.22em] text-champagne">Approach</p>
                       <p className="mt-2 text-sm text-slate">{item.approach}</p>
                     </div>
-                    <div className="rounded-xl border border-champagne/20 bg-champagne/10 p-4">
-                      <p className="text-[10px] uppercase tracking-[0.22em] text-midnight">Result</p>
+                    <div className="rounded-xl border border-champagne/28 bg-champagne/12 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-[10px] uppercase tracking-[0.22em] text-midnight">Result</p>
+                        <span className="rounded-full bg-white/70 px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-slate">Reduced</span>
+                      </div>
                       <p className="mt-2 text-sm text-slate">{item.result}</p>
                     </div>
                   </div>

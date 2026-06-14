@@ -90,9 +90,53 @@ export function StaggerItem({ children, ...props }: StaggerItemProps) {
     <motion.div
       initial={prefersReducedMotion ? false : undefined}
       variants={{
-        hidden: { opacity: 0, y: 20, scale: 0.985, filter: "blur(5px)" },
-        visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.56, ease: [0.16, 1, 0.3, 1] } }
+        hidden: { opacity: 0, y: 42, scale: 0.94, rotateX: 8, filter: "blur(10px)" },
+        visible: { opacity: 1, y: 0, scale: 1, rotateX: 0, filter: "blur(0px)", transition: { duration: 0.72, ease: [0.16, 1, 0.3, 1] } }
       }}
+      {...props}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+type DepthRevealProps = HTMLMotionProps<"div"> & {
+  children: ReactNode;
+  delay?: number;
+};
+
+export function DepthReveal({ children, delay = 0, ...props }: DepthRevealProps) {
+  const prefersReducedMotion = useReducedMotion();
+
+  return (
+    <motion.div
+      initial={prefersReducedMotion ? false : { opacity: 0, y: 64, scale: 0.92, rotateX: 10, filter: "blur(12px)" }}
+      whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0, scale: 1, rotateX: 0, filter: "blur(0px)" }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay }}
+      style={{ transformPerspective: 1200, transformOrigin: "50% 55%" }}
+      {...props}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+type FlyInPanelProps = HTMLMotionProps<"div"> & {
+  children: ReactNode;
+  delay?: number;
+};
+
+export function FlyInPanel({ children, delay = 0, ...props }: FlyInPanelProps) {
+  const prefersReducedMotion = useReducedMotion();
+
+  return (
+    <motion.div
+      initial={prefersReducedMotion ? false : { opacity: 0, x: 46, y: 24, scale: 0.9, rotateY: -9, filter: "blur(12px)" }}
+      whileInView={prefersReducedMotion ? undefined : { opacity: 1, x: 0, y: 0, scale: 1, rotateY: 0, filter: "blur(0px)" }}
+      viewport={{ once: true, margin: "-70px" }}
+      transition={{ duration: 0.92, ease: [0.16, 1, 0.3, 1], delay }}
+      style={{ transformPerspective: 1200, transformOrigin: "50% 50%" }}
       {...props}
     >
       {children}
