@@ -1,9 +1,12 @@
 import {
+  aboutBlockDefinitions,
+  getOrderedEnabledAboutBlocks,
   getOrderedEnabledHomeBlocks,
   getOrderedEnabledServicesBlocks,
   getPageBlockAttributes,
   homeBlockDefinitions,
   normalizePageBlockSettings,
+  normalizeAboutBlocks,
   normalizeServicesBlocks,
   pageBlockSettingsDefaults,
   servicesBlockDefinitions
@@ -99,5 +102,40 @@ describe("Page block settings", () => {
   it("rejects unsupported services layouts", () => {
     const services = normalizeServicesBlocks([{ id: "service-cards", layout: "two-column" }]);
     expect(services.find((block) => block.id === "service-cards")?.layout).toBe("default");
+  });
+
+  it("uses about defaults when an older pageBlocks value has no about", () => {
+    const settings = normalizePageBlockSettings({ home: pageBlockSettingsDefaults.home, services: pageBlockSettingsDefaults.services });
+    expect(settings.about).toEqual(pageBlockSettingsDefaults.about);
+  });
+
+  it("normalizes unknown, duplicate, missing and invalid about blocks", () => {
+    const about = normalizeAboutBlocks([
+      { id: "faq", enabled: "false", order: 0, background: "bg-red-500", motion: "javascript", layout: "w-screen" },
+      { id: "faq", enabled: false, order: 1 },
+      { id: "admin", enabled: true, order: 2 }
+    ]);
+    expect(about).toHaveLength(aboutBlockDefinitions.length);
+    expect(about.filter((block) => block.id === "faq")).toHaveLength(1);
+    expect(about.some((block) => (block.id as string) === "admin")).toBe(false);
+    expect(about.find((block) => block.id === "faq")).toEqual(expect.objectContaining({ enabled: true, background: "default", motion: "inherit", layout: "default" }));
+  });
+
+  it("keeps the about hero enabled and first and creates continuous order", () => {
+    const about = normalizeAboutBlocks([{ id: "faq", enabled: true, order: 0 }, { id: "hero", enabled: false, order: 99 }, { id: "testimonials", enabled: true, order: "bad" }]);
+    expect(about[0]).toEqual(expect.objectContaining({ id: "hero", enabled: true, order: 0 }));
+    expect(about.map((block) => block.order)).toEqual([0, 1, 2, 3, 4]);
+  });
+
+  it("filters disabled about blocks in normalized order", () => {
+    const settings = normalizePageBlockSettings({ ...pageBlockSettingsDefaults, about: pageBlockSettingsDefaults.about.map((block) => block.id === "founder-experience" ? { ...block, enabled: false } : block) });
+    expect(getOrderedEnabledAboutBlocks(settings).map((block) => block.id)).toEqual(["hero", "brand-positioning", "testimonials", "faq"]);
+  });
+
+  it("rejects unsupported about layouts and arbitrary classes", () => {
+    const about = normalizeAboutBlocks([{ id: "brand-positioning", layout: "single-column", background: "bg-black", motion: "animate-spin" }]);
+    const block = about.find((item) => item.id === "brand-positioning")!;
+    expect(block).toEqual(expect.objectContaining({ layout: "default", background: "default", motion: "inherit" }));
+    expect(JSON.stringify(getPageBlockAttributes(block))).not.toMatch(/bg-black|animate-spin/);
   });
 });

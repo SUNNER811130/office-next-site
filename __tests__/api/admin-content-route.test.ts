@@ -28,7 +28,7 @@ describe("admin design content API", () => {
 
   it("rejects unauthenticated page block writes", async () => {
     (rejectIfNotAdmin as jest.Mock).mockResolvedValue(NextResponse.json({ error: "Unauthorized" }, { status: 401 }));
-    const request = new NextRequest("http://localhost/api/admin/content/pageBlocks", { method: "PUT", body: JSON.stringify({ page: "services", blocks: siteContentSeed.pageBlocks.services }) });
+    const request = new NextRequest("http://localhost/api/admin/content/pageBlocks", { method: "PUT", body: JSON.stringify({ page: "about", blocks: siteContentSeed.pageBlocks.about }) });
     const response = await PUT(request, { params: Promise.resolve({ section: "pageBlocks" }) });
     expect(response.status).toBe(401);
     expect(updateContentSection).not.toHaveBeenCalled();
@@ -50,6 +50,17 @@ describe("admin design content API", () => {
     const request = new NextRequest("http://localhost/api/admin/content/pageBlocks", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     const response = await PUT(request, { params: Promise.resolve({ section: "pageBlocks" }) });
     expect(updatePageBlockPage).toHaveBeenCalledWith("services", payload.blocks);
+    expect(updateContentSection).not.toHaveBeenCalled();
+    await expect(response.json()).resolves.toEqual({ ok: true, data: siteContentSeed.pageBlocks });
+  });
+
+  it("stores a nested about update without using whole-section replacement", async () => {
+    (rejectIfNotAdmin as jest.Mock).mockResolvedValue(null);
+    (updatePageBlockPage as jest.Mock).mockResolvedValue(siteContentSeed);
+    const payload = { page: "about", blocks: siteContentSeed.pageBlocks.about };
+    const request = new NextRequest("http://localhost/api/admin/content/pageBlocks", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    const response = await PUT(request, { params: Promise.resolve({ section: "pageBlocks" }) });
+    expect(updatePageBlockPage).toHaveBeenCalledWith("about", payload.blocks);
     expect(updateContentSection).not.toHaveBeenCalled();
     await expect(response.json()).resolves.toEqual({ ok: true, data: siteContentSeed.pageBlocks });
   });

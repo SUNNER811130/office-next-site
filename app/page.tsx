@@ -9,7 +9,7 @@ import { SectionTitle } from "@/components/ui/section-title";
 import Image from "next/image";
 import { readContent } from "@/lib/content-store";
 import { JsonLd, createFaqSchema, createPageMetadata } from "@/lib/seo";
-import { PageBlockFrame } from "@/components/home/page-block-frame";
+import { PageBlockFrame } from "@/components/layout/page-block-frame";
 import { getOrderedEnabledHomeBlocks } from "@/lib/page-block-settings";
 import type { HomeBlockId } from "@/types/content";
 import type { ReactNode } from "react";

@@ -7,6 +7,10 @@ import { SectionTitle } from "@/components/ui/section-title";
 import Image from "next/image";
 import { readContent } from "@/lib/content-store";
 import { JsonLd, createBreadcrumbSchema, createFaqSchema, createPageMetadata } from "@/lib/seo";
+import { PageBlockFrame } from "@/components/layout/page-block-frame";
+import { getOrderedEnabledAboutBlocks } from "@/lib/page-block-settings";
+import type { AboutBlockId } from "@/types/content";
+import type { ReactNode } from "react";
 
 export async function generateMetadata() {
   const content = await readContent();
@@ -28,18 +32,8 @@ export async function generateMetadata() {
 export default async function AboutPage() {
   const content = await readContent();
 
-  return (
-    <>
-      <JsonLd
-        data={[
-          createBreadcrumbSchema([
-            { name: "首頁", path: "/" },
-            { name: "關於 OFFICE NEXT 辦公進化所", path: "/about" }
-          ]),
-          createFaqSchema(content.faq.items)
-        ]}
-      />
-
+  const aboutBlockRegistry = {
+    hero: (
       <Section className="bg-oat">
         <div className="grid gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
           <FadeUp>
@@ -70,6 +64,8 @@ export default async function AboutPage() {
           </FadeUp>
         </div>
       </Section>
+    ),
+    "brand-positioning": (
 
       <Section>
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
@@ -101,6 +97,8 @@ export default async function AboutPage() {
           </StaggerContainer>
         </div>
       </Section>
+    ),
+    "founder-experience": (
 
       <Section surface="muted">
         <div className="grid gap-10 lg:grid-cols-[0.86fr_1.14fr]">
@@ -134,6 +132,8 @@ export default async function AboutPage() {
           </FadeUp>
         </div>
       </Section>
+    ),
+    testimonials: (
 
       <Section>
         <div className="grid gap-10 lg:grid-cols-[0.88fr_1.12fr]">
@@ -154,6 +154,8 @@ export default async function AboutPage() {
           </StaggerContainer>
         </div>
       </Section>
+    ),
+    faq: (
 
       <Section className="pb-24">
         <div className="grid gap-10 lg:grid-cols-[0.88fr_1.12fr]">
@@ -165,6 +167,25 @@ export default async function AboutPage() {
           </FadeUp>
         </div>
       </Section>
+    )
+  } satisfies Record<AboutBlockId, ReactNode>;
+
+  return (
+    <>
+      <JsonLd
+        data={[
+          createBreadcrumbSchema([
+            { name: "首頁", path: "/" },
+            { name: "關於 OFFICE NEXT 辦公進化所", path: "/about" }
+          ]),
+          createFaqSchema(content.faq.items)
+        ]}
+      />
+      {getOrderedEnabledAboutBlocks(content.pageBlocks).map((config) => (
+        <PageBlockFrame key={config.id} config={config} page="about">
+          {aboutBlockRegistry[config.id]}
+        </PageBlockFrame>
+      ))}
     </>
   );
 }

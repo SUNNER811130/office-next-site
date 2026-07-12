@@ -17,3 +17,11 @@
 右側 iframe 可切換 390px、768px、1280px，手動刷新或在新分頁開啟 `/services`。成功儲存或確認恢復服務頁預設後才自動刷新；失敗不刷新。
 
 Home 與 Services 設定彼此獨立。兩個編輯器都使用 server-side nested update：伺服器先讀取最新 `pageBlocks`，只替換指定頁面並 normalize，因此儲存或 reset Services 不會覆蓋 Home，反向亦同。
+
+## 關於頁區塊管理
+
+管理者可前往 `/admin/pages/about` 控制 `/about` 的 Founder 主視覺、品牌定位、Founder 經歷、真實回饋與 FAQ。Hero 固定第一且不可隱藏；其他區塊可以顯示／隱藏、向上／向下排序，並選擇安全背景、實際支援版型與動畫。隱藏區塊不會刪除 Founder 姓名、Bio、經歷、客戶或圖片內容。
+
+右側 iframe 可切換 390px、768px、1280px，手動刷新或在新分頁開啟 `/about`。成功儲存或確認 About reset 後才自動刷新，失敗不刷新。
+
+Home、Services、About 使用相同 nested update 流程且彼此獨立。伺服器讀取最新 JSON 後只替換指定頁面，因此 About 儲存／reset 不修改 Home、Services 或 Founder content。資料仍位於 `data/site-content.json`，正式 Vercel CMS 未來仍需持久化資料庫。

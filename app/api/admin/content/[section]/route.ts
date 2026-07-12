@@ -47,7 +47,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ sec
   const payload = await request.json();
   if (section === "pageBlocks" && payload && typeof payload === "object" && "page" in payload && "blocks" in payload) {
     const page = (payload as { page?: unknown }).page;
-    if (page !== "home" && page !== "services") return NextResponse.json({ error: "Unknown page" }, { status: 400 });
+    if (page !== "home" && page !== "services" && page !== "about") return NextResponse.json({ error: "Unknown page" }, { status: 400 });
     const content = await updatePageBlockPage(page, (payload as { blocks: unknown }).blocks);
     return NextResponse.json({ ok: true, data: content.pageBlocks });
   }
