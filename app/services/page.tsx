@@ -44,7 +44,7 @@ export default async function ServicesPage() {
         <div className="grid gap-12 lg:grid-cols-[1fr_0.92fr] lg:items-end">
           <FadeUp>
             <p className="text-[11px] uppercase tracking-[0.34em] text-champagne">Services</p>
-            <h1 className="mt-5 max-w-[14ch] text-balance text-[clamp(2.3rem,4.8vw,4.25rem)] font-medium leading-[1.1] text-midnight">
+            <h1 className="site-hero-title mt-5 max-w-[14ch] text-balance font-medium leading-[1.1] text-midnight">
               從 ChatGPT 到自動化，建立你的 AI 辦公流程
             </h1>
             <p className="mt-7 max-w-[43rem] text-[1.06rem] text-slate">{content.brand.proposition}</p>

@@ -33,7 +33,7 @@ export function SectionTitle({
       {eyebrow ? (
         <p className="text-[11px] font-medium uppercase tracking-[0.34em] text-champagne">{eyebrow}</p>
       ) : null}
-      <Heading className="max-w-[18ch] text-balance text-[clamp(1.9rem,4vw,3.25rem)] font-medium leading-[1.12] text-midnight">
+      <Heading className="site-section-title max-w-[18ch] text-balance font-medium leading-[1.12] text-midnight">
         {title}
       </Heading>
       {description ? (

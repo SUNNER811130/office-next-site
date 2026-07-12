@@ -4,6 +4,7 @@ import path from "path";
 import { unstable_noStore as noStore } from "next/cache";
 
 import { siteContentSeed } from "@/data/site-content.seed";
+import { normalizeDesignSettings } from "@/lib/design-settings";
 import type { ContentSection, ContentSectionMap, SiteContent } from "@/types/content";
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -28,7 +29,8 @@ class LocalFileContentRepository implements IContentRepository {
   async read(): Promise<SiteContent> {
     await this.ensureContentFile();
     const raw = await fs.readFile(CONTENT_FILE, "utf8");
-    return JSON.parse(raw) as SiteContent;
+    const parsed = JSON.parse(raw) as Partial<SiteContent>;
+    return { ...siteContentSeed, ...parsed, design: normalizeDesignSettings(parsed.design) };
   }
 
   async write(content: SiteContent): Promise<void> {
@@ -50,14 +52,19 @@ export async function writeContent(content: SiteContent) {
   await getRepository().write(content);
 }
 
+const sectionNormalizers: Partial<Record<ContentSection, (payload: unknown) => unknown>> = {
+  design: normalizeDesignSettings
+};
+
 export async function updateContentSection<K extends ContentSection>(
   section: K,
   payload: ContentSectionMap[K]
 ): Promise<SiteContent> {
   const current = await readContent();
+  const normalizedPayload = (sectionNormalizers[section]?.(payload) ?? payload) as ContentSectionMap[K];
   const next = {
     ...current,
-    [section]: payload
+    [section]: normalizedPayload
   } satisfies SiteContent;
 
   await writeContent(next);

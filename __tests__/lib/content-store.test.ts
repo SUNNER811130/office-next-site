@@ -35,6 +35,24 @@ describe("Content Store", () => {
     expect(content.brand.name).toBe("Test Brand");
   });
 
+  it("uses design defaults when an older JSON file has no design section", async () => {
+    const { design: _design, ...legacyContent } = mockContent;
+    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(legacyContent));
+    const content = await readContent();
+    expect(content.design).toEqual(siteContentSeed.design);
+  });
+
+  it("normalizes the design section before storing it", async () => {
+    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(mockContent));
+    const nextContent = await updateContentSection("design", {
+      ...siteContentSeed.design,
+      layout: { ...siteContentSeed.design.layout, desktopContainer: 9999 as 1400 }
+    });
+    expect(nextContent.design.layout.desktopContainer).toBe(1400);
+    const stored = (fs.writeFile as jest.Mock).mock.calls.at(-1)?.[1] as string;
+    expect(JSON.parse(stored).design.layout.desktopContainer).toBe(1400);
+  });
+
   it("should write content to file", async () => {
     await writeContent(mockContent);
 

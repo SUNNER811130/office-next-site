@@ -13,7 +13,8 @@ const sections = new Set<ContentSection>([
   "testimonials",
   "faq",
   "contact",
-  "social"
+  "social",
+  "design"
 ]);
 
 export async function GET(_request: NextRequest, context: { params: Promise<{ section: string }> }) {

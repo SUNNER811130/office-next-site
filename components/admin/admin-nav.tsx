@@ -2,6 +2,7 @@ import Link from "next/link";
 
 const navItems = [
   { href: "/admin", label: "Overview" },
+  { href: "/admin/design", label: "視覺設計" },
   { href: "/admin/brand", label: "Brand" },
   { href: "/admin/home", label: "Home" },
   { href: "/admin/founder", label: "Founder" },

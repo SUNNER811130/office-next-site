@@ -17,7 +17,7 @@ export function Section({
   return (
     <section
       className={cn(
-        "py-16 md:py-20 lg:py-24",
+        "site-section",
         surface === "muted" && "bg-oat/60 backdrop-blur-sm",
         className
       )}

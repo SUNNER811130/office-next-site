@@ -1,4 +1,4 @@
-import type { SectionField } from "@/components/admin/section-editor";
+import type { SectionField, SectionFieldGroup } from "@/components/admin/section-editor";
 
 export const brandFields: SectionField[] = [
   { type: "text", path: "name", label: "品牌名稱" },
@@ -147,3 +147,66 @@ export const socialFields: SectionField[] = [
     ]
   }
 ];
+
+const scaleOptions = [
+  { label: "緊湊", value: "compact" }, { label: "標準", value: "balanced" }, { label: "放大", value: "large" }
+];
+const densityOptions = [
+  { label: "緊湊", value: "compact" }, { label: "標準", value: "balanced" }, { label: "寬鬆", value: "spacious" }
+];
+
+export const designFieldGroups: SectionFieldGroup[] = [
+  {
+    title: "字體與排版",
+    description: "調整全站標題、內文大小與閱讀密度。",
+    fields: [
+      { type: "select", path: "typography.heroTitleScale", label: "Hero 標題大小", description: "控制首頁與主要頁面第一屏標題尺寸。", options: scaleOptions },
+      { type: "select", path: "typography.sectionTitleScale", label: "區塊標題大小", description: "控制各內容區塊的主標題尺寸。", options: scaleOptions },
+      { type: "select", path: "typography.cardTitleScale", label: "卡片標題大小", description: "控制共用卡片內的標題尺寸。", options: scaleOptions },
+      { type: "select", path: "typography.bodySize", label: "內文字級", description: "控制一般內文的基準字級。", options: [{ label: "小", value: "small" }, { label: "標準", value: "standard" }, { label: "大", value: "large" }] },
+      { type: "select", path: "typography.lineHeight", label: "內文行距", description: "控制一般內文的閱讀密度。", options: [{ label: "緊湊", value: "compact" }, { label: "舒適", value: "comfortable" }, { label: "寬鬆", value: "relaxed" }] }
+    ]
+  },
+  {
+    title: "版面與留白",
+    description: "控制內容寬度、區塊留白與卡片間距。",
+    fields: [
+      { type: "select", path: "layout.density", label: "整體排版密度", description: "同步微調頁面整體的視覺密度。", options: densityOptions },
+      { type: "select", path: "layout.mobileGutter", label: "手機左右留白", description: "控制窄螢幕內容與畫面邊緣的距離。", options: [16, 20, 24].map((value) => ({ label: `${value}px`, value })) },
+      { type: "select", path: "layout.desktopContainer", label: "桌機內容寬度", description: "控制主要頁面在大螢幕的最大寬度。", options: [1200, 1280, 1400, 1520].map((value) => ({ label: `${value}px`, value })) },
+      { type: "select", path: "layout.sectionSpacing", label: "區塊上下留白", options: densityOptions },
+      { type: "select", path: "layout.cardPadding", label: "卡片內距", options: densityOptions },
+      { type: "select", path: "layout.cardGap", label: "卡片間距", options: densityOptions },
+      { type: "select", path: "layout.headerDensity", label: "Header 高度", options: [{ label: "緊湊", value: "compact" }, { label: "標準", value: "balanced" }] }
+    ]
+  },
+  {
+    title: "卡片風格",
+    description: "切換服務卡片與重點內容卡片的安全視覺預設。",
+    fields: [
+      { type: "select", path: "cards.style", label: "卡片風格", description: "不改變內容結構或 CTA 功能。", options: [{ label: "科技切角", value: "tech-cut" }, { label: "極簡細框", value: "minimal-line" }, { label: "清透玻璃", value: "glass-panel" }, { label: "柔和精品", value: "soft-premium" }] },
+      { type: "select", path: "cards.hoverEffect", label: "滑鼠互動", options: [{ label: "無", value: "none" }, { label: "輕微上浮", value: "lift" }, { label: "邊緣光暈", value: "edge-glow" }] }
+    ]
+  },
+  {
+    title: "動畫與互動",
+    description: "系統開啟減少動態效果時，動畫永遠自動停用。",
+    fields: [
+      { type: "select", path: "motion.preset", label: "動畫模式", description: "控制區塊進場方式。", options: [{ label: "關閉", value: "none" }, { label: "淡入", value: "fade" }, { label: "向上進場", value: "fly-up" }, { label: "左右交錯", value: "fly-alternate" }] },
+      { type: "select", path: "motion.speed", label: "動畫速度", options: [{ label: "快速", value: "fast" }, { label: "標準", value: "balanced" }, { label: "緩慢", value: "slow" }] },
+      { type: "select", path: "motion.distance", label: "移動距離", options: [{ label: "輕微", value: "subtle" }, { label: "標準", value: "balanced" }, { label: "明顯", value: "strong" }] },
+      { type: "select", path: "motion.stagger", label: "交錯間隔", options: [{ label: "無", value: "none" }, { label: "輕微", value: "subtle" }, { label: "標準", value: "balanced" }] },
+      { type: "toggle", path: "motion.playOnce", label: "動畫只播放一次", description: "開啟後，同一內容捲動回來時不重播。" }
+    ]
+  },
+  {
+    title: "手機浮動操作列",
+    description: "控制訪客在手機底部看到的快速操作列。",
+    fields: [
+      { type: "toggle", path: "floatingCta.enabled", label: "顯示浮動操作列", description: "關閉後不渲染浮動操作列，也不保留多餘底部空白。" },
+      { type: "select", path: "floatingCta.density", label: "操作列密度", options: [{ label: "精簡", value: "compact" }, { label: "標準", value: "balanced" }] }
+    ]
+  }
+];
+
+export const designFields = designFieldGroups.flatMap((group) => group.fields);

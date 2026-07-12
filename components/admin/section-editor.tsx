@@ -44,7 +44,28 @@ type ObjectRepeaterField = {
   fields: RepeaterSubField[];
 };
 
-export type SectionField = SimpleField | MediaField | StringRepeaterField | ObjectRepeaterField;
+type SelectField = {
+  type: "select";
+  path: string;
+  label: string;
+  description?: string;
+  options: Array<{ label: string; value: string | number }>;
+};
+
+type ToggleField = {
+  type: "toggle";
+  path: string;
+  label: string;
+  description?: string;
+};
+
+export type SectionField = SimpleField | MediaField | StringRepeaterField | ObjectRepeaterField | SelectField | ToggleField;
+
+export type SectionFieldGroup = {
+  title: string;
+  description?: string;
+  fields: SectionField[];
+};
 
 function getValue(target: unknown, path: string) {
   return path.split(".").reduce((current, part) => (current as Record<string, unknown>)?.[part], target);
@@ -73,13 +94,17 @@ export function SectionEditor<T>({
   initialValue,
   fields,
   onSaveAsync,
-  onChange
+  onChange,
+  onSaved,
+  fieldGroups
 }: {
   section: string;
   initialValue: T;
   fields: SectionField[];
   onSaveAsync?: (value: T) => Promise<void>;
   onChange?: (value: T) => void;
+  onSaved?: (value: T) => void;
+  fieldGroups?: SectionFieldGroup[];
 }) {
   const [value, setValueState] = useState(initialValue);
 
@@ -97,9 +122,7 @@ export function SectionEditor<T>({
     setStatus("idle");
   };
 
-  return (
-    <div className="grid gap-5">
-      {fields.map((field) => {
+  const renderField = (field: SectionField) => {
         if (field.type === "string-list") {
           return (
             <RepeaterField
@@ -156,6 +179,39 @@ export function SectionEditor<T>({
           );
         }
 
+        if (field.type === "select") {
+          const current = getValue(value, field.path);
+          return (
+            <FieldGroup key={field.path} title={field.label} description={field.description}>
+              <label className="grid gap-2 text-sm text-slate">
+                <span>{field.label}</span>
+                <select
+                  value={String(current ?? "")}
+                  onChange={(event) => {
+                    const option = field.options.find((item) => String(item.value) === event.target.value);
+                    if (option) updatePath(field.path, option.value);
+                  }}
+                  className="min-w-0 max-w-full rounded-[1.2rem] border border-ink/10 bg-[#fcfaf7] px-4 py-3 text-base text-ink outline-none transition focus-visible:border-ink/30 focus-visible:ring-2 focus-visible:ring-bronze/30"
+                >
+                  {field.options.map((option) => <option key={String(option.value)} value={String(option.value)}>{option.label}</option>)}
+                </select>
+              </label>
+            </FieldGroup>
+          );
+        }
+
+        if (field.type === "toggle") {
+          const checked = getValue(value, field.path) === true;
+          return (
+            <FieldGroup key={field.path} title={field.label} description={field.description}>
+              <label className="flex cursor-pointer items-center justify-between gap-4 rounded-[1.2rem] border border-ink/10 bg-[#fcfaf7] px-4 py-3 text-sm text-slate focus-within:ring-2 focus-within:ring-bronze/30">
+                <span>{checked ? "已開啟" : "已關閉"}</span>
+                <input type="checkbox" checked={checked} onChange={(event) => updatePath(field.path, event.target.checked)} className="h-5 w-5 accent-ink" />
+              </label>
+            </FieldGroup>
+          );
+        }
+
         const multiline = field.type === "textarea";
         const Element = multiline ? "textarea" : "input";
 
@@ -173,7 +229,21 @@ export function SectionEditor<T>({
             </label>
           </FieldGroup>
         );
-      })}
+  };
+
+  const activeGroups = fieldGroups ?? [{ title: "設定", fields }];
+
+  return (
+    <div className="grid gap-5">
+      {activeGroups.map((group) => (
+        <section key={group.title} className="grid gap-4 rounded-[2rem] border border-ink/8 bg-white/55 p-4 md:p-5">
+          <div>
+            <h2 className="text-xl font-medium text-ink">{group.title}</h2>
+            {group.description ? <p className="mt-1 text-sm text-slate">{group.description}</p> : null}
+          </div>
+          {group.fields.map(renderField)}
+        </section>
+      ))}
 
       <SaveBar
         status={status}
@@ -198,9 +268,10 @@ export function SectionEditor<T>({
               }
             }
             setStatus("saved");
-          } catch (e: any) {
+            onSaved?.(value);
+          } catch (e: unknown) {
             setStatus("error");
-            setError(e.message || "儲存失敗");
+            setError(e instanceof Error ? e.message : "儲存失敗");
           }
         }}
       />

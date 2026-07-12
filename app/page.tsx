@@ -46,7 +46,7 @@ export default async function HomePage() {
         <Container className="relative grid gap-9 py-12 md:gap-12 md:py-20 lg:min-h-[calc(100vh-80px)] lg:grid-cols-[1fr_0.94fr] lg:items-center lg:py-16">
           <FadeUp>
             <p className="text-[11px] uppercase tracking-[0.34em] text-champagne">{content.home.hero.eyebrow}</p>
-            <h1 className="title-scan mt-5 max-w-[13ch] text-balance text-[clamp(2.4rem,5vw,4.6rem)] font-medium leading-[1.08] text-midnight">
+            <h1 className="site-hero-title title-scan mt-5 max-w-[13ch] text-balance font-medium leading-[1.08] text-midnight">
               {content.home.hero.title}
             </h1>
             <div 

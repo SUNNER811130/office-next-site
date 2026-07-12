@@ -138,6 +138,40 @@ export type ClientLogo = {
   href?: string;
 };
 
+export type DesignSettings = {
+  typography: {
+    heroTitleScale: "compact" | "balanced" | "large";
+    sectionTitleScale: "compact" | "balanced" | "large";
+    cardTitleScale: "compact" | "balanced" | "large";
+    bodySize: "small" | "standard" | "large";
+    lineHeight: "compact" | "comfortable" | "relaxed";
+  };
+  layout: {
+    density: "compact" | "balanced" | "spacious";
+    mobileGutter: 16 | 20 | 24;
+    desktopContainer: 1200 | 1280 | 1400 | 1520;
+    sectionSpacing: "compact" | "balanced" | "spacious";
+    cardPadding: "compact" | "balanced" | "spacious";
+    cardGap: "compact" | "balanced" | "spacious";
+    headerDensity: "compact" | "balanced";
+  };
+  cards: {
+    style: "tech-cut" | "minimal-line" | "glass-panel" | "soft-premium";
+    hoverEffect: "none" | "lift" | "edge-glow";
+  };
+  motion: {
+    preset: "none" | "fade" | "fly-up" | "fly-alternate";
+    speed: "fast" | "balanced" | "slow";
+    distance: "subtle" | "balanced" | "strong";
+    stagger: "none" | "subtle" | "balanced";
+    playOnce: boolean;
+  };
+  floatingCta: {
+    enabled: boolean;
+    density: "compact" | "balanced";
+  };
+};
+
 export type SiteContent = {
   siteUrl: string;
   navigation: {
@@ -155,9 +189,10 @@ export type SiteContent = {
   contact: ContactContent;
   social: SocialContent;
   clientLogos: ClientLogo[];
+  design: DesignSettings;
 };
 
-export type ContentSection = Exclude<keyof SiteContent, "siteUrl" | "navigation" | "clientLogos"> | "social";
+export type ContentSection = Exclude<keyof SiteContent, "siteUrl" | "navigation" | "clientLogos">;
 
 export type ContentSectionMap = {
   brand: BrandContent;
@@ -169,4 +204,5 @@ export type ContentSectionMap = {
   faq: FaqContent;
   contact: ContactContent;
   social: SocialContent;
+  design: DesignSettings;
 };

@@ -12,7 +12,7 @@ export async function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/60 bg-white/72 backdrop-blur-xl shadow-glass">
-      <Container className="flex h-[72px] items-center justify-between gap-3 md:h-[80px] md:gap-8">
+      <Container className="site-header flex items-center justify-between gap-3 md:gap-8">
         <Link href="/" className="min-w-0 shrink-0" aria-label={`返回 ${content.brand.name} 首頁`}>
           {headerLogo ? (
             <Image

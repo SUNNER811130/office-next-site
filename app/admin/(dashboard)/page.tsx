@@ -3,6 +3,7 @@ import Link from "next/link";
 import { readContent } from "@/lib/content-store";
 
 const sections = [
+  { href: "/admin/design", label: "視覺設計", description: "全站字級、留白、卡片與動畫設計預設" },
   { href: "/admin/brand", label: "Brand", description: "品牌名稱、摘要、定位、Logo 與 OG" },
   { href: "/admin/home", label: "Home", description: "首頁 Hero、痛點、主張卡片與模組內容" },
   { href: "/admin/founder", label: "Founder", description: "主理人姓名、定位、簡介與照片" },
@@ -21,6 +22,12 @@ export default async function AdminDashboardPage() {
   return (
     <div className="grid gap-5">
       <section className="grid gap-5 lg:grid-cols-3">
+        <article className="rounded-[1.8rem] border border-ink/8 bg-white/86 p-5">
+          <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">Design</p>
+          <p className="mt-3 text-xl font-medium text-ink">{content.design.cards.style}</p>
+          <p className="mt-2 text-sm text-slate">密度 {content.design.layout.density} · 動畫 {content.design.motion.preset}</p>
+          <Link href="/admin/design" className="mt-4 inline-flex rounded-full border border-ink/10 px-4 py-2 text-sm text-ink">前往視覺設計</Link>
+        </article>
         <article className="rounded-[1.8rem] border border-ink/8 bg-white/86 p-5">
           <p className="text-[11px] uppercase tracking-[0.28em] text-bronze">Brand</p>
           <p className="mt-3 text-xl font-medium text-ink">{content.brand.name}</p>

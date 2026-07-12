@@ -5,6 +5,8 @@ import { Footer } from "@/components/layout/footer";
 import { FloatingCta } from "@/components/layout/floating-cta";
 import { Header } from "@/components/layout/header";
 import { JsonLd, createOrganizationSchema, createWebsiteSchema } from "@/lib/seo";
+import { readContent } from "@/lib/content-store";
+import { getDesignCssVariables, getDesignDataAttributes } from "@/lib/design-settings";
 import { getDynamicSiteConfig } from "@/lib/site";
 
 import "./globals.css";
@@ -89,14 +91,18 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const content = await readContent();
+  const designAttributes = getDesignDataAttributes(content.design);
+  const designStyle = getDesignCssVariables(content.design);
+
   return (
     <html lang="zh-Hant" data-scroll-behavior="smooth" className={`${bodyFont.variable} ${displayFont.variable}`}>
-      <body>
+      <body {...designAttributes} style={designStyle}>
         <div className="relative flex min-h-screen flex-col">
           <a
             href="#main-content"
@@ -106,7 +112,7 @@ export default function RootLayout({
           </a>
           <JsonLd data={[createOrganizationSchema(), createWebsiteSchema()]} />
           <Header />
-          <main id="main-content" className="flex-1 pb-24 lg:pb-0">
+          <main id="main-content" className={`flex-1 ${content.design.floatingCta.enabled ? "pb-24 lg:pb-0" : "pb-0"}`}>
             {children}
           </main>
           <FloatingCta />

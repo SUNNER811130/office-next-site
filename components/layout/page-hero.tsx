@@ -23,7 +23,7 @@ export function PageHero({
       <Container className="relative">
         <div className="max-w-[920px]">
           <p className="text-[11px] uppercase tracking-[0.34em] text-champagne">{eyebrow}</p>
-          <h1 className="mt-5 max-w-[12ch] text-balance text-[2.8rem] font-medium leading-[1.08] text-midnight md:text-[4.6rem] lg:text-[5.2rem]">
+          <h1 className="site-hero-title mt-5 max-w-[12ch] text-balance font-medium leading-[1.08] text-midnight">
             {title}
           </h1>
           <p className="mt-7 max-w-[42rem] text-[1.05rem] leading-relaxed text-slate md:text-[1.15rem]">

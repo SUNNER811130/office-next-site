@@ -2,83 +2,99 @@
 
 ## 1. Summary
 
-完成前端 UI 修復與密度調整：修正 `SectionTitle` 的非法 `<p><div>` 巢狀、處理 Next.js smooth-scroll 警告、建立較一致的響應式標題/內文字級、縮短手機 Section 與 Hero、放寬桌機容器、精簡 Header 與浮動 CTA，並將首頁及服務頁服務卡改為低飽和冷白科技框架。上一輪 Email、課程 CTA、主理人與後台資料成果完整保留。
+完成 OFFICE NEXT 後台升級第一階段 Design Console v1：新增 `/admin/design`、五組安全設計控制、手機／平板／桌機 iframe 預覽、儲存成功後刷新、二次確認恢復預設設計，以及前台共用 Design Tokens 串接。沿用既有 generic content API、`updateContentSection`、`LocalFileContentRepository` 與 `data/site-content.json`，沒有建立平行儲存架構。
 
-## 2. Hydration Error
+## 2. Existing admin preserved
 
-- 原因：`SectionTitle` 無條件以 `<p>` 包裝 `ReactNode` description，首頁傳入含 `<div>` 的富文字區塊。
-- 修正：description 容器改為語意安全的 `<div>`，保留純文字與富文字支援；未使用 `suppressHydrationWarning`。
-- 四個公開頁本機 HTTP 皆為 200，且各自只有一個 H1。
-- `agent-browser` CLI 在環境中不存在，無法自動讀取瀏覽器 Console；仍需人工確認紅色 overlay 與 Console 完全清除。
+原有 Brand、Home、Founder、Services、Cases、Testimonials、FAQ、Contact、Insights、Media 導覽與資料結構均保留。既有兩個 Google Form 報名網址、正式聯絡 Email、Founder 與其他內容值未修改。RichText、Media、Services CTA 與登入 Cookie 流程未改。
 
-## 3. Typography and layout
+## 3. Design settings
 
-- Hero H1：首頁 `clamp(2.4rem, 5vw, 4.6rem)`；About/Services `clamp(2.3rem, 4.8vw, 4.25rem)`。
-- Section H2：`clamp(1.9rem, 4vw, 3.25rem)`，行高 1.12。
-- Card headings：手機約 1.3rem，桌機 1.45rem。
-- Body：手機 0.95rem/line-height 1.75 左右，桌機約 1rem–1.08rem。
-- Section：手機 64px、平板 80px、桌機 96px 上下間距。
-- Container：最大 1400px；手機 20px、平板 32px、桌機 40px 左右 padding。
-- Header：手機 72px、桌機 80px。
-- Main 增加手機底部留白，浮動 CTA 支援 `safe-area-inset-bottom`。
+- 字級：Hero、Section、Card title 與 Body size。
+- 行距：compact、comfortable、relaxed。
+- 留白：整體密度、Section spacing、Card padding、Card gap。
+- 容器：手機 gutter 16／20／24px；桌機 1200／1280／1400／1520px。
+- 卡片：tech-cut、minimal-line、glass-panel、soft-premium；none、lift、edge-glow hover。
+- 動畫：none、fade、fly-up、fly-alternate；速度、距離、stagger、playOnce。
+- Header：compact／balanced。
+- Floating CTA：enabled 與 compact／balanced；關閉時不渲染且 main 不保留手機底部空白。
 
-## 4. Service cards
+## 4. Preview
 
-- 冷白漸層、低飽和藍灰細框、24px 淡網格、右上角座標式短線與 inset 層次。
-- 圓角縮小並採非對稱右下角。
-- Hover 僅上浮 4px，reduced-motion 取消位移。
-- 首頁與服務頁 CTA 條件、安全 target/rel/aria 全部保留。
-- 服務頁手機一欄、平板兩欄、寬桌機四欄；卡片 padding 手機 20px、桌機 28px。
+`/admin/design` 桌機採左表單、右 sticky preview；窄螢幕改為上下排列。iframe 可切換 390px、768px、1280px，顯示目前尺寸，支援手動刷新及新分頁開啟首頁。未儲存設定不即時套用；PUT 成功後才增加 iframe key 刷新，失敗不刷新，因此不會形成無限循環。
 
-## 5. Animation
+## 5. Data architecture
 
-- Hero 延用既有 FadeUp/FlyInPanel 分層進場。
-- Section 延用 FadeUp，位移與 blur 維持輕量。
-- 卡片 stagger 0.1 秒，改為 28px 垂直進場，移除較重的 scale/rotateX。
-- `viewport.once` 與 `useReducedMotion` 保留，減少重播與暈動。
+- `DesignSettings` 是 `SiteContent.design` 的唯一型別，亦加入 `ContentSectionMap`。
+- `designSettingsDefaults` 集中保存目前平衡設計預設。
+- `normalizeDesignSettings()` 對巢狀資料逐欄 allowlist，缺值、舊 JSON、非法 enum、非法 fixed number 與非 boolean 均 fallback。
+- Repository `read()` 會合併 seed 並 normalize 舊資料；`updateContentSection()` 經可擴充的 `sectionNormalizers` mapping 正規化 design 後才寫檔。
+- generic `/api/admin/content/[section]` 加入 design，仍先執行 `rejectIfNotAdmin()`，成功後回傳 normalized section。
+- Repository abstraction 未改，未來可替換成 Supabase／其他持久化 repository，而不用重寫前台元件。
 
-## 6. Files changed in this round
+## 6. Security
 
-- `components/ui/section-title.tsx`
-- `components/ui/section.tsx`
-- `components/ui/container.tsx`
-- `components/ui/card.tsx`
-- `components/ui/motion.tsx`
-- `components/home/tech-interactions.tsx`
-- `components/layout/header.tsx`
-- `components/layout/floating-cta.tsx`
-- `app/layout.tsx`
-- `app/globals.css`
-- `app/page.tsx`
-- `app/services/page.tsx`
-- `app/about/page.tsx`
-- `app/contact/page.tsx`
+所有控制只有 select 與原生 checkbox toggle；沒有 CSS、JavaScript、HTML attribute 或 Tailwind class 輸入。CSS variables 只由固定映射產生，數值亦限固定集合。`prefers-reduced-motion: reduce` 使用 CSS 強制清除 animation、transition、filter、transform，優先於後台 motion 設定。未讀取或修改 `.env.local`，未變更登入帳密或 secret。
 
-上一輪未提交的資料與型別檔仍保留，沒有改動其內容值。
+## 7. Files changed
 
-## 7. Tests
+- `types/content.ts`：新增 DesignSettings、SiteContent.design 與 section map。
+- `lib/design-settings.ts`：defaults、normalizer、data attributes、CSS variables、motion/card config。
+- `lib/content-store.ts`：讀取 fallback 與 section normalizer mapping。
+- `data/site-content.seed.ts`、`data/site-content.json`：同步 Design 預設值。
+- `app/api/admin/content/[section]/route.ts`：允許 design section。
+- `components/admin/section-editor.tsx`：新增安全 select、toggle、field groups、onSaved。
+- `lib/admin-field-config.ts`：五組繁中 Design 欄位與 allowlist 選項。
+- `components/admin/design-editor.tsx`：表單、預覽、刷新、二次確認 reset。
+- `app/admin/(dashboard)/design/page.tsx`：Design Console 頁面。
+- `components/admin/admin-nav.tsx`、`app/admin/(dashboard)/page.tsx`：導覽與 Overview 入口／摘要。
+- `app/layout.tsx`、`app/globals.css`：root tokens、data attributes、固定映射樣式與 reduced-motion 防護。
+- `components/ui/container.tsx`、`section.tsx`、`section-title.tsx`、`card.tsx`、`motion.tsx`：共用元件讀取全站 tokens。
+- `components/layout/header.tsx`、`floating-cta.tsx`、`page-hero.tsx`：Header、CTA、Hero tokens。
+- `app/page.tsx`、`app/services/page.tsx`、`app/about/page.tsx`、`app/contact/page.tsx`、`components/home/hero-section.tsx`：主要 Hero 改用共用 title token，不改文字或 heading 層級。
+- `__tests__/lib/design-settings.test.ts`、`__tests__/lib/content-store.test.ts`、`__tests__/api/admin-content-route.test.ts`：defaults、非法值、fixed number、boolean、CSS allowlist、舊 JSON、儲存 normalization、API auth／write。
+- `__tests__/lib/seo.test.ts`：測試期待更新為既有實作的 `ProfessionalService`；正式 schema 未改。
+- `docs/admin-design-guide.md`：繁中操作、預覽、儲存、reduced-motion、資料與 reset 說明。
 
-- `npm run anti:check`：FAIL；TypeScript PASS，Jest 11/12 PASS。唯一失敗仍是已知 SEO 測試期待 `Organization`、實作回傳 `ProfessionalService`，本輪未修改 SEO。
-- `npm run build`：PASS，40/40 靜態頁生成完成。
+## 8. Tests
+
+- `npm run anti:check`：PASS；TypeScript PASS；5 suites、20 tests PASS。
+- `npm run build`：PASS；Next.js 15.5.10 production build、type check、41 static pages generation PASS。
 - `git diff --check`：PASS。
-- 本機 dev server：`/`、`/services`、`/about`、`/contact` 全部 HTTP 200，各一個 H1；伺服器端無 runtime error。
-- 報名 URL 與 Email 搜尋：值維持不變。
-
-## 8. Commit / deploy
-
-- Commit：未建立（依使用者指示）。
-- Push：未執行。
-- Vercel / clasp / Cloud Run deploy：均不需要且未執行。
+- `data/site-content.json` JSON parse：PASS。
+- 安全搜尋：沒有 `suppressHydrationWarning`；`.env.local`、`package.json`、`package-lock.json` 無 diff；報名網址與 `sunner811130gas@gmail.com` 仍存在於 seed 與正式 JSON。
+- SEO：`createOrganizationSchema()` 現有 `ProfessionalService` 符合 OFFICE NEXT 專業服務／企業內訓定位，因此只修正過期測試期待，沒有修改 production schema。
 
 ## 9. Manual verification
 
-網址：`http://localhost:3000`、`/services`、`/about`、`/contact`。
+尚未由 Codex 代替真人登入操作；需交由 OpenClaw QA／使用者驗收：
 
-尺寸：390×608、390×844、430×932、768×1024、1440×900、1680×1050。
+- 後台：`http://localhost:3000/admin`、`/admin/design`、`/admin/home`、`/admin/services`。
+- 前台：`http://localhost:3000`、`/services`、`/about`、`/contact`。
+- 尺寸：390×608、390×844、430×932、768×1024、1280×800、1440×900、1680×1050。
+- 驗證 Hero／Body／gutter／container、四種 card style、motion none／fly-alternate、系統 reduced-motion、Floating CTA 關閉、reset 僅影響 design、成功儲存刷新 preview，以及 dev server 重啟後 JSON 設定仍保留。
 
-檢查：Console Hydration/scroll warning、首頁首屏高度、Contact H1 換行、服務卡科技框架與 stagger、浮動 CTA 遮擋、水平捲動、兩個報名表單。
+## 10. Git
 
-## 10. Risks / notes
+- 開工前 branch：`feature/admin-design-console-v1`。
+- 開工前 commit：`f7d4073 feat: update content and refine responsive interface`。
+- 開工前工作樹乾淨，沒有既有未提交修改；目前所有 status 變更皆為本輪。
+- 沒有 Commit、沒有 Push、沒有部署。
+- 沒有修改 `.env.local`，沒有新增套件，package manifests／lockfile 未修改。
+- 修改狀態以本 handoff 上方 Files changed 清單為準；新增檔包含 design page/editor/tool/tests/doc。
 
-- 未新增套件，未修改 `.env.local`、SEO Schema、API、Admin 認證、報名網址或 Email。
-- 因 `agent-browser` 不可用，實際瀏覽器 Console 與像素級視覺結果需 OpenClaw/人工 QA。
+## 11. Needs OpenClaw QA
+
+Yes。請執行完整瀏覽器與登入後台 QA，尤其確認 iframe Cookie、裝置寬度、四種卡片視覺、fly-alternate 體感與 reduced-motion。
+
+## 12. Needs deploy
+
+No。本輪禁止部署，未執行 Vercel deploy。
+
+## 13. Risks / notes
+
+LocalFileContentRepository 在本機可持久化；Vercel 正式環境的 ephemeral filesystem 不適合作為長期 CMS 儲存，正式上線前仍需資料庫 migration。Design v1 集中於共用元件，少數非共用／特殊頁面卡片可能保有局部 class 覆寫，需在人工 QA 尺寸矩陣檢查視覺優先序。
+
+## 14. Next phase
+
+Page Block Editor v1（本輪未實作）：區塊顯示／隱藏、區塊上下排序、一欄／兩欄版型、區塊背景預設、區塊動畫預設、頁面草稿與預覽。

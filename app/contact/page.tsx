@@ -63,7 +63,7 @@ export default async function ContactPage() {
               title={content.contact.intro}
               description={content.contact.responseExpectation}
               headingLevel="h1"
-              className="max-w-4xl [&_h1]:max-w-[20ch] [&_h1]:text-[clamp(2.15rem,4.5vw,4rem)]"
+              className="max-w-4xl [&_h1]:max-w-[20ch]"
             />
           </FadeUp>
           <FadeUp delay={0.15}>

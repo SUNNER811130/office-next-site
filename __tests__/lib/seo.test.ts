@@ -36,7 +36,8 @@ describe("SEO Utilities", () => {
 
   it("should generate correct organization schema", () => {
     const schema = createOrganizationSchema();
-    expect(schema["@type"]).toBe("Organization");
+    // OFFICE NEXT 提供專業顧問與企業內訓服務，正式 schema 使用更精確的子型別。
+    expect(schema["@type"]).toBe("ProfessionalService");
     expect(schema.name).toBe("Test Site Inc.");
     expect(schema.founder?.name).toBe("Test Founder");
   });

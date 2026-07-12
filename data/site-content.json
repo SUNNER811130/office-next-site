@@ -1,4 +1,37 @@
 {
+  "design": {
+    "typography": {
+      "heroTitleScale": "balanced",
+      "sectionTitleScale": "balanced",
+      "cardTitleScale": "balanced",
+      "bodySize": "standard",
+      "lineHeight": "comfortable"
+    },
+    "layout": {
+      "density": "compact",
+      "mobileGutter": 16,
+      "desktopContainer": 1400,
+      "sectionSpacing": "compact",
+      "cardPadding": "compact",
+      "cardGap": "balanced",
+      "headerDensity": "balanced"
+    },
+    "cards": {
+      "style": "tech-cut",
+      "hoverEffect": "edge-glow"
+    },
+    "motion": {
+      "preset": "fly-alternate",
+      "speed": "balanced",
+      "distance": "strong",
+      "stagger": "subtle",
+      "playOnce": false
+    },
+    "floatingCta": {
+      "enabled": true,
+      "density": "compact"
+    }
+  },
   "siteUrl": "https://office-next-site.vercel.app",
   "navigation": {
     "headerTagline": "White-Collar AI Productivity and Office Automation",

@@ -44,7 +44,7 @@ export default async function AboutPage() {
         <div className="grid gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
           <FadeUp>
             <p className="text-[11px] uppercase tracking-[0.34em] text-champagne">Founder</p>
-            <h1 className="mt-5 max-w-[14ch] text-balance text-[clamp(2.3rem,4.8vw,4.25rem)] font-medium leading-[1.1] text-midnight">
+            <h1 className="site-hero-title mt-5 max-w-[14ch] text-balance font-medium leading-[1.1] text-midnight">
               {content.founder.name}
             </h1>
             <p className="mt-5 text-sm uppercase tracking-[0.14em] text-champagne">{content.founder.role}</p>

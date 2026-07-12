@@ -25,7 +25,7 @@ export function HeroSection() {
           <p className="text-[11px] uppercase tracking-[0.36em] text-bronze">
             OFFICE NEXT 辦公進化所
           </p>
-          <h1 className="mt-6 max-w-[11ch] text-balance text-[3.4rem] font-medium leading-[1.02] text-ink md:text-[5.5rem] lg:text-[6.2rem]">
+          <h1 className="site-hero-title mt-6 max-w-[11ch] text-balance font-medium leading-[1.02] text-ink">
             讓 AI 成為你的工作協作員
           </h1>
           <p className="mt-7 max-w-[40rem] text-pretty text-[1.05rem] text-slate md:text-[1.2rem]">
