@@ -78,6 +78,20 @@ export async function updateContentSection<K extends ContentSection>(
   return next;
 }
 
+export async function updatePageBlockPage(
+  page: "home" | "services",
+  blocks: unknown
+): Promise<SiteContent> {
+  const current = await readContent();
+  const pageBlocks = normalizePageBlockSettings({
+    ...current.pageBlocks,
+    [page]: blocks
+  });
+  const next = { ...current, pageBlocks } satisfies SiteContent;
+  await writeContent(next);
+  return next;
+}
+
 export async function resetContentToSeed() {
   await writeContent(siteContentSeed);
   return siteContentSeed;

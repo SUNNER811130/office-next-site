@@ -7,6 +7,10 @@ import { SectionTitle } from "@/components/ui/section-title";
 import Image from "next/image";
 import { readContent } from "@/lib/content-store";
 import { JsonLd, createBreadcrumbSchema, createFaqSchema, createPageMetadata } from "@/lib/seo";
+import { PageBlockFrame } from "@/components/home/page-block-frame";
+import { getOrderedEnabledServicesBlocks } from "@/lib/page-block-settings";
+import type { ServicesBlockId } from "@/types/content";
+import type { ReactNode } from "react";
 
 export async function generateMetadata() {
   return createPageMetadata({
@@ -28,18 +32,8 @@ export async function generateMetadata() {
 export default async function ServicesPage() {
   const content = await readContent();
 
-  return (
-    <>
-      <JsonLd
-        data={[
-          createBreadcrumbSchema([
-            { name: "首頁", path: "/" },
-            { name: "服務方向", path: "/services" }
-          ]),
-          createFaqSchema(content.faq.items)
-        ]}
-      />
-
+  const servicesBlockRegistry = {
+    hero: (
       <Section className="bg-oat">
         <div className="grid gap-12 lg:grid-cols-[1fr_0.92fr] lg:items-end">
           <FadeUp>
@@ -70,6 +64,8 @@ export default async function ServicesPage() {
           </FadeUp>
         </div>
       </Section>
+    ),
+    "service-cards": (
 
       <Section>
         <StaggerContainer className="grid gap-4 md:grid-cols-2 xl:grid-cols-4" stagger={0.1}>
@@ -102,6 +98,8 @@ export default async function ServicesPage() {
           ))}
         </StaggerContainer>
       </Section>
+    ),
+    "case-snapshots": (
 
       <Section surface="muted">
         <div className="grid gap-10">
@@ -133,6 +131,8 @@ export default async function ServicesPage() {
           </StaggerContainer>
         </div>
       </Section>
+    ),
+    faq: (
 
       <Section className="pb-24">
         <div className="grid gap-10 lg:grid-cols-[0.88fr_1.12fr]">
@@ -144,6 +144,25 @@ export default async function ServicesPage() {
           </FadeUp>
         </div>
       </Section>
+    )
+  } satisfies Record<ServicesBlockId, ReactNode>;
+
+  return (
+    <>
+      <JsonLd
+        data={[
+          createBreadcrumbSchema([
+            { name: "首頁", path: "/" },
+            { name: "服務方向", path: "/services" }
+          ]),
+          createFaqSchema(content.faq.items)
+        ]}
+      />
+      {getOrderedEnabledServicesBlocks(content.pageBlocks).map((config) => (
+        <PageBlockFrame key={config.id} config={config} page="services">
+          {servicesBlockRegistry[config.id]}
+        </PageBlockFrame>
+      ))}
     </>
   );
 }

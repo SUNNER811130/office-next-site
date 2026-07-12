@@ -182,13 +182,15 @@ export type HomeBlockId =
   | "client-logos"
   | "testimonials"
   | "faq";
+export type ServicesBlockId = "hero" | "service-cards" | "case-snapshots" | "faq";
+export type PageBlockId = HomeBlockId | ServicesBlockId;
 
 export type PageBlockBackground = "default" | "clean" | "soft-grid" | "soft-blue" | "deep-panel";
 export type PageBlockMotion = "inherit" | "none" | "fade" | "fly-up" | "fly-left" | "fly-right";
 export type PageBlockLayout = "default" | "contained" | "wide" | "single-column" | "two-column";
 
-export type PageBlockConfig = {
-  id: HomeBlockId;
+export type PageBlockConfig<TId extends PageBlockId = PageBlockId> = {
+  id: TId;
   enabled: boolean;
   order: number;
   background: PageBlockBackground;
@@ -197,7 +199,8 @@ export type PageBlockConfig = {
 };
 
 export type PageBlockSettings = {
-  home: PageBlockConfig[];
+  home: PageBlockConfig<HomeBlockId>[];
+  services: PageBlockConfig<ServicesBlockId>[];
 };
 
 export type SiteContent = {

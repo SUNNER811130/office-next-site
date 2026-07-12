@@ -4,6 +4,7 @@ const navItems = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/design", label: "視覺設計" },
   { href: "/admin/pages/home", label: "首頁區塊" },
+  { href: "/admin/pages/services", label: "服務頁區塊" },
   { href: "/admin/brand", label: "Brand" },
   { href: "/admin/home", label: "Home" },
   { href: "/admin/founder", label: "Founder" },

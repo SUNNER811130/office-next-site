@@ -2,7 +2,7 @@ import { promises as fs } from "fs";
 
 import { unstable_noStore as noStore } from "next/cache";
 
-import { readContent, writeContent, updateContentSection, resetContentToSeed, siteContentSeed } from "@/lib/content-store";
+import { readContent, writeContent, updateContentSection, updatePageBlockPage, resetContentToSeed, siteContentSeed } from "@/lib/content-store";
 
 jest.mock("fs", () => ({
   promises: {
@@ -51,7 +51,7 @@ describe("Content Store", () => {
 
   it("normalizes page blocks before storing them", async () => {
     (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(mockContent));
-    const nextContent = await updateContentSection("pageBlocks", { home: [
+    const nextContent = await updateContentSection("pageBlocks", { ...siteContentSeed.pageBlocks, home: [
       { ...siteContentSeed.pageBlocks.home[0], enabled: false, order: 99 },
       { ...siteContentSeed.pageBlocks.home[1], background: "unsafe" as "default" }
     ] });
@@ -59,6 +59,29 @@ describe("Content Store", () => {
     expect(nextContent.pageBlocks.home.find((block) => block.id === "work-upgrade")?.background).toBe("default");
     const stored = JSON.parse((fs.writeFile as jest.Mock).mock.calls.at(-1)?.[1] as string);
     expect(stored.pageBlocks.home).toHaveLength(siteContentSeed.pageBlocks.home.length);
+  });
+
+  it("updates services blocks while preserving the latest home settings", async () => {
+    const latest = { ...mockContent, pageBlocks: { ...mockContent.pageBlocks, home: mockContent.pageBlocks.home.map((block) => block.id === "faq" ? { ...block, enabled: false } : block) } };
+    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(latest));
+    const next = await updatePageBlockPage("services", [{ ...siteContentSeed.pageBlocks.services[0] }]);
+    expect(next.pageBlocks.home.find((block) => block.id === "faq")?.enabled).toBe(false);
+    expect(next.pageBlocks.services).toHaveLength(siteContentSeed.pageBlocks.services.length);
+  });
+
+  it("updates home blocks while preserving the latest services settings", async () => {
+    const latest = { ...mockContent, pageBlocks: { ...mockContent.pageBlocks, services: mockContent.pageBlocks.services.map((block) => block.id === "faq" ? { ...block, enabled: false } : block) } };
+    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(latest));
+    const next = await updatePageBlockPage("home", siteContentSeed.pageBlocks.home);
+    expect(next.pageBlocks.services.find((block) => block.id === "faq")?.enabled).toBe(false);
+  });
+
+  it("resets services defaults without changing home", async () => {
+    const latest = { ...mockContent, pageBlocks: { ...mockContent.pageBlocks, home: mockContent.pageBlocks.home.map((block) => block.id === "faq" ? { ...block, enabled: false } : block) } };
+    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(latest));
+    const next = await updatePageBlockPage("services", siteContentSeed.pageBlocks.services);
+    expect(next.pageBlocks.home.find((block) => block.id === "faq")?.enabled).toBe(false);
+    expect(next.pageBlocks.services).toEqual(siteContentSeed.pageBlocks.services);
   });
 
   it("normalizes the design section before storing it", async () => {

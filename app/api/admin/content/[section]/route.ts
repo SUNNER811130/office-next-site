@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { rejectIfNotAdmin } from "@/lib/admin-auth";
-import { readContent, updateContentSection } from "@/lib/content-store";
+import { readContent, updateContentSection, updatePageBlockPage } from "@/lib/content-store";
 import type { ContentSection } from "@/types/content";
 
 const sections = new Set<ContentSection>([
@@ -45,6 +45,12 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ sec
   }
 
   const payload = await request.json();
+  if (section === "pageBlocks" && payload && typeof payload === "object" && "page" in payload && "blocks" in payload) {
+    const page = (payload as { page?: unknown }).page;
+    if (page !== "home" && page !== "services") return NextResponse.json({ error: "Unknown page" }, { status: 400 });
+    const content = await updatePageBlockPage(page, (payload as { blocks: unknown }).blocks);
+    return NextResponse.json({ ok: true, data: content.pageBlocks });
+  }
   const content = await updateContentSection(section as ContentSection, payload);
   return NextResponse.json({ ok: true, data: content[section as ContentSection] });
 }

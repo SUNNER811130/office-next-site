@@ -106,6 +106,40 @@
         "motion": "inherit",
         "layout": "default"
       }
+    ],
+    "services": [
+      {
+        "id": "hero",
+        "enabled": true,
+        "order": 0,
+        "background": "default",
+        "motion": "inherit",
+        "layout": "default"
+      },
+      {
+        "id": "service-cards",
+        "enabled": true,
+        "order": 1,
+        "background": "default",
+        "motion": "fly-left",
+        "layout": "default"
+      },
+      {
+        "id": "case-snapshots",
+        "enabled": false,
+        "order": 2,
+        "background": "default",
+        "motion": "inherit",
+        "layout": "default"
+      },
+      {
+        "id": "faq",
+        "enabled": true,
+        "order": 3,
+        "background": "default",
+        "motion": "inherit",
+        "layout": "default"
+      }
     ]
   },
   "siteUrl": "https://office-next-site.vercel.app",

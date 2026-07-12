@@ -43,7 +43,7 @@ export function HomeBlockEditor({ initialValue }: { initialValue: PageBlockSetti
   const save = async (nextValue = value) => {
     setStatus("saving"); setError("");
     try {
-      const response = await fetch("/api/admin/content/pageBlocks", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(nextValue) });
+      const response = await fetch("/api/admin/content/pageBlocks", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ page: "home", blocks: nextValue.home }) });
       const result = await response.json() as { data?: PageBlockSettings; error?: string };
       if (!response.ok || !result.data) throw new Error(result.error || "儲存失敗");
       setValue(normalizePageBlockSettings(result.data));

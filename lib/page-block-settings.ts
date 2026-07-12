@@ -6,6 +6,7 @@ import type {
   PageBlockMotion,
   PageBlockSettings
 } from "@/types/content";
+import type { ServicesBlockId } from "@/types/content";
 
 export type HomeBlockDefinition = {
   id: HomeBlockId;
@@ -13,7 +14,7 @@ export type HomeBlockDefinition = {
   description: string;
   canDisable: boolean;
   supportedLayouts: readonly PageBlockLayout[];
-  defaultConfig: PageBlockConfig;
+  defaultConfig: PageBlockConfig<HomeBlockId>;
 };
 
 const backgrounds = ["default", "clean", "soft-grid", "soft-blue", "deep-panel"] as const;
@@ -48,9 +49,38 @@ export const homeBlockDefinitions = [
   define("faq", "常見問題", "首頁 FAQ 與回覆說明。", ["default", "contained", "wide", "single-column", "two-column"])
 ] as const satisfies readonly HomeBlockDefinition[];
 
-export const pageBlockSettingsDefaults: PageBlockSettings = {
-  home: homeBlockDefinitions.map((definition, order) => ({ ...definition.defaultConfig, order }))
+export type ServicesBlockDefinition = {
+  id: ServicesBlockId;
+  label: string;
+  description: string;
+  canDisable: boolean;
+  supportedLayouts: readonly PageBlockLayout[];
+  defaultConfig: PageBlockConfig<ServicesBlockId>;
 };
+
+function defineServices(
+  id: ServicesBlockId,
+  label: string,
+  description: string,
+  supportedLayouts: readonly PageBlockLayout[],
+  canDisable = true
+): ServicesBlockDefinition {
+  return { id, label, description, canDisable, supportedLayouts, defaultConfig: { id, enabled: true, order: 0, background: "default", motion: "inherit", layout: "default" } };
+}
+
+export const servicesBlockDefinitions = [
+  defineServices("hero", "服務頁主視覺", "服務頁標題、品牌主張、行動按鈕與 Service Snapshot。", ["default", "wide", "two-column"], false),
+  defineServices("service-cards", "服務與課程卡片", "四項服務內容、適合對象與報名按鈕。", ["default", "wide"]),
+  defineServices("case-snapshots", "服務案例快照", "服務對應的真實辦公應用案例。", ["default", "contained", "wide"]),
+  defineServices("faq", "服務合作常見問題", "服務頁常見問題與回答。", ["default", "contained", "wide", "single-column", "two-column"])
+] as const satisfies readonly ServicesBlockDefinition[];
+
+export const pageBlockSettingsDefaults: PageBlockSettings = {
+  home: homeBlockDefinitions.map((definition, order) => ({ ...definition.defaultConfig, order })),
+  services: servicesBlockDefinitions.map((definition, order) => ({ ...definition.defaultConfig, order }))
+};
+
+export const servicesPageBlockDefaults = pageBlockSettingsDefaults.services;
 
 function record(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
@@ -60,7 +90,7 @@ function allowed<T extends readonly string[]>(values: T, value: unknown, fallbac
   return typeof value === "string" && values.includes(value as T[number]) ? value as T[number] : fallback;
 }
 
-export function normalizeHomeBlocks(input: unknown): PageBlockConfig[] {
+export function normalizeHomeBlocks(input: unknown): PageBlockConfig<HomeBlockId>[] {
   const rows = Array.isArray(input) ? input : [];
   const firstById = new Map<HomeBlockId, Record<string, unknown>>();
   for (const value of rows) {
@@ -89,12 +119,41 @@ export function normalizeHomeBlocks(input: unknown): PageBlockConfig[] {
   return [hero, ...rest].map((block, order) => ({ ...block, order, enabled: block.id === "hero" ? true : block.enabled }));
 }
 
-export function normalizePageBlockSettings(input: unknown): PageBlockSettings {
-  return { home: normalizeHomeBlocks(record(input).home) };
+export function normalizeServicesBlocks(input: unknown): PageBlockConfig<ServicesBlockId>[] {
+  const rows = Array.isArray(input) ? input : [];
+  const firstById = new Map<ServicesBlockId, Record<string, unknown>>();
+  for (const value of rows) {
+    const row = record(value);
+    const definition = servicesBlockDefinitions.find((item) => item.id === row.id);
+    if (definition && !firstById.has(definition.id)) firstById.set(definition.id, row);
+  }
+  const normalized = servicesBlockDefinitions.map((definition, defaultOrder) => {
+    const row = firstById.get(definition.id) ?? {};
+    return {
+      id: definition.id,
+      enabled: definition.canDisable && typeof row.enabled === "boolean" ? row.enabled : true,
+      order: Number.isInteger(row.order) && Number(row.order) >= 0 ? Number(row.order) : defaultOrder,
+      background: allowed(backgrounds, row.background, definition.defaultConfig.background) as PageBlockBackground,
+      motion: allowed(motions, row.motion, definition.defaultConfig.motion) as PageBlockMotion,
+      layout: allowed(definition.supportedLayouts, row.layout, definition.defaultConfig.layout) as PageBlockLayout
+    };
+  });
+  const hero = normalized.find((block) => block.id === "hero")!;
+  const rest = normalized.filter((block) => block.id !== "hero").sort((a, b) => a.order - b.order || servicesBlockDefinitions.findIndex((item) => item.id === a.id) - servicesBlockDefinitions.findIndex((item) => item.id === b.id));
+  return [hero, ...rest].map((block, order) => ({ ...block, order, enabled: block.id === "hero" ? true : block.enabled }));
 }
 
-export function getOrderedEnabledHomeBlocks(settings: PageBlockSettings): PageBlockConfig[] {
+export function normalizePageBlockSettings(input: unknown): PageBlockSettings {
+  const root = record(input);
+  return { home: normalizeHomeBlocks(root.home), services: normalizeServicesBlocks(root.services) };
+}
+
+export function getOrderedEnabledHomeBlocks(settings: PageBlockSettings): PageBlockConfig<HomeBlockId>[] {
   return normalizeHomeBlocks(settings.home).filter((block) => block.enabled);
+}
+
+export function getOrderedEnabledServicesBlocks(settings: PageBlockSettings): PageBlockConfig<ServicesBlockId>[] {
+  return normalizeServicesBlocks(settings.services).filter((block) => block.enabled);
 }
 
 export function getPageBlockAttributes(config: PageBlockConfig) {

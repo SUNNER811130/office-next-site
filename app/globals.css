@@ -113,6 +113,10 @@ body {
   .page-block--deep-panel :is(h1,h2,h3,h4,h5,h6,.text-midnight,.text-ink) { color: #f8fbfd !important; }
   .page-block--deep-panel :is(p,.text-slate,.prose,.prose-slate) { color: #c7d9e3 !important; }
   .page-block--deep-panel .site-card { border-color: rgba(173,219,235,.22); background: rgba(255,255,255,.09); }
+  [data-page-block-page="services"].page-block--deep-panel .site-card { border-color: rgba(173,219,235,.3); background: rgba(248,251,253,.96); }
+  [data-page-block-page="services"].page-block--deep-panel .site-card :is(h1,h2,h3,h4,h5,h6,.text-midnight,.text-ink) { color: #071a2f !important; }
+  [data-page-block-page="services"].page-block--deep-panel .site-card :is(p,.text-slate,.prose,.prose-slate) { color: #445566 !important; }
+  [data-page-block-page="services"].page-block--deep-panel .site-card :is(a,button):focus-visible { outline: 3px solid #6ea7bf; outline-offset: 3px; }
   .page-block-layout--contained .site-container { max-width: 1100px; }
   .page-block-layout--wide .site-container { max-width: 1520px; }
   .page-block-layout--single-column .site-container > .grid { margin-inline: auto; max-width: 900px; grid-template-columns: minmax(0,1fr) !important; }

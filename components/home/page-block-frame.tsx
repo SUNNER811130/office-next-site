@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { getPageBlockAttributes, getPageBlockClassConfig } from "@/lib/page-block-settings";
 import type { PageBlockConfig } from "@/types/content";
 
-export function PageBlockFrame({ config, children }: { config: PageBlockConfig; children: ReactNode }) {
+export function PageBlockFrame({ config, children, page }: { config: PageBlockConfig; children: ReactNode; page?: "home" | "services" }) {
   const reducedMotion = useReducedMotion();
   const preset = config.motion;
   const disabled = reducedMotion || preset === "inherit" || preset === "none";
@@ -22,6 +22,7 @@ export function PageBlockFrame({ config, children }: { config: PageBlockConfig; 
   return (
     <motion.div
       {...getPageBlockAttributes(config)}
+      data-page-block-page={page}
       className={getPageBlockClassConfig(config)}
       initial={disabled ? false : initial}
       whileInView={disabled ? undefined : { opacity: 1, x: 0, y: 0 }}

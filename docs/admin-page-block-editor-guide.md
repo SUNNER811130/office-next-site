@@ -9,3 +9,11 @@
 「恢復首頁預設區塊」需要二次確認，只會重設 `pageBlocks.home` 的順序、顯示、背景、動畫與版型，不會變更 Design Settings、首頁文案、Email、服務、Founder、Cases、Insights 或 Media。
 
 目前資料沿用 `LocalFileContentRepository`，儲存在 `data/site-content.json`。本機可持久化；正式 Vercel CMS 上線前仍需遷移到持久化資料庫。
+
+## 服務頁區塊管理
+
+管理者可前往 `/admin/pages/services` 控制 `/services` 的主視覺、服務卡片、案例快照與 FAQ。Hero 固定第一且不可隱藏；其他區塊可顯示／隱藏、向上／向下排序，並選擇安全背景、支援版型與動畫。隱藏只影響呈現，不會刪除服務內容或報名 CTA。
+
+右側 iframe 可切換 390px、768px、1280px，手動刷新或在新分頁開啟 `/services`。成功儲存或確認恢復服務頁預設後才自動刷新；失敗不刷新。
+
+Home 與 Services 設定彼此獨立。兩個編輯器都使用 server-side nested update：伺服器先讀取最新 `pageBlocks`，只替換指定頁面並 normalize，因此儲存或 reset Services 不會覆蓋 Home，反向亦同。

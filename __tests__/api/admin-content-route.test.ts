@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { PUT } from "@/app/api/admin/content/[section]/route";
 import { rejectIfNotAdmin } from "@/lib/admin-auth";
-import { updateContentSection } from "@/lib/content-store";
+import { updateContentSection, updatePageBlockPage } from "@/lib/content-store";
 import { siteContentSeed } from "@/data/site-content.seed";
 
 jest.mock("@/lib/admin-auth", () => ({ rejectIfNotAdmin: jest.fn() }));
 jest.mock("@/lib/content-store", () => ({
   readContent: jest.fn(),
-  updateContentSection: jest.fn()
+  updateContentSection: jest.fn(),
+  updatePageBlockPage: jest.fn()
 }));
 
 describe("admin design content API", () => {
@@ -27,7 +28,7 @@ describe("admin design content API", () => {
 
   it("rejects unauthenticated page block writes", async () => {
     (rejectIfNotAdmin as jest.Mock).mockResolvedValue(NextResponse.json({ error: "Unauthorized" }, { status: 401 }));
-    const request = new NextRequest("http://localhost/api/admin/content/pageBlocks", { method: "PUT", body: JSON.stringify(siteContentSeed.pageBlocks) });
+    const request = new NextRequest("http://localhost/api/admin/content/pageBlocks", { method: "PUT", body: JSON.stringify({ page: "services", blocks: siteContentSeed.pageBlocks.services }) });
     const response = await PUT(request, { params: Promise.resolve({ section: "pageBlocks" }) });
     expect(response.status).toBe(401);
     expect(updateContentSection).not.toHaveBeenCalled();
@@ -39,6 +40,17 @@ describe("admin design content API", () => {
     const request = new NextRequest("http://localhost/api/admin/content/pageBlocks", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(siteContentSeed.pageBlocks) });
     const response = await PUT(request, { params: Promise.resolve({ section: "pageBlocks" }) });
     expect(updateContentSection).toHaveBeenCalledWith("pageBlocks", siteContentSeed.pageBlocks);
+    await expect(response.json()).resolves.toEqual({ ok: true, data: siteContentSeed.pageBlocks });
+  });
+
+  it("stores a nested services update without using whole-section replacement", async () => {
+    (rejectIfNotAdmin as jest.Mock).mockResolvedValue(null);
+    (updatePageBlockPage as jest.Mock).mockResolvedValue(siteContentSeed);
+    const payload = { page: "services", blocks: siteContentSeed.pageBlocks.services };
+    const request = new NextRequest("http://localhost/api/admin/content/pageBlocks", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    const response = await PUT(request, { params: Promise.resolve({ section: "pageBlocks" }) });
+    expect(updatePageBlockPage).toHaveBeenCalledWith("services", payload.blocks);
+    expect(updateContentSection).not.toHaveBeenCalled();
     await expect(response.json()).resolves.toEqual({ ok: true, data: siteContentSeed.pageBlocks });
   });
 

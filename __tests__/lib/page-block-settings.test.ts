@@ -1,9 +1,12 @@
 import {
   getOrderedEnabledHomeBlocks,
+  getOrderedEnabledServicesBlocks,
   getPageBlockAttributes,
   homeBlockDefinitions,
   normalizePageBlockSettings,
-  pageBlockSettingsDefaults
+  normalizeServicesBlocks,
+  pageBlockSettingsDefaults,
+  servicesBlockDefinitions
 } from "@/lib/page-block-settings";
 
 describe("Page block settings", () => {
@@ -55,5 +58,46 @@ describe("Page block settings", () => {
   it("only accepts layouts supported by each block", () => {
     const settings = normalizePageBlockSettings({ home: [{ id: "services", layout: "single-column" }] });
     expect(settings.home.find((block) => block.id === "services")?.layout).toBe("default");
+  });
+
+  it("uses services defaults when an older pageBlocks value has no services", () => {
+    const settings = normalizePageBlockSettings({ home: pageBlockSettingsDefaults.home });
+    expect(settings.services).toEqual(pageBlockSettingsDefaults.services);
+  });
+
+  it("normalizes unknown, duplicate, missing and invalid services blocks", () => {
+    const services = normalizeServicesBlocks([
+      { id: "faq", enabled: "false", order: 0, background: "bg-red-500", motion: "javascript", layout: "w-screen" },
+      { id: "faq", enabled: false, order: 1 },
+      { id: "footer", enabled: true, order: 2 }
+    ]);
+    expect(services).toHaveLength(servicesBlockDefinitions.length);
+    expect(services.filter((block) => block.id === "faq")).toHaveLength(1);
+    expect(services.some((block) => (block.id as string) === "footer")).toBe(false);
+    expect(services.find((block) => block.id === "faq")).toEqual(expect.objectContaining({ enabled: true, background: "default", motion: "inherit", layout: "default" }));
+  });
+
+  it("keeps the services hero enabled and first and creates continuous order", () => {
+    const services = normalizeServicesBlocks([
+      { id: "faq", enabled: true, order: 0 },
+      { id: "hero", enabled: false, order: 99 },
+      { id: "service-cards", enabled: true, order: "invalid" }
+    ]);
+    expect(services[0]).toEqual(expect.objectContaining({ id: "hero", enabled: true, order: 0 }));
+    expect(services.map((block) => block.order)).toEqual([0, 1, 2, 3]);
+  });
+
+  it("filters disabled services blocks in normalized order", () => {
+    const settings = normalizePageBlockSettings({
+      home: pageBlockSettingsDefaults.home,
+      services: pageBlockSettingsDefaults.services.map((block) => block.id === "case-snapshots" ? { ...block, enabled: false } : block)
+    });
+    const rendered = getOrderedEnabledServicesBlocks(settings);
+    expect(rendered.map((block) => block.id)).toEqual(["hero", "service-cards", "faq"]);
+  });
+
+  it("rejects unsupported services layouts", () => {
+    const services = normalizeServicesBlocks([{ id: "service-cards", layout: "two-column" }]);
+    expect(services.find((block) => block.id === "service-cards")?.layout).toBe("default");
   });
 });
