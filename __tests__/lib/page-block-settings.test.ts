@@ -1,5 +1,7 @@
 import {
   aboutBlockDefinitions,
+  contactBlockDefinitions,
+  getOrderedEnabledContactBlocks,
   getOrderedEnabledAboutBlocks,
   getOrderedEnabledHomeBlocks,
   getOrderedEnabledServicesBlocks,
@@ -7,6 +9,7 @@ import {
   homeBlockDefinitions,
   normalizePageBlockSettings,
   normalizeAboutBlocks,
+  normalizeContactBlocks,
   normalizeServicesBlocks,
   pageBlockSettingsDefaults,
   servicesBlockDefinitions
@@ -135,6 +138,41 @@ describe("Page block settings", () => {
   it("rejects unsupported about layouts and arbitrary classes", () => {
     const about = normalizeAboutBlocks([{ id: "brand-positioning", layout: "single-column", background: "bg-black", motion: "animate-spin" }]);
     const block = about.find((item) => item.id === "brand-positioning")!;
+    expect(block).toEqual(expect.objectContaining({ layout: "default", background: "default", motion: "inherit" }));
+    expect(JSON.stringify(getPageBlockAttributes(block))).not.toMatch(/bg-black|animate-spin/);
+  });
+
+  it("uses contact defaults when an older pageBlocks value has no contact", () => {
+    const settings = normalizePageBlockSettings({ home: pageBlockSettingsDefaults.home, services: pageBlockSettingsDefaults.services, about: pageBlockSettingsDefaults.about });
+    expect(settings.contact).toEqual(pageBlockSettingsDefaults.contact);
+  });
+
+  it("normalizes unknown, duplicate, missing and invalid contact blocks", () => {
+    const contact = normalizeContactBlocks([
+      { id: "faq", enabled: "false", order: -1, background: "bg-red-500", motion: "javascript", layout: "w-screen" },
+      { id: "faq", enabled: false, order: 0 },
+      { id: "footer", enabled: true, order: 1 }
+    ]);
+    expect(contact).toHaveLength(contactBlockDefinitions.length);
+    expect(contact.filter((block) => block.id === "faq")).toHaveLength(1);
+    expect(contact.some((block) => (block.id as string) === "footer")).toBe(false);
+    expect(contact.find((block) => block.id === "faq")).toEqual(expect.objectContaining({ enabled: true, background: "default", motion: "inherit", layout: "default" }));
+  });
+
+  it("locks the contact hero and filters disabled blocks in normalized order", () => {
+    const settings = normalizePageBlockSettings({ ...pageBlockSettingsDefaults, contact: [
+      { ...pageBlockSettingsDefaults.contact[2], order: 1 },
+      { ...pageBlockSettingsDefaults.contact[0], enabled: false, order: 99 },
+      { ...pageBlockSettingsDefaults.contact[1], enabled: false, order: 2 }
+    ] });
+    expect(settings.contact[0]).toEqual(expect.objectContaining({ id: "hero", enabled: true, order: 0 }));
+    expect(settings.contact.map((block) => block.order)).toEqual([0, 1, 2]);
+    expect(getOrderedEnabledContactBlocks(settings).map((block) => block.id)).toEqual(["hero", "faq"]);
+  });
+
+  it("rejects unsupported contact layouts and arbitrary presentation values", () => {
+    const contact = normalizeContactBlocks([{ id: "contact-methods", layout: "single-column", background: "bg-black", motion: "animate-spin" }]);
+    const block = contact.find((item) => item.id === "contact-methods")!;
     expect(block).toEqual(expect.objectContaining({ layout: "default", background: "default", motion: "inherit" }));
     expect(JSON.stringify(getPageBlockAttributes(block))).not.toMatch(/bg-black|animate-spin/);
   });

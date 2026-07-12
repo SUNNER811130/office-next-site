@@ -1,6 +1,7 @@
 import type {
   HomeBlockId,
   AboutBlockId,
+  ContactBlockId,
   PageBlockBackground,
   PageBlockConfig,
   PageBlockLayout,
@@ -97,14 +98,35 @@ export const aboutBlockDefinitions = [
   defineAbout("faq", "關於頁常見問題", "關於 OFFICE NEXT 的常見問題。", ["default", "contained", "wide", "single-column", "two-column"])
 ] as const satisfies readonly AboutBlockDefinition[];
 
+export type ContactBlockDefinition = {
+  id: ContactBlockId;
+  label: string;
+  description: string;
+  canDisable: boolean;
+  supportedLayouts: readonly PageBlockLayout[];
+  defaultConfig: PageBlockConfig<ContactBlockId>;
+};
+
+function defineContact(id: ContactBlockId, label: string, description: string, supportedLayouts: readonly PageBlockLayout[], canDisable = true): ContactBlockDefinition {
+  return { id, label, description, canDisable, supportedLayouts, defaultConfig: { id, enabled: true, order: 0, background: "default", motion: "inherit", layout: "default" } };
+}
+
+export const contactBlockDefinitions = [
+  defineContact("hero", "聯絡頁主視覺", "Contact Intro、回覆時間、Contact Snapshot、Email 與洽詢選項。", ["default", "wide", "two-column"], false),
+  defineContact("contact-methods", "聯絡方式", "Email CTA、服務內容 CTA、辦公進化說明與 Social Links。", ["default", "contained", "wide", "two-column"]),
+  defineContact("faq", "聯絡前常見問題", "聯絡頁 FAQ 與 Accordion。", ["default", "contained", "wide", "single-column", "two-column"])
+] as const satisfies readonly ContactBlockDefinition[];
+
 export const pageBlockSettingsDefaults: PageBlockSettings = {
   home: homeBlockDefinitions.map((definition, order) => ({ ...definition.defaultConfig, order })),
   services: servicesBlockDefinitions.map((definition, order) => ({ ...definition.defaultConfig, order })),
-  about: aboutBlockDefinitions.map((definition, order) => ({ ...definition.defaultConfig, order }))
+  about: aboutBlockDefinitions.map((definition, order) => ({ ...definition.defaultConfig, order })),
+  contact: contactBlockDefinitions.map((definition, order) => ({ ...definition.defaultConfig, order }))
 };
 
 export const servicesPageBlockDefaults = pageBlockSettingsDefaults.services;
 export const aboutPageBlockDefaults = pageBlockSettingsDefaults.about;
+export const contactPageBlockDefaults = pageBlockSettingsDefaults.contact;
 
 function record(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
@@ -191,9 +213,33 @@ export function normalizeAboutBlocks(input: unknown): PageBlockConfig<AboutBlock
   return [hero, ...rest].map((block, order) => ({ ...block, order, enabled: block.id === "hero" ? true : block.enabled }));
 }
 
+export function normalizeContactBlocks(input: unknown): PageBlockConfig<ContactBlockId>[] {
+  const rows = Array.isArray(input) ? input : [];
+  const firstById = new Map<ContactBlockId, Record<string, unknown>>();
+  for (const value of rows) {
+    const row = record(value);
+    const definition = contactBlockDefinitions.find((item) => item.id === row.id);
+    if (definition && !firstById.has(definition.id)) firstById.set(definition.id, row);
+  }
+  const normalized = contactBlockDefinitions.map((definition, defaultOrder) => {
+    const row = firstById.get(definition.id) ?? {};
+    return {
+      id: definition.id,
+      enabled: definition.canDisable && typeof row.enabled === "boolean" ? row.enabled : true,
+      order: Number.isInteger(row.order) && Number(row.order) >= 0 ? Number(row.order) : defaultOrder,
+      background: allowed(backgrounds, row.background, definition.defaultConfig.background) as PageBlockBackground,
+      motion: allowed(motions, row.motion, definition.defaultConfig.motion) as PageBlockMotion,
+      layout: allowed(definition.supportedLayouts, row.layout, definition.defaultConfig.layout) as PageBlockLayout
+    };
+  });
+  const hero = normalized.find((block) => block.id === "hero")!;
+  const rest = normalized.filter((block) => block.id !== "hero").sort((a, b) => a.order - b.order || contactBlockDefinitions.findIndex((item) => item.id === a.id) - contactBlockDefinitions.findIndex((item) => item.id === b.id));
+  return [hero, ...rest].map((block, order) => ({ ...block, order, enabled: block.id === "hero" ? true : block.enabled }));
+}
+
 export function normalizePageBlockSettings(input: unknown): PageBlockSettings {
   const root = record(input);
-  return { home: normalizeHomeBlocks(root.home), services: normalizeServicesBlocks(root.services), about: normalizeAboutBlocks(root.about) };
+  return { home: normalizeHomeBlocks(root.home), services: normalizeServicesBlocks(root.services), about: normalizeAboutBlocks(root.about), contact: normalizeContactBlocks(root.contact) };
 }
 
 export function getOrderedEnabledHomeBlocks(settings: PageBlockSettings): PageBlockConfig<HomeBlockId>[] {
@@ -206,6 +252,10 @@ export function getOrderedEnabledServicesBlocks(settings: PageBlockSettings): Pa
 
 export function getOrderedEnabledAboutBlocks(settings: PageBlockSettings): PageBlockConfig<AboutBlockId>[] {
   return normalizeAboutBlocks(settings.about).filter((block) => block.enabled);
+}
+
+export function getOrderedEnabledContactBlocks(settings: PageBlockSettings): PageBlockConfig<ContactBlockId>[] {
+  return normalizeContactBlocks(settings.contact).filter((block) => block.enabled);
 }
 
 export function getPageBlockAttributes(config: PageBlockConfig) {

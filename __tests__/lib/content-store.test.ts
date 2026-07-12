@@ -124,6 +124,44 @@ describe("Content Store", () => {
     expect(next.pageBlocks.about).toEqual(siteContentSeed.pageBlocks.about);
   });
 
+  it("updates contact while preserving home, services, about, and contact content", async () => {
+    const latest = { ...mockContent, pageBlocks: {
+      ...mockContent.pageBlocks,
+      home: mockContent.pageBlocks.home.map((block) => block.id === "faq" ? { ...block, enabled: false } : block),
+      services: mockContent.pageBlocks.services.map((block) => block.id === "faq" ? { ...block, enabled: false } : block),
+      about: mockContent.pageBlocks.about.map((block) => block.id === "faq" ? { ...block, enabled: false } : block)
+    } };
+    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(latest));
+    const next = await updatePageBlockPage("contact", [{ ...siteContentSeed.pageBlocks.contact[0] }]);
+    expect(next.pageBlocks.home.find((block) => block.id === "faq")?.enabled).toBe(false);
+    expect(next.pageBlocks.services.find((block) => block.id === "faq")?.enabled).toBe(false);
+    expect(next.pageBlocks.about.find((block) => block.id === "faq")?.enabled).toBe(false);
+    expect(next.contact).toEqual(latest.contact);
+  });
+
+  it.each(["home", "services", "about"] as const)("preserves the latest contact settings when %s is updated", async (page) => {
+    const latest = { ...mockContent, pageBlocks: { ...mockContent.pageBlocks, contact: mockContent.pageBlocks.contact.map((block) => block.id === "faq" ? { ...block, enabled: false } : block) } };
+    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(latest));
+    const next = await updatePageBlockPage(page, siteContentSeed.pageBlocks[page]);
+    expect(next.pageBlocks.contact.find((block) => block.id === "faq")?.enabled).toBe(false);
+  });
+
+  it("resets contact defaults without changing other pages or contact content", async () => {
+    const latest = { ...mockContent, pageBlocks: {
+      ...mockContent.pageBlocks,
+      home: mockContent.pageBlocks.home.map((block) => block.id === "faq" ? { ...block, enabled: false } : block),
+      services: mockContent.pageBlocks.services.map((block) => block.id === "faq" ? { ...block, enabled: false } : block),
+      about: mockContent.pageBlocks.about.map((block) => block.id === "faq" ? { ...block, enabled: false } : block)
+    } };
+    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(latest));
+    const next = await updatePageBlockPage("contact", siteContentSeed.pageBlocks.contact);
+    expect(next.pageBlocks.home.find((block) => block.id === "faq")?.enabled).toBe(false);
+    expect(next.pageBlocks.services.find((block) => block.id === "faq")?.enabled).toBe(false);
+    expect(next.pageBlocks.about.find((block) => block.id === "faq")?.enabled).toBe(false);
+    expect(next.pageBlocks.contact).toEqual(siteContentSeed.pageBlocks.contact);
+    expect(next.contact).toEqual(latest.contact);
+  });
+
   it("normalizes the design section before storing it", async () => {
     (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(mockContent));
     const nextContent = await updateContentSection("design", {

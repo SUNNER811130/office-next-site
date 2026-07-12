@@ -79,7 +79,7 @@ export async function updateContentSection<K extends ContentSection>(
 }
 
 export async function updatePageBlockPage(
-  page: "home" | "services" | "about",
+  page: "home" | "services" | "about" | "contact",
   blocks: unknown
 ): Promise<SiteContent> {
   const current = await readContent();

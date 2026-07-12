@@ -6,6 +6,7 @@ const navItems = [
   { href: "/admin/pages/home", label: "首頁區塊" },
   { href: "/admin/pages/services", label: "服務頁區塊" },
   { href: "/admin/pages/about", label: "關於頁區塊" },
+  { href: "/admin/pages/contact", label: "聯絡頁區塊" },
   { href: "/admin/brand", label: "Brand" },
   { href: "/admin/home", label: "Home" },
   { href: "/admin/founder", label: "Founder" },

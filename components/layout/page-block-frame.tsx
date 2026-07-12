@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { getPageBlockAttributes, getPageBlockClassConfig } from "@/lib/page-block-settings";
 import type { PageBlockConfig } from "@/types/content";
 
-export function PageBlockFrame({ config, children, page }: { config: PageBlockConfig; children: ReactNode; page?: "home" | "services" | "about" }) {
+export function PageBlockFrame({ config, children, page }: { config: PageBlockConfig; children: ReactNode; page?: "home" | "services" | "about" | "contact" }) {
   const reducedMotion = useReducedMotion();
   const preset = config.motion;
   const disabled = reducedMotion || preset === "inherit" || preset === "none";

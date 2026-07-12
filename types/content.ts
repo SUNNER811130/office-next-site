@@ -184,7 +184,8 @@ export type HomeBlockId =
   | "faq";
 export type ServicesBlockId = "hero" | "service-cards" | "case-snapshots" | "faq";
 export type AboutBlockId = "hero" | "brand-positioning" | "founder-experience" | "testimonials" | "faq";
-export type PageBlockId = HomeBlockId | ServicesBlockId | AboutBlockId;
+export type ContactBlockId = "hero" | "contact-methods" | "faq";
+export type PageBlockId = HomeBlockId | ServicesBlockId | AboutBlockId | ContactBlockId;
 
 export type PageBlockBackground = "default" | "clean" | "soft-grid" | "soft-blue" | "deep-panel";
 export type PageBlockMotion = "inherit" | "none" | "fade" | "fly-up" | "fly-left" | "fly-right";
@@ -203,6 +204,7 @@ export type PageBlockSettings = {
   home: PageBlockConfig<HomeBlockId>[];
   services: PageBlockConfig<ServicesBlockId>[];
   about: PageBlockConfig<AboutBlockId>[];
+  contact: PageBlockConfig<ContactBlockId>[];
 };
 
 export type SiteContent = {

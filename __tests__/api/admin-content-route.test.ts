@@ -65,6 +65,25 @@ describe("admin design content API", () => {
     await expect(response.json()).resolves.toEqual({ ok: true, data: siteContentSeed.pageBlocks });
   });
 
+  it("rejects an unauthenticated nested contact update", async () => {
+    (rejectIfNotAdmin as jest.Mock).mockResolvedValue(NextResponse.json({ error: "Unauthorized" }, { status: 401 }));
+    const request = new NextRequest("http://localhost/api/admin/content/pageBlocks", { method: "PUT", body: JSON.stringify({ page: "contact", blocks: siteContentSeed.pageBlocks.contact }) });
+    const response = await PUT(request, { params: Promise.resolve({ section: "pageBlocks" }) });
+    expect(response.status).toBe(401);
+    expect(updatePageBlockPage).not.toHaveBeenCalled();
+  });
+
+  it("stores a nested contact update without using whole-section replacement", async () => {
+    (rejectIfNotAdmin as jest.Mock).mockResolvedValue(null);
+    (updatePageBlockPage as jest.Mock).mockResolvedValue(siteContentSeed);
+    const payload = { page: "contact", blocks: siteContentSeed.pageBlocks.contact };
+    const request = new NextRequest("http://localhost/api/admin/content/pageBlocks", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    const response = await PUT(request, { params: Promise.resolve({ section: "pageBlocks" }) });
+    expect(updatePageBlockPage).toHaveBeenCalledWith("contact", payload.blocks);
+    expect(updateContentSection).not.toHaveBeenCalled();
+    await expect(response.json()).resolves.toEqual({ ok: true, data: siteContentSeed.pageBlocks });
+  });
+
   it("stores and returns the design section for an authenticated admin", async () => {
     (rejectIfNotAdmin as jest.Mock).mockResolvedValue(null);
     (updateContentSection as jest.Mock).mockResolvedValue(siteContentSeed);

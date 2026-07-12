@@ -25,3 +25,11 @@ Home 與 Services 設定彼此獨立。兩個編輯器都使用 server-side nest
 右側 iframe 可切換 390px、768px、1280px，手動刷新或在新分頁開啟 `/about`。成功儲存或確認 About reset 後才自動刷新，失敗不刷新。
 
 Home、Services、About 使用相同 nested update 流程且彼此獨立。伺服器讀取最新 JSON 後只替換指定頁面，因此 About 儲存／reset 不修改 Home、Services 或 Founder content。資料仍位於 `data/site-content.json`，正式 Vercel CMS 未來仍需持久化資料庫。
+
+## 聯絡頁區塊管理
+
+管理者可前往 `/admin/pages/contact` 控制 `/contact` 的三個實際區塊：`hero`（Contact Intro、回覆時間、Contact Snapshot、Email 與洽詢選項）、`contact-methods`（Email CTA、服務內容 CTA、Office Upgrade Note 與 Social Links）及 `faq`。Hero 固定第一且不可隱藏；其他區塊可顯示／隱藏、排序，並選擇安全背景、實際支援版型與動畫。
+
+右側 iframe 可切換 390px、768px、1280px，亦可手動刷新或在新分頁開啟 `/contact`。只有成功儲存或確認 Contact reset 後才自動刷新；失敗不刷新。隱藏區塊只改變呈現，不會刪除 Email、Contact Intro、洽詢選項、品牌內容或 Social Links。
+
+「恢復聯絡頁預設區塊」只重設 `pageBlocks.contact`，不修改 Home、Services、About、Design、正式 Email 或其他 Contact 內容。四個頁面使用相同 server-side nested update，伺服器每次讀取最新 JSON 後只替換指定頁面，因此設定彼此獨立。資料目前仍由 `LocalFileContentRepository` 儲存於 `data/site-content.json`；正式 CMS 上線前仍需遷移到持久化資料庫。
