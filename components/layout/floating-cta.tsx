@@ -21,13 +21,13 @@ export async function FloatingCta() {
         </div>
       </div>
 
-      <div className="fixed inset-x-4 bottom-4 z-40 lg:hidden">
-        <div className="rounded-full bg-white/80 px-3 py-3 shadow-elegant backdrop-blur-xl">
+      <div className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 lg:hidden">
+        <div className="rounded-2xl border border-white/70 bg-white/88 px-2.5 py-2 shadow-elegant backdrop-blur-xl">
           <div className="grid grid-cols-2 gap-2">
-            <ButtonLink href="/contact" className="px-4 py-3 text-[12px]">
+            <ButtonLink href="/contact" className="px-3 py-2.5 text-[11px] tracking-[0.1em]">
               寄信洽詢
             </ButtonLink>
-            <ButtonLink href="/services" variant="secondary" className="px-4 py-3 text-[12px]">
+            <ButtonLink href="/services" variant="secondary" className="px-3 py-2.5 text-[11px] tracking-[0.1em]">
               查看服務
             </ButtonLink>
           </div>

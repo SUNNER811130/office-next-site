@@ -50,6 +50,9 @@ export const founderFields: SectionField[] = [
   { type: "text", path: "role", label: "主理人角色" },
   { type: "text", path: "tagline", label: "一句定位" },
   { type: "richtext", path: "bio", label: "主理人簡介" },
+  { type: "string-list", path: "pastExperience", label: "過去經歷", itemLabel: "經歷", placeholder: "輸入過去經歷" },
+  { type: "string-list", path: "currentRoles", label: "現任與專業", itemLabel: "經歷", placeholder: "輸入現任角色或專業" },
+  { type: "string-list", path: "representativeClients", label: "代表性客戶與培訓經歷", itemLabel: "經歷", placeholder: "輸入代表性客戶或培訓經歷" },
   { type: "media", path: "heroImageUrl", label: "Founder Hero", category: "people", suggestedPath: "people/founder-hero.webp", description: "建議尺寸：1200x800px 橫圖，請確保視覺重心良好。" },
   { type: "media", path: "portraitImageUrl", label: "Founder Portrait", category: "people", suggestedPath: "people/founder-portrait.webp", description: "建議尺寸：800x1000px 直式人像，臉部置中。" }
 ];
@@ -64,7 +67,9 @@ export const servicesFields: SectionField[] = [
       { name: "title", label: "Title" },
       { name: "audience", label: "Audience", type: "textarea" },
       { name: "description", label: "Description", type: "textarea" },
-      { name: "imageUrl", label: "Image URL", type: "url" }
+      { name: "imageUrl", label: "Image URL", type: "url" },
+      { name: "ctaLabel", label: "CTA Label" },
+      { name: "ctaHref", label: "CTA Href", type: "url" }
     ]
   }
 ];

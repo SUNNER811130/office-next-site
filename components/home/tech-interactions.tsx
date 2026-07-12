@@ -44,7 +44,7 @@ export function GlowCard({ children, className, ...props }: GlowCardProps) {
   return (
     <div
       className={cn(
-        "glow-card group relative overflow-hidden rounded-2xl border border-white/70 bg-white/76 p-7 shadow-glass backdrop-blur-xl transition-all duration-500 motion-safe:hover:-translate-y-2 motion-safe:hover:rotate-[0.25deg] motion-safe:hover:shadow-[0_22px_58px_rgba(7,26,47,0.12),0_0_0_1px_rgba(110,167,191,0.18)] md:p-8",
+        "glow-card group relative overflow-hidden rounded-2xl border border-white/70 bg-white/76 p-5 shadow-glass backdrop-blur-xl transition-all duration-300 motion-safe:hover:-translate-y-1 motion-safe:hover:shadow-[0_22px_58px_rgba(7,26,47,0.12),0_0_0_1px_rgba(110,167,191,0.18)] md:p-7",
         className
       )}
       {...props}

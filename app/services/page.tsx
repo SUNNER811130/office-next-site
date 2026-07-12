@@ -44,11 +44,11 @@ export default async function ServicesPage() {
         <div className="grid gap-12 lg:grid-cols-[1fr_0.92fr] lg:items-end">
           <FadeUp>
             <p className="text-[11px] uppercase tracking-[0.34em] text-champagne">Services</p>
-            <h1 className="mt-5 max-w-[12ch] text-balance text-[2.9rem] font-medium leading-[1.06] text-midnight md:text-[4.8rem]">
+            <h1 className="mt-5 max-w-[14ch] text-balance text-[clamp(2.3rem,4.8vw,4.25rem)] font-medium leading-[1.1] text-midnight">
               從 ChatGPT 到自動化，建立你的 AI 辦公流程
             </h1>
             <p className="mt-7 max-w-[43rem] text-[1.06rem] text-slate">{content.brand.proposition}</p>
-            <div className="mt-10 flex gap-3">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row md:mt-10">
               <ButtonLink href="/contact">提出合作需求</ButtonLink>
               <ButtonLink href="/about" variant="secondary">
                 查看主理人
@@ -72,16 +72,31 @@ export default async function ServicesPage() {
       </Section>
 
       <Section>
-        <StaggerContainer className="grid gap-5 lg:grid-cols-3">
-          {content.services.items.map((item) => (
+        <StaggerContainer className="grid gap-4 md:grid-cols-2 xl:grid-cols-4" stagger={0.1}>
+          {content.services.items.map((item, index) => (
             <StaggerItem key={item.title}>
-              <Card>
+              <Card className="service-tech-card h-full">
                 {item.imageUrl ? (
                   <Image src={item.imageUrl} alt={item.title} width={1600} height={1200} className="aspect-[4/3] w-full rounded-2xl object-cover" />
                 ) : null}
-                <h2 className="mt-5 text-[1.45rem] font-medium text-midnight">{item.title}</h2>
-                <p className="mt-4 text-base text-slate">{item.description}</p>
+                <div className="mt-5 flex items-center justify-between gap-3">
+                  <p className="text-[10px] uppercase tracking-[0.24em] text-champagne">Module 0{index + 1}</p>
+                  <span className="rounded-full border border-champagne/30 bg-champagne/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-champagne">Unlock</span>
+                </div>
+                <h2 className="mt-4 text-[1.3rem] font-medium leading-8 text-midnight md:text-[1.45rem]">{item.title}</h2>
+                <p className="mt-3 text-[0.95rem] leading-7 text-slate md:text-base">{item.description}</p>
                 <p className="mt-5 border-t border-midnight/8 pt-5 text-sm text-slate">{item.audience}</p>
+                {item.ctaLabel && item.ctaHref ? (
+                  <ButtonLink
+                    href={item.ctaHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`前往「${item.title}」報名表單，另開新視窗`}
+                    className="mt-6 max-w-full text-center"
+                  >
+                    {item.ctaLabel}
+                  </ButtonLink>
+                ) : null}
               </Card>
             </StaggerItem>
           ))}

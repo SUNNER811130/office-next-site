@@ -43,23 +43,23 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(110,167,191,0.34),transparent_32%),radial-gradient(circle_at_78%_24%,rgba(7,26,47,0.18),transparent_36%),linear-gradient(115deg,rgba(255,255,255,0.86)_0%,rgba(255,255,255,0.56)_42%,rgba(231,241,247,0.72)_100%)]" />
         <div aria-hidden="true" className="absolute -right-32 top-20 h-[32rem] w-[32rem] rounded-full border border-champagne/20 bg-[radial-gradient(circle,rgba(110,167,191,0.22),transparent_58%)] blur-sm" />
         <div aria-hidden="true" className="absolute left-[8%] top-[18%] h-px w-[46%] rotate-[-16deg] bg-[linear-gradient(90deg,transparent,rgba(110,167,191,0.64),transparent)]" />
-        <Container className="relative grid gap-12 py-16 md:py-24 lg:min-h-[calc(100vh-88px)] lg:grid-cols-[1fr_0.94fr] lg:items-center lg:py-20">
+        <Container className="relative grid gap-9 py-12 md:gap-12 md:py-20 lg:min-h-[calc(100vh-80px)] lg:grid-cols-[1fr_0.94fr] lg:items-center lg:py-16">
           <FadeUp>
             <p className="text-[11px] uppercase tracking-[0.34em] text-champagne">{content.home.hero.eyebrow}</p>
-            <h1 className="title-scan mt-6 max-w-[11ch] text-balance text-[3rem] font-medium leading-[0.98] text-midnight md:text-[5.2rem]">
+            <h1 className="title-scan mt-5 max-w-[13ch] text-balance text-[clamp(2.4rem,5vw,4.6rem)] font-medium leading-[1.08] text-midnight">
               {content.home.hero.title}
             </h1>
             <div 
-              className="prose prose-slate mt-7 max-w-[42rem] text-[1.05rem] md:text-[1.18rem] md:prose-lg"
+              className="prose prose-slate mt-5 max-w-[46rem] text-[0.95rem] leading-7 md:mt-6 md:text-[1.08rem] md:leading-8"
               dangerouslySetInnerHTML={{ __html: content.home.hero.description }} 
             />
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap md:mt-9">
               <ButtonLink href={content.home.hero.ctaPrimaryHref}>{content.home.hero.ctaPrimaryLabel}</ButtonLink>
               <ButtonLink href={content.home.hero.ctaSecondaryHref} variant="secondary">
                 {content.home.hero.ctaSecondaryLabel}
               </ButtonLink>
             </div>
-            <div className="mt-12 grid gap-4 border-t border-midnight/8 pt-6 md:grid-cols-3">
+            <div className="mt-9 grid gap-4 border-t border-midnight/8 pt-5 md:mt-11 md:grid-cols-3">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.28em] text-champagne">Brand</p>
                 <div className="prose prose-sm prose-slate mt-2 leading-7" dangerouslySetInnerHTML={{ __html: content.brand.summary }} />
@@ -141,7 +141,7 @@ export default async function HomePage() {
         <StaggerContainer className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {content.services.items.map((service, index) => (
             <StaggerItem key={service.title}>
-              <GlowCard className="min-h-full">
+              <GlowCard className="service-tech-card min-h-full">
                 {service.imageUrl ? (
                   <Image
                     src={service.imageUrl}
@@ -155,9 +155,20 @@ export default async function HomePage() {
                   <p className="text-[11px] uppercase tracking-[0.28em] text-champagne">Module 0{index + 1}</p>
                   <span className="live-badge rounded-full border border-champagne/28 bg-champagne/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-champagne">Unlock</span>
                 </div>
-                <h3 className="mt-4 text-[1.45rem] font-medium text-midnight">{service.title}</h3>
-                <p className="mt-4 text-base text-slate">{service.description}</p>
+                <h3 className="mt-4 text-[1.3rem] font-medium leading-8 text-midnight md:text-[1.45rem]">{service.title}</h3>
+                <p className="mt-3 text-[0.95rem] leading-7 text-slate md:text-base">{service.description}</p>
                 <p className="mt-5 border-t border-midnight/8 pt-5 text-sm text-slate">{service.audience}</p>
+                {service.ctaLabel && service.ctaHref ? (
+                  <ButtonLink
+                    href={service.ctaHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`前往「${service.title}」報名表單，另開新視窗`}
+                    className="mt-6 max-w-full text-center"
+                  >
+                    {service.ctaLabel}
+                  </ButtonLink>
+                ) : null}
               </GlowCard>
             </StaggerItem>
           ))}

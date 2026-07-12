@@ -7,6 +7,7 @@ type SectionTitleProps = HTMLAttributes<HTMLDivElement> & {
   title: string;
   description?: React.ReactNode;
   align?: "left" | "center";
+  headingLevel?: "h1" | "h2";
 };
 
 export function SectionTitle({
@@ -15,8 +16,11 @@ export function SectionTitle({
   title,
   description,
   align = "left",
+  headingLevel = "h2",
   ...props
 }: SectionTitleProps) {
+  const Heading = headingLevel;
+
   return (
     <div
       className={cn(
@@ -29,13 +33,13 @@ export function SectionTitle({
       {eyebrow ? (
         <p className="text-[11px] font-medium uppercase tracking-[0.34em] text-champagne">{eyebrow}</p>
       ) : null}
-      <h2 className="max-w-[16ch] text-balance text-[2rem] font-medium leading-[1.18] text-midnight md:text-[3.35rem]">
+      <Heading className="max-w-[18ch] text-balance text-[clamp(1.9rem,4vw,3.25rem)] font-medium leading-[1.12] text-midnight">
         {title}
-      </h2>
+      </Heading>
       {description ? (
-        <p className="max-w-[38rem] text-pretty text-[1rem] leading-8 text-slate md:text-[1.075rem]">
+        <div className="max-w-[42rem] text-pretty text-[0.95rem] leading-7 text-slate md:text-[1.05rem] md:leading-8">
           {description}
-        </p>
+        </div>
       ) : null}
     </div>
   );

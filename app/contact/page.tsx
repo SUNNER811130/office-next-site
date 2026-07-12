@@ -62,6 +62,8 @@ export default async function ContactPage() {
               eyebrow="Contact"
               title={content.contact.intro}
               description={content.contact.responseExpectation}
+              headingLevel="h1"
+              className="max-w-4xl [&_h1]:max-w-[20ch] [&_h1]:text-[clamp(2.15rem,4.5vw,4rem)]"
             />
           </FadeUp>
           <FadeUp delay={0.15}>
@@ -70,7 +72,7 @@ export default async function ContactPage() {
               <div className="mt-5 grid gap-4">
                 <div className="rounded-2xl bg-white/60 px-4 py-4 backdrop-blur-sm">
                   <p className="text-sm text-slate">Email</p>
-                  <Link href={`mailto:${content.contact.email}`} className="mt-2 block text-lg font-medium text-midnight">
+                  <Link href={`mailto:${content.contact.email}`} className="mt-2 block break-all text-base font-medium text-midnight sm:text-lg">
                     {content.contact.email}
                   </Link>
                 </div>

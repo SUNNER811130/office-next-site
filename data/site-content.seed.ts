@@ -94,13 +94,32 @@ export const siteContentSeed: SiteContent = {
     ]
   },
   founder: {
-    name: "SUN",
-    role: "OFFICE NEXT 辦公進化所主理人",
-    tagline: "白領 AI 工作升級教練，協助團隊把 AI 用進日常流程，減少重工並準時下班。",
+    name: "蘇彥宇 Sun",
+    role: "OFFICE NEXT 辦公進化所創辦人",
+    tagline: "從醫療現場到企業數位轉型，把複雜的 AI 與自動化工具，轉化為白領真正用得上的工作方法。",
     bio:
-      "長期關注白領工作現場、AI 協作流程與辦公自動化導入。OFFICE NEXT 不追求炫技工具清單，而是從會議、文件、資料、提案、表單與跨部門協作出發，陪個人與團隊建立可落地、可維護、能降低工作耗損的 AI 工作方法。",
+      "擁有 7 年護理經驗，曾任台東區域醫院開刀房護理師與台南嘉南療養院急性精神科病房護理人員，累積服務超過 6,000 人。轉入講師產業後累積 6 年教學與培訓經驗，現專注 GPT 智慧工作模組、GAS 辦公降載與企業數位轉型培訓，協助個人與組織建立可落地、可維護的 AI 工作流程。",
     heroImageUrl: "/people/founder-hero.svg",
-    portraitImageUrl: "/people/founder-portrait.svg"
+    portraitImageUrl: "/people/founder-portrait.svg",
+    pastExperience: [
+      "曾任台東區域醫院開刀房護理師",
+      "曾任台南嘉南療養院急性精神科病房護理人員",
+      "7 年護理經驗，累積服務超過 6,000 人"
+    ],
+    currentRoles: [
+      "講師行業經驗 6 年",
+      "INCA 國際生命數字協會－高級論碼諮詢師",
+      "OFFICE NEXT 辦公進化所創辦人",
+      "沐樂關係成長事務所專責講師"
+    ],
+    representativeClients: [
+      "中鋼碳素、中石化、河見泵浦、國防部新訓單位",
+      "凱基、富邦、三商美邦、南山、公勝、巨鼎等保險與保經公司",
+      "安麗、賀寶芙、美商婕斯等組織行銷團隊",
+      "沐樂 MORe LOVE、慕約會、337 同居聯誼、微 Micro Club",
+      "各大扶輪社、醫美診所、長照中心等組織",
+      "經濟部數位轉型企業包班超過 40 場"
+    ]
   },
   services: {
     items: [
@@ -109,14 +128,18 @@ export const siteContentSeed: SiteContent = {
         audience: "行政、企劃、行銷、業務、PM、人資與需要大量文件輸出的白領工作者",
         description:
           "學會把 ChatGPT 用在會議紀錄、提案摘要、資料整理、文案修稿與報表說明，建立可複製的提示詞與工作模板。",
-        imageUrl: "/sections/advisory-01.svg"
+        imageUrl: "/sections/advisory-01.svg",
+        ctaLabel: "立即報名",
+        ctaHref: "https://forms.gle/iQAEYyhY8HSzmG1J6"
       },
       {
         title: "GPT 智慧工作模組－GAS 辦公降載",
         audience: "需要處理表單、試算表、信件通知、名單整理與例行彙整的個人與團隊",
         description:
           "用 Google Apps Script 串起表單、試算表、文件與信件，先做半自動，再把高重複流程逐步變成穩定自動化。",
-        imageUrl: "/sections/workshop-01.svg"
+        imageUrl: "/sections/workshop-01.svg",
+        ctaLabel: "立即報名",
+        ctaHref: "https://forms.gle/ERUFKXzHgN3uo2id9"
       },
       {
         title: "GPT 智慧工作模組－Agent 高效槓桿",
@@ -225,7 +248,7 @@ export const siteContentSeed: SiteContent = {
     ]
   },
   contact: {
-    email: "hello@officenext.tw",
+    email: "sunner811130gas@gmail.com",
     intro:
       "如果你想把 ChatGPT、辦公自動化或 AI 工作流程導入日常工作，歡迎告訴我們目前最耗時的重複任務。",
     responseExpectation: "通常會在 2 個工作天內回覆，必要時再安排需求訪談或企業內訓討論。",

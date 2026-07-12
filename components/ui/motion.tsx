@@ -90,8 +90,8 @@ export function StaggerItem({ children, ...props }: StaggerItemProps) {
     <motion.div
       initial={prefersReducedMotion ? false : undefined}
       variants={{
-        hidden: { opacity: 0, y: 42, scale: 0.94, rotateX: 8, filter: "blur(10px)" },
-        visible: { opacity: 1, y: 0, scale: 1, rotateX: 0, filter: "blur(0px)", transition: { duration: 0.72, ease: [0.16, 1, 0.3, 1] } }
+        hidden: { opacity: 0, y: 28, filter: "blur(6px)" },
+        visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
       }}
       {...props}
     >

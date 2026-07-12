@@ -95,7 +95,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-Hant" className={`${bodyFont.variable} ${displayFont.variable}`}>
+    <html lang="zh-Hant" data-scroll-behavior="smooth" className={`${bodyFont.variable} ${displayFont.variable}`}>
       <body>
         <div className="relative flex min-h-screen flex-col">
           <a
@@ -106,7 +106,7 @@ export default function RootLayout({
           </a>
           <JsonLd data={[createOrganizationSchema(), createWebsiteSchema()]} />
           <Header />
-          <main id="main-content" className="flex-1">
+          <main id="main-content" className="flex-1 pb-24 lg:pb-0">
             {children}
           </main>
           <FloatingCta />

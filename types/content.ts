@@ -61,6 +61,9 @@ export type FounderContent = {
   bio: string;
   heroImageUrl: string;
   portraitImageUrl: string;
+  pastExperience?: string[];
+  currentRoles?: string[];
+  representativeClients?: string[];
 };
 
 export type ServiceItem = {
@@ -68,6 +71,8 @@ export type ServiceItem = {
   audience: string;
   description: string;
   imageUrl?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
 };
 
 export type ServicesContent = {

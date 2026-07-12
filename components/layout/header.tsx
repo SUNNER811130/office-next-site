@@ -12,7 +12,7 @@ export async function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/60 bg-white/72 backdrop-blur-xl shadow-glass">
-      <Container className="flex h-[88px] items-center justify-between gap-5 md:gap-8">
+      <Container className="flex h-[72px] items-center justify-between gap-3 md:h-[80px] md:gap-8">
         <Link href="/" className="min-w-0 shrink-0" aria-label={`返回 ${content.brand.name} 首頁`}>
           {headerLogo ? (
             <Image
@@ -20,7 +20,7 @@ export async function Header() {
               alt="OFFICE NEXT 辦公進化所 Logo"
               width={520}
               height={48}
-              className="h-10 w-auto max-w-[360px] object-contain"
+              className="h-8 w-auto max-w-[210px] object-contain sm:max-w-[300px] md:h-9 md:max-w-[360px]"
               priority
             />
           ) : (
@@ -37,7 +37,7 @@ export async function Header() {
             </Link>
           ))}
         </nav>
-        <ButtonLink href="/contact" variant="secondary" className="shrink-0 px-4 py-3 text-[10px] tracking-[0.18em] sm:px-6 sm:text-[11px] sm:tracking-[0.22em]">
+        <ButtonLink href="/contact" variant="secondary" className="shrink-0 px-3 py-2.5 text-[10px] tracking-[0.12em] sm:px-5 sm:text-[11px] sm:tracking-[0.18em]">
           開始辦公進化
         </ButtonLink>
       </Container>

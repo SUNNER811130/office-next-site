@@ -43,12 +43,14 @@ export default async function AboutPage() {
       <Section className="bg-oat">
         <div className="grid gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
           <FadeUp>
-            <p className="text-[11px] uppercase tracking-[0.34em] text-champagne">About</p>
-            <h1 className="mt-5 max-w-[12ch] text-balance text-[2.9rem] font-medium leading-[1.06] text-midnight md:text-[4.8rem]">
-              {content.founder.tagline}
+            <p className="text-[11px] uppercase tracking-[0.34em] text-champagne">Founder</p>
+            <h1 className="mt-5 max-w-[14ch] text-balance text-[clamp(2.3rem,4.8vw,4.25rem)] font-medium leading-[1.1] text-midnight">
+              {content.founder.name}
             </h1>
+            <p className="mt-5 text-sm uppercase tracking-[0.14em] text-champagne">{content.founder.role}</p>
+            <p className="mt-5 max-w-[44rem] text-[1.05rem] leading-8 text-midnight md:text-[1.15rem]">{content.founder.tagline}</p>
             <div className="prose prose-slate mt-6 max-w-[42rem] text-[1.06rem]" dangerouslySetInnerHTML={{ __html: content.founder.bio }} />
-            <div className="mt-10 flex gap-3">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row md:mt-10">
               <ButtonLink href="/services">查看服務</ButtonLink>
               <ButtonLink href="/contact" variant="secondary">
                 聯絡 OFFICE NEXT
@@ -105,28 +107,29 @@ export default async function AboutPage() {
           <FadeUp>
             <SectionTitle
               eyebrow="Founder"
-              title="用白領能理解的語言，把 AI 變成每天用得到的工作方法"
-              description="OFFICE NEXT 從實際辦公場景出發，協助個人與團隊辨識可降載流程、建立提示詞模板與自動化步驟。"
+              title="從醫療現場到 AI 辦公進化"
+              description="對人的理解、教學現場與企業流程實作，構成 OFFICE NEXT 將 AI 工具轉化為可執行工作方法的基礎。"
             />
           </FadeUp>
           <FadeUp delay={0.15}>
             <div className="grid gap-5 md:grid-cols-2">
-              <Card className="md:col-span-2">
-                <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-center">
-                  <Image
-                    src={content.founder.portraitImageUrl || "/people/founder-portrait.svg"}
-                    alt={content.founder.name}
-                    width={1200}
-                    height={1200}
-                    className="aspect-square w-full rounded-2xl object-cover"
-                  />
-                  <div>
-                    <h2 className="text-[1.5rem] font-medium text-midnight">{content.founder.name}</h2>
-                    <p className="mt-2 text-sm uppercase tracking-[0.14em] text-champagne">{content.founder.role}</p>
-                    <div className="prose prose-slate mt-4 text-base" dangerouslySetInnerHTML={{ __html: content.founder.bio }} />
-                  </div>
-                </div>
-              </Card>
+              {[
+                { title: "過去", items: content.founder.pastExperience ?? [] },
+                { title: "現任與專業", items: content.founder.currentRoles ?? [] },
+                { title: "代表性客戶與培訓經歷", items: content.founder.representativeClients ?? [], wide: true }
+              ].map((group) => group.items.length ? (
+                <Card key={group.title} className={group.wide ? "md:col-span-2" : undefined}>
+                  <h2 className="text-[1.35rem] font-medium text-midnight">{group.title}</h2>
+                  <ul className="mt-5 grid gap-3 text-base leading-7 text-slate">
+                    {group.items.map((item) => (
+                      <li key={item} className="flex gap-3">
+                        <span aria-hidden="true" className="mt-[0.65rem] h-1.5 w-1.5 shrink-0 rounded-full bg-champagne" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              ) : null)}
             </div>
           </FadeUp>
         </div>
