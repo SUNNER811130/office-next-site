@@ -42,6 +42,25 @@ describe("Content Store", () => {
     expect(content.design).toEqual(siteContentSeed.design);
   });
 
+  it("uses page block defaults when an older JSON file has no pageBlocks section", async () => {
+    const { pageBlocks: _pageBlocks, ...legacyContent } = mockContent;
+    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(legacyContent));
+    const content = await readContent();
+    expect(content.pageBlocks).toEqual(siteContentSeed.pageBlocks);
+  });
+
+  it("normalizes page blocks before storing them", async () => {
+    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(mockContent));
+    const nextContent = await updateContentSection("pageBlocks", { home: [
+      { ...siteContentSeed.pageBlocks.home[0], enabled: false, order: 99 },
+      { ...siteContentSeed.pageBlocks.home[1], background: "unsafe" as "default" }
+    ] });
+    expect(nextContent.pageBlocks.home[0]).toEqual(expect.objectContaining({ id: "hero", enabled: true, order: 0 }));
+    expect(nextContent.pageBlocks.home.find((block) => block.id === "work-upgrade")?.background).toBe("default");
+    const stored = JSON.parse((fs.writeFile as jest.Mock).mock.calls.at(-1)?.[1] as string);
+    expect(stored.pageBlocks.home).toHaveLength(siteContentSeed.pageBlocks.home.length);
+  });
+
   it("normalizes the design section before storing it", async () => {
     (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(mockContent));
     const nextContent = await updateContentSection("design", {

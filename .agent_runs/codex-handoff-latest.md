@@ -2,99 +2,98 @@
 
 ## 1. Summary
 
-完成 OFFICE NEXT 後台升級第一階段 Design Console v1：新增 `/admin/design`、五組安全設計控制、手機／平板／桌機 iframe 預覽、儲存成功後刷新、二次確認恢復預設設計，以及前台共用 Design Tokens 串接。沿用既有 generic content API、`updateContentSection`、`LocalFileContentRepository` 與 `data/site-content.json`，沒有建立平行儲存架構。
+完成 OFFICE NEXT Page Block Editor v1（首頁區塊管理器 MVP）。新增 `/admin/pages/home`，可安全控制首頁既有區塊的顯示、順序、背景、版型與動畫，並提供三種裝置 iframe 預覽、成功儲存後刷新及二次確認恢復預設。首頁文案、CTA、Heading、JSON-LD 與既有 Design Console 均保留。
 
-## 2. Existing admin preserved
+## 2. Home blocks
 
-原有 Brand、Home、Founder、Services、Cases、Testimonials、FAQ、Contact、Insights、Media 導覽與資料結構均保留。既有兩個 Google Form 報名網址、正式聯絡 Email、Founder 與其他內容值未修改。RichText、Media、Services CTA 與登入 Cookie 流程未改。
+實際首頁共 9 個可管理區塊：
 
-## 3. Design settings
+- `hero`：首頁主視覺；固定第一且不可隱藏。
+- `work-upgrade`：工作升級主張與 proposition cards。
+- `pain-points`：白領工作痛點。
+- `services`：服務與課程卡片。
+- `flagship-modules`：提示詞、GAS 與 Agent 核心模組。
+- `cases`：辦公 AI 提效案例。
+- `client-logos`：合作團隊 Logo；原本無資料時仍不渲染。
+- `testimonials`：學員與團隊見證。
+- `faq`：首頁常見問題。
 
-- 字級：Hero、Section、Card title 與 Body size。
-- 行距：compact、comfortable、relaxed。
-- 留白：整體密度、Section spacing、Card padding、Card gap。
-- 容器：手機 gutter 16／20／24px；桌機 1200／1280／1400／1520px。
-- 卡片：tech-cut、minimal-line、glass-panel、soft-premium；none、lift、edge-glow hover。
-- 動畫：none、fade、fly-up、fly-alternate；速度、距離、stagger、playOnce。
-- Header：compact／balanced。
-- Floating CTA：enabled 與 compact／balanced；關閉時不渲染且 main 不保留手機底部空白。
+Header、Footer、Floating CTA 未納入；首頁實際沒有 final CTA，因此未建立不存在的區塊。
+
+## 3. Controls
+
+- 非 Hero 區塊可用原生 checkbox 顯示／隱藏；隱藏不刪除內容。
+- 使用具 `aria-label`、disabled 與 focus-visible 的真正 button 向上／向下排序，未新增 drag-and-drop 套件。
+- 背景 allowlist：default、clean、soft-grid、soft-blue、deep-panel。
+- 動畫 allowlist：inherit、none、fade、fly-up、fly-left、fly-right。
+- 版型依每個區塊 metadata 限制，只顯示前台支援選項。
+- Hero 顯示「固定第一區塊」，不能關閉或移動。
+- 恢復預設需二次確認，只送出 `pageBlocks` 設定，不修改內容或 Design。
 
 ## 4. Preview
 
-`/admin/design` 桌機採左表單、右 sticky preview；窄螢幕改為上下排列。iframe 可切換 390px、768px、1280px，顯示目前尺寸，支援手動刷新及新分頁開啟首頁。未儲存設定不即時套用；PUT 成功後才增加 iframe key 刷新，失敗不刷新，因此不會形成無限循環。
+後台桌機為左側設定、右側 sticky preview；窄螢幕上下排列。iframe 可切換 390px、768px、1280px，顯示目前寬度，支援手動刷新與新分頁開啟首頁。未儲存設定不套用；PUT 成功後才刷新 iframe，失敗不刷新。
 
 ## 5. Data architecture
 
-- `DesignSettings` 是 `SiteContent.design` 的唯一型別，亦加入 `ContentSectionMap`。
-- `designSettingsDefaults` 集中保存目前平衡設計預設。
-- `normalizeDesignSettings()` 對巢狀資料逐欄 allowlist，缺值、舊 JSON、非法 enum、非法 fixed number 與非 boolean 均 fallback。
-- Repository `read()` 會合併 seed 並 normalize 舊資料；`updateContentSection()` 經可擴充的 `sectionNormalizers` mapping 正規化 design 後才寫檔。
-- generic `/api/admin/content/[section]` 加入 design，仍先執行 `rejectIfNotAdmin()`，成功後回傳 normalized section。
-- Repository abstraction 未改，未來可替換成 Supabase／其他持久化 repository，而不用重寫前台元件。
+- `PageBlockSettings` 是 `SiteContent.pageBlocks` 的唯一型別；區塊內容仍留在既有 content sections。
+- `lib/page-block-settings.ts` 集中 definitions、supported layouts、defaults、normalizer、排序／過濾與安全 attributes/classes。
+- Normalizer 忽略未知 ID、重複只取第一筆、補齊缺少區塊、驗證 boolean／order／background／motion／layout，最後重排連續 order 並強制 Hero 第一且啟用。
+- `app/page.tsx` 使用 typed `homeBlockRegistry` 與 normalized configs 排序渲染，沒有把首頁轉成大型 Client Component；只有 `PageBlockFrame` 負責動畫外框。
+- Generic admin API 新增 `pageBlocks` section，仍先驗證 admin；`updateContentSection()` 寫入前 normalize。
+- 沿用既有 `LocalFileContentRepository` 與 `data/site-content.json`，沒有平行 repository 或資料庫。
 
 ## 6. Security
 
-所有控制只有 select 與原生 checkbox toggle；沒有 CSS、JavaScript、HTML attribute 或 Tailwind class 輸入。CSS variables 只由固定映射產生，數值亦限固定集合。`prefers-reduced-motion: reduce` 使用 CSS 強制清除 animation、transition、filter、transform，優先於後台 motion 設定。未讀取或修改 `.env.local`，未變更登入帳密或 secret。
+所有設定均為固定 allowlist；後台沒有 CSS、Tailwind class、HTML、JavaScript、顏色碼或圖片 URL 輸入。前台 class/data attributes 只由 normalized enum 產生。deep-panel 有固定高對比文字規則；非 inherit 區塊動畫會停用內層既有 motion，系統 `prefers-reduced-motion` 仍具有最高優先權。未讀取或修改 `.env.local`，未輸出 secrets。
 
 ## 7. Files changed
 
-- `types/content.ts`：新增 DesignSettings、SiteContent.design 與 section map。
-- `lib/design-settings.ts`：defaults、normalizer、data attributes、CSS variables、motion/card config。
-- `lib/content-store.ts`：讀取 fallback 與 section normalizer mapping。
-- `data/site-content.seed.ts`、`data/site-content.json`：同步 Design 預設值。
-- `app/api/admin/content/[section]/route.ts`：允許 design section。
-- `components/admin/section-editor.tsx`：新增安全 select、toggle、field groups、onSaved。
-- `lib/admin-field-config.ts`：五組繁中 Design 欄位與 allowlist 選項。
-- `components/admin/design-editor.tsx`：表單、預覽、刷新、二次確認 reset。
-- `app/admin/(dashboard)/design/page.tsx`：Design Console 頁面。
-- `components/admin/admin-nav.tsx`、`app/admin/(dashboard)/page.tsx`：導覽與 Overview 入口／摘要。
-- `app/layout.tsx`、`app/globals.css`：root tokens、data attributes、固定映射樣式與 reduced-motion 防護。
-- `components/ui/container.tsx`、`section.tsx`、`section-title.tsx`、`card.tsx`、`motion.tsx`：共用元件讀取全站 tokens。
-- `components/layout/header.tsx`、`floating-cta.tsx`、`page-hero.tsx`：Header、CTA、Hero tokens。
-- `app/page.tsx`、`app/services/page.tsx`、`app/about/page.tsx`、`app/contact/page.tsx`、`components/home/hero-section.tsx`：主要 Hero 改用共用 title token，不改文字或 heading 層級。
-- `__tests__/lib/design-settings.test.ts`、`__tests__/lib/content-store.test.ts`、`__tests__/api/admin-content-route.test.ts`：defaults、非法值、fixed number、boolean、CSS allowlist、舊 JSON、儲存 normalization、API auth／write。
-- `__tests__/lib/seo.test.ts`：測試期待更新為既有實作的 `ProfessionalService`；正式 schema 未改。
-- `docs/admin-design-guide.md`：繁中操作、預覽、儲存、reduced-motion、資料與 reset 說明。
+- `types/content.ts`：Page Block 型別、SiteContent 與 section map。
+- `lib/page-block-settings.ts`：definitions、defaults、normalization、排序與安全 mapping。
+- `lib/content-store.ts`：讀取舊 JSON fallback 與 pageBlocks 寫入 normalizer。
+- `data/site-content.seed.ts`、`data/site-content.json`：首頁區塊預設設定。
+- `app/api/admin/content/[section]/route.ts`：允許 pageBlocks generic section。
+- `components/admin/home-block-editor.tsx`：管理卡、排序、select、save/reset 與 preview。
+- `app/admin/(dashboard)/pages/home/page.tsx`：首頁區塊管理頁。
+- `components/admin/admin-nav.tsx`、`app/admin/(dashboard)/page.tsx`：導覽及 Overview 入口／摘要。
+- `components/home/page-block-frame.tsx`：安全背景／版型 attributes 與區塊 motion 外框。
+- `app/page.tsx`：typed registry 與 normalized 動態渲染。
+- `app/globals.css`：五種背景、安全版型、對比與 motion override。
+- `__tests__/lib/page-block-settings.test.ts`：normalization、排序、隱藏與 allowlist。
+- `__tests__/lib/content-store.test.ts`：舊 JSON fallback 與儲存 normalization。
+- `__tests__/api/admin-content-route.test.ts`：pageBlocks auth 與 write。
+- `docs/admin-page-block-editor-guide.md`：繁中操作與資料持久化說明。
+- `.agent_runs/codex-handoff-latest.md`：本 handoff。
 
 ## 8. Tests
 
-- `npm run anti:check`：PASS；TypeScript PASS；5 suites、20 tests PASS。
-- `npm run build`：PASS；Next.js 15.5.10 production build、type check、41 static pages generation PASS。
+- `npm run anti:check`：PASS；TypeScript PASS；6 suites、30 tests PASS。
+- `npm run build`：PASS；Next.js 15.5.10 production build、type check、42 static pages generation PASS；新增 `/admin/pages/home` route。
 - `git diff --check`：PASS。
 - `data/site-content.json` JSON parse：PASS。
-- 安全搜尋：沒有 `suppressHydrationWarning`；`.env.local`、`package.json`、`package-lock.json` 無 diff；報名網址與 `sunner811130gas@gmail.com` 仍存在於 seed 與正式 JSON。
-- SEO：`createOrganizationSchema()` 現有 `ProfessionalService` 符合 OFFICE NEXT 專業服務／企業內訓定位，因此只修正過期測試期待，沒有修改 production schema。
+- 安全檢查：`.env.local`、`package.json`、`package-lock.json` 無 diff；`immediatelyRender: false` 仍存在；無 `suppressHydrationWarning`；首頁 source 仍只有一個 H1；正式 Email 與兩個 Google Form URL 仍存在於 seed 與正式 JSON。
 
-## 9. Manual verification
+## 9. Manual QA
 
-尚未由 Codex 代替真人登入操作；需交由 OpenClaw QA／使用者驗收：
+需交由 OpenClaw／使用者執行瀏覽器與登入驗收：
 
-- 後台：`http://localhost:3000/admin`、`/admin/design`、`/admin/home`、`/admin/services`。
-- 前台：`http://localhost:3000`、`/services`、`/about`、`/contact`。
-- 尺寸：390×608、390×844、430×932、768×1024、1280×800、1440×900、1680×1050。
-- 驗證 Hero／Body／gutter／container、四種 card style、motion none／fly-alternate、系統 reduced-motion、Floating CTA 關閉、reset 僅影響 design、成功儲存刷新 preview，以及 dev server 重啟後 JSON 設定仍保留。
+- 後台：`http://localhost:3000/admin`、`/admin/pages/home`、`/admin/design`、`/admin/home`。
+- 前台：`http://localhost:3000`。
+- 驗證非 Hero 隱藏／恢復、兩區塊互換、soft-grid、deep-panel 對比、fly-left／fly-right、系統 reduced-motion、390px 無水平捲動、reset、成功儲存刷新、失敗不刷新，以及 dev server 重啟後 JSON 保留。
 
 ## 10. Git
 
-- 開工前 branch：`feature/admin-design-console-v1`。
-- 開工前 commit：`f7d4073 feat: update content and refine responsive interface`。
-- 開工前工作樹乾淨，沒有既有未提交修改；目前所有 status 變更皆為本輪。
+- 分支：`feature/page-block-editor-v1`。
+- 開工基準：`f72548f content: refine homepage hero title`；歷史包含 `450e400 feat: add admin design console` 與 Tiptap SSR 修復。
 - 沒有 Commit、沒有 Push、沒有部署。
 - 沒有修改 `.env.local`，沒有新增套件，package manifests／lockfile 未修改。
-- 修改狀態以本 handoff 上方 Files changed 清單為準；新增檔包含 design page/editor/tool/tests/doc。
+- 目前工作樹只有本輪 Files changed 所列修改與新增檔。
 
-## 11. Needs OpenClaw QA
+## 11. Next phase
 
-Yes。請執行完整瀏覽器與登入後台 QA，尤其確認 iframe Cookie、裝置寬度、四種卡片視覺、fly-alternate 體感與 reduced-motion。
-
-## 12. Needs deploy
-
-No。本輪禁止部署，未執行 Vercel deploy。
-
-## 13. Risks / notes
-
-LocalFileContentRepository 在本機可持久化；Vercel 正式環境的 ephemeral filesystem 不適合作為長期 CMS 儲存，正式上線前仍需資料庫 migration。Design v1 集中於共用元件，少數非共用／特殊頁面卡片可能保有局部 class 覆寫，需在人工 QA 尺寸矩陣檢查視覺優先序。
-
-## 14. Next phase
-
-Page Block Editor v1（本輪未實作）：區塊顯示／隱藏、區塊上下排序、一欄／兩欄版型、區塊背景預設、區塊動畫預設、頁面草稿與預覽。
+- Services Page Block Editor。
+- About Page Block Editor。
+- Contact Page Block Editor。
+- 草稿與發布工作流。
+- 持久化資料庫。

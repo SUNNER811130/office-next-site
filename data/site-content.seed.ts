@@ -1,8 +1,10 @@
 import type { SiteContent } from "@/types/content";
 import { designSettingsDefaults } from "@/lib/design-settings";
+import { pageBlockSettingsDefaults } from "@/lib/page-block-settings";
 
 export const siteContentSeed: SiteContent = {
   design: designSettingsDefaults,
+  pageBlocks: pageBlockSettingsDefaults,
   siteUrl: "https://office-next-site.vercel.app",
   navigation: {
     headerTagline: "White-Collar AI Productivity and Office Automation",

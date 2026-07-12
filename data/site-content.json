@@ -32,6 +32,19 @@
       "density": "compact"
     }
   },
+  "pageBlocks": {
+    "home": [
+      { "id": "hero", "enabled": true, "order": 0, "background": "default", "motion": "inherit", "layout": "default" },
+      { "id": "work-upgrade", "enabled": true, "order": 1, "background": "default", "motion": "inherit", "layout": "default" },
+      { "id": "pain-points", "enabled": true, "order": 2, "background": "default", "motion": "inherit", "layout": "default" },
+      { "id": "services", "enabled": true, "order": 3, "background": "default", "motion": "inherit", "layout": "default" },
+      { "id": "flagship-modules", "enabled": true, "order": 4, "background": "default", "motion": "inherit", "layout": "default" },
+      { "id": "cases", "enabled": true, "order": 5, "background": "default", "motion": "inherit", "layout": "default" },
+      { "id": "client-logos", "enabled": true, "order": 6, "background": "default", "motion": "inherit", "layout": "default" },
+      { "id": "testimonials", "enabled": true, "order": 7, "background": "default", "motion": "inherit", "layout": "default" },
+      { "id": "faq", "enabled": true, "order": 8, "background": "default", "motion": "inherit", "layout": "default" }
+    ]
+  },
   "siteUrl": "https://office-next-site.vercel.app",
   "navigation": {
     "headerTagline": "White-Collar AI Productivity and Office Automation",

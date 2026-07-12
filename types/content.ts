@@ -172,6 +172,34 @@ export type DesignSettings = {
   };
 };
 
+export type HomeBlockId =
+  | "hero"
+  | "work-upgrade"
+  | "pain-points"
+  | "services"
+  | "flagship-modules"
+  | "cases"
+  | "client-logos"
+  | "testimonials"
+  | "faq";
+
+export type PageBlockBackground = "default" | "clean" | "soft-grid" | "soft-blue" | "deep-panel";
+export type PageBlockMotion = "inherit" | "none" | "fade" | "fly-up" | "fly-left" | "fly-right";
+export type PageBlockLayout = "default" | "contained" | "wide" | "single-column" | "two-column";
+
+export type PageBlockConfig = {
+  id: HomeBlockId;
+  enabled: boolean;
+  order: number;
+  background: PageBlockBackground;
+  motion: PageBlockMotion;
+  layout: PageBlockLayout;
+};
+
+export type PageBlockSettings = {
+  home: PageBlockConfig[];
+};
+
 export type SiteContent = {
   siteUrl: string;
   navigation: {
@@ -190,6 +218,7 @@ export type SiteContent = {
   social: SocialContent;
   clientLogos: ClientLogo[];
   design: DesignSettings;
+  pageBlocks: PageBlockSettings;
 };
 
 export type ContentSection = Exclude<keyof SiteContent, "siteUrl" | "navigation" | "clientLogos">;
@@ -205,4 +234,5 @@ export type ContentSectionMap = {
   contact: ContactContent;
   social: SocialContent;
   design: DesignSettings;
+  pageBlocks: PageBlockSettings;
 };

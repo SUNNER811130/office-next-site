@@ -9,6 +9,10 @@ import { SectionTitle } from "@/components/ui/section-title";
 import Image from "next/image";
 import { readContent } from "@/lib/content-store";
 import { JsonLd, createFaqSchema, createPageMetadata } from "@/lib/seo";
+import { PageBlockFrame } from "@/components/home/page-block-frame";
+import { getOrderedEnabledHomeBlocks } from "@/lib/page-block-settings";
+import type { HomeBlockId } from "@/types/content";
+import type { ReactNode } from "react";
 
 export async function generateMetadata() {
   return createPageMetadata({
@@ -33,10 +37,8 @@ export async function generateMetadata() {
 export default async function HomePage() {
   const content = await readContent();
 
-  return (
-    <>
-      <JsonLd data={createFaqSchema(content.faq.items)} />
-
+  const homeBlockRegistry = {
+    hero: (
       <section className="relative overflow-hidden border-b border-white/70 bg-[linear-gradient(135deg,#F8FAFC_0%,#EAF2F7_45%,#DDE9F0_100%)]">
         <TechGrid intensity="strong" className="opacity-[0.18]" />
         <DataStream className="opacity-70" />
@@ -81,6 +83,8 @@ export default async function HomePage() {
           </FlyInPanel>
         </Container>
       </section>
+    ),
+    "work-upgrade": (
 
       <Section className="section-portal">
         <DepthReveal className="grid gap-10 lg:grid-cols-[0.92fr_1.08fr]">
@@ -103,6 +107,8 @@ export default async function HomePage() {
           </StaggerContainer>
         </DepthReveal>
       </Section>
+    ),
+    "pain-points": (
 
       <Section surface="muted" className="section-portal relative overflow-hidden">
         <TechGrid intensity="strong" className="opacity-[0.12]" />
@@ -136,6 +142,8 @@ export default async function HomePage() {
           </StaggerContainer>
         </div>
       </Section>
+    ),
+    services: (
 
       <Section className="section-portal">
         <StaggerContainer className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -174,6 +182,8 @@ export default async function HomePage() {
           ))}
         </StaggerContainer>
       </Section>
+    ),
+    "flagship-modules": (
 
       <Section surface="muted" className="section-portal relative overflow-hidden">
         <TechGrid intensity="strong" className="opacity-[0.12]" />
@@ -196,6 +206,8 @@ export default async function HomePage() {
           </FadeUp>
         </div>
       </Section>
+    ),
+    cases: (
 
       <Section className="section-portal">
         <div className="grid gap-10">
@@ -242,8 +254,10 @@ export default async function HomePage() {
           </StaggerContainer>
         </div>
       </Section>
+    ),
+    "client-logos": (
 
-      {content.clientLogos.length > 0 ? (
+      content.clientLogos.length > 0 ? (
         <Section surface="muted">
           <div className="grid gap-8">
             <FadeUp>
@@ -266,7 +280,9 @@ export default async function HomePage() {
             </StaggerContainer>
           </div>
         </Section>
-      ) : null}
+      ) : null
+    ),
+    testimonials: (
 
       <Section>
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
@@ -307,6 +323,8 @@ export default async function HomePage() {
           </StaggerContainer>
         </div>
       </Section>
+    ),
+    faq: (
 
       <Section className="pb-24">
         <div className="grid gap-10 lg:grid-cols-[0.88fr_1.12fr]">
@@ -318,6 +336,17 @@ export default async function HomePage() {
           </FadeUp>
         </div>
       </Section>
+    )
+  } satisfies Record<HomeBlockId, ReactNode>;
+
+  return (
+    <>
+      <JsonLd data={createFaqSchema(content.faq.items)} />
+      {getOrderedEnabledHomeBlocks(content.pageBlocks).map((config) => (
+        <PageBlockFrame key={config.id} config={config}>
+          {homeBlockRegistry[config.id]}
+        </PageBlockFrame>
+      ))}
     </>
   );
 }
