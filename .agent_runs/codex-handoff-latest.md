@@ -2,108 +2,100 @@
 
 ## 1. Summary
 
-完成 OFFICE NEXT Contact Page Block Editor v1。新增 `/admin/pages/contact`，可安全控制正式 `/contact` 三個既有主要區塊的顯示、順序、背景、版型與動畫，提供 390px／768px／1280px iframe 預覽、儲存成功後刷新，以及二次確認恢復 Contact 預設。正式 Email、Contact／Brand／Social 文案與 URL、SEO、JSON-LD、單一 H1 和 Design Tokens 均保留。
+完成 OFFICE NEXT Shared Page Block Editor Components v1 安全重構。Home、Services、About、Contact 四份 Editor 原有的 state、排序、toggle、select、PUT save、reset 二次確認、status、preview refresh、裝置切換、control card 與 options 已集中為單一共用架構；四份 wrapper 由原本合計 263 行縮為合計 60 行，只保留頁面差異設定。沒有新增功能或改變四頁可觀察行為。
 
-## 2. Contact blocks
+## 2. Shared architecture
 
-- `hero`：Contact Intro、Response Expectation、Contact Snapshot、正式 Email 與 Inquiry Options；固定第一且不可隱藏。
-- `contact-methods`：Start a Conversation、mailto CTA、服務內容 CTA、Response Expectation、Office Upgrade Note 與 Social Links。
-- `faq`：聯絡前常見問題與 FAQ Accordion。
+- `page-block-editor.tsx`：管理 blocks、saving/saved/error、重複送出保護、move/update、nested save、reset、成功後 preview refresh，以及 unmount state guard。
+- `page-block-control-card.tsx`：統一 block metadata、locked Hero、checkbox、move buttons、background/motion/layout selects。
+- `page-block-preview.tsx`：統一 390px／768px／1280px iframe、sticky preview、手動刷新與新分頁開啟。
+- `page-block-editor-types.ts`：泛型 `PageBlockEditorConfig`、definition、page key 與 status 型別，未使用 `any`。
+- `page-block-editor-options.ts`：背景、動畫、layout labels 與裝置寬度單一來源。
+- `page-block-editor-helpers.ts`：可測試的 update、move、nested payload 與 PUT request helper。
 
-Header、Footer 與 Floating CTA 不納入管理；沒有建立不存在的區塊，也沒有拆分或重複儲存 Contact 內容。
+## 3. Page wrappers
 
-## 3. Controls
+- Home：只傳入 `home`、`/`、Home definitions/defaults 與既有中文 save/reset 文案。
+- Services：只傳入 `services`、`/services`、Services definitions/defaults 與既有中文 save/reset 文案。
+- About：只傳入 `about`、`/about`、About definitions/defaults 與既有中文 save/reset 文案。
+- Contact：只傳入 `contact`、`/contact`、Contact definitions/defaults 與既有中文 save/reset 文案。
 
-- 非 Hero 區塊可顯示／隱藏；隱藏只影響渲染，不刪除 Email、CTA、品牌或 Social 內容。
-- 原生 button 支援向上／向下排序，具 aria-label、disabled、focus-visible 與鍵盤操作能力。
-- 背景 allowlist：default、clean、soft-grid、soft-blue、deep-panel。
-- 動畫 allowlist：inherit、none、fade、fly-up、fly-left、fly-right。
-- 版型依 Contact metadata 僅提供各區塊實際支援選項。
-- Hero 強制 enabled=true、order=0，不能隱藏或移動。
-- Contact Reset 需二次確認，只重設 `pageBlocks.contact`。
+四份 wrapper 不再保留 fetch、reorder、reset、iframe、裝置按鈕、control card JSX 或 options arrays。
 
-## 4. Preview
+## 4. Behavior preservation
 
-`/admin/pages/contact` 在桌機採左側表單、右側 sticky preview，窄螢幕改為上下排列。iframe 指向 `/contact`，可切換 390px、768px、1280px，顯示目前寬度，支援手動刷新與新分頁開啟。PUT 成功後才刷新；失敗不刷新。
+- Home 9、Services 4、About 5、Contact 3 個 block definitions 與 block IDs 未改。
+- Hero 仍固定第一、不可 disabled、不可移動；第一個非 Hero 不能移到 Hero 前面。
+- supported layouts 仍只取自各 block definition。
+- 既有背景、動畫、layout labels、390／768／1280 preview、save/reset 文案與 responsive layout 保留。
+- save/reset 成功才刷新 iframe；失敗保留目前設定且不刷新。saving ref 防止快速重複 PUT。
+- Design Console、前台 registries、PageBlockFrame、公開頁排序與 CSS 均未修改。
 
-## 5. Data architecture
+## 5. Accessibility
 
-- `PageBlockSettings` 擴充為 `home`、`services`、`about`、`contact`，沿用共用 PageBlockConfig、background、motion、layout 型別。
-- 新增 `ContactBlockId`、`ContactBlockDefinition`、`contactBlockDefinitions`、`contactPageBlockDefaults`、`normalizeContactBlocks()`、`getOrderedEnabledContactBlocks()`。
-- Contact normalizer 處理缺失／舊 JSON、未知與重複 ID、缺少區塊、非法或重複 order、非法 boolean/background/motion/layout，最後產生連續 order 並鎖定 Hero。
-- `/contact` 使用 typed `contactBlockRegistry` 與 normalized configs，套用共用 `PageBlockFrame`；保持 Server Component、metadata、Breadcrumb／FAQ JSON-LD 與單一 H1。
-- 沿用 Generic Admin API、`updatePageBlockPage()`、LocalFileContentRepository 與 `data/site-content.json`，沒有平行 repository 或資料庫。
+保留原生 button、checkbox、select 與 anchor；checkbox 使用包覆 label；move buttons 保留 aria-label、Hero/邊界 disabled、鍵盤操作與 focus-visible；裝置按鈕保留 aria-pressed；status 保留 aria-live；reset 保留 alertdialog 與 aria-labelledby；iframe title 與可理解的新分頁文字保留。
 
-## 6. Lost-update protection
+## 6. Data and API
 
-- Nested payload 接受 `{ page: "contact", blocks }`，authenticated API page allowlist 擴充為 home／services／about／contact。
-- `updatePageBlockPage()` 先讀取最新完整 content，只替換指定 page，normalize 完整 pageBlocks 後寫回。
-- 更新 Contact 保留最新 Home、Services、About 與 Contact content。
-- 更新 Home、Services 或 About 均保留最新 Contact settings。
-- Reset Contact 使用相同 nested update，只替換 Contact defaults，不影響其他頁、正式 Email 或 Contact 內容。
+- `PageBlockSettings` JSON 結構未改。
+- Generic API payload 仍為 `{ page: "home" | "services" | "about" | "contact", blocks }`。
+- Reset 只將目前頁 defaults 送入相同 nested update，未提交其他頁設定。
+- `updatePageBlockPage()`、Repository、normalizers 與 lost-update protection 未修改。
+- `data/site-content.json`、正式 Email、兩個 Google Form URL、Founder、Contact 與其他公開內容檔均無 diff。
 
-## 7. Existing editors preserved
+## 7. Files changed
 
-- Home Page Block Editor：設定、預覽與 nested update 未修改。
-- Services Page Block Editor：設定、預覽與 lost-update 行為未修改。
-- About Page Block Editor：設定、預覽與 lost-update 行為未修改。
-- Design Console：資料與 editor 未修改。
-- Contact Content Editor：內容欄位、route 與資料未修改。
-- Founder：內容與 editor 未修改。
-- Tiptap：`immediatelyRender: false` 保留，無 `suppressHydrationWarning`。
-
-## 8. Security
-
-所有 block ID、背景、動畫與版型均經 allowlist normalization；後台沒有任意 CSS、Tailwind class、HTML、JavaScript、色碼、背景 URL 或 Social URL 輸入。Generic API 仍先驗證 admin。Social Links 沿用原資料來源與空 URL 條件渲染，Email 保持可點擊的 mailto 並使用 break-all 防止 390px 水平溢出。Contact deep-panel 使用 page-scoped 固定對比規則處理標題、Email、Badge、卡片、CTA、Social Links、FAQ 與 focus-visible，不改變其他頁面樣式。reduced-motion 仍具最高優先權。
-
-## 9. Files changed
-
-- `types/content.ts`：ContactBlockId、PageBlockId 與 PageBlockSettings.contact。
-- `lib/page-block-settings.ts`：Contact definitions、defaults、normalizer、排序與 enabled 過濾。
-- `lib/content-store.ts`：nested page union 加入 contact。
-- `data/site-content.json`：加入 Contact defaults，其他內容值不變。
-- `app/api/admin/content/[section]/route.ts`：authenticated nested page allowlist 加入 contact。
-- `components/layout/page-block-frame.tsx`：共用 Frame page scope 加入 contact。
-- `components/admin/contact-block-editor.tsx`：Contact 控制、save/reset 與裝置 preview。
-- `app/admin/(dashboard)/pages/contact/page.tsx`：Contact Page Block Editor 頁面。
-- `components/admin/admin-nav.tsx`：加入聯絡頁區塊入口。
-- `app/admin/(dashboard)/page.tsx`：加入 Contact overview 卡片與入口。
-- `app/contact/page.tsx`：typed Contact registry 與動態 renderer。
-- `app/globals.css`：Contact page-scoped deep-panel 對比與 focus 樣式。
-- `__tests__/lib/page-block-settings.test.ts`：Contact defaults、非法值、Hero lock、排序、隱藏與 allowlist。
-- `__tests__/lib/content-store.test.ts`：四頁 lost-update、Contact reset 隔離與 Contact content 保留。
-- `__tests__/api/admin-content-route.test.ts`：Contact authentication 與 nested update。
-- `docs/admin-page-block-editor-guide.md`：Contact 操作、預覽、reset、資料隔離與 JSON 限制。
+- `components/admin/page-block-editor/page-block-editor.tsx`：新增共用 Editor orchestration。
+- `components/admin/page-block-editor/page-block-control-card.tsx`：新增共用 control card。
+- `components/admin/page-block-editor/page-block-preview.tsx`：新增共用 preview。
+- `components/admin/page-block-editor/page-block-editor-types.ts`：新增共用泛型型別。
+- `components/admin/page-block-editor/page-block-editor-options.ts`：新增共用 allowlisted UI options。
+- `components/admin/page-block-editor/page-block-editor-helpers.ts`：新增純 helper 與 PUT request helper。
+- `components/admin/home-block-editor.tsx`：改為 Home 薄 wrapper。
+- `components/admin/services-block-editor.tsx`：改為 Services 薄 wrapper。
+- `components/admin/about-block-editor.tsx`：改為 About 薄 wrapper。
+- `components/admin/contact-block-editor.tsx`：改為 Contact 薄 wrapper。
+- `__tests__/lib/page-block-editor.test.ts`：新增 wrapper、payload、reset defaults、Hero lock、move/update、options、supportedLayouts 與 save 成敗測試。
+- `docs/admin-page-block-editor-guide.md`：新增共用架構、第五頁 wrapper、save/reset 與 nested update 維護章節。
 - `.agent_runs/codex-handoff-latest.md`：本 handoff。
 
-## 10. Tests
+## 8. Tests
 
-- `npm run anti:check`：PASS；TypeScript PASS；6 suites、60 tests PASS。
-- `rm -rf .next && npm run build`：PASS；先確認無 dev server；Next.js 15.5.10 production build、lint/type check、45 pages generation PASS；新增 `/admin/pages/contact`。
+- `npm run anti:check`：PASS；TypeScript PASS；7 suites、68 tests PASS。
+- `rm -rf .next && npm run build`：PASS；Next.js 15.5.10 production build、lint/type check、45 pages generation、exit code 0；四個 Admin Page Editor routes 均生成。
+- Build 出現一筆動態字型 fetch `ETIMEDOUT`，Build 仍成功，依規則記為非阻塞外部網路警告，未修改字型架構。
 - `git diff --check`：PASS。
 - `data/site-content.json` parse：PASS。
-- 安全檢查：`.env.local`、`package.json`、`package-lock.json`、`data/site-content.seed.ts` 無 diff；`immediatelyRender: false` 存在；無 `suppressHydrationWarning`；Contact Hero 只有一個 H1 來源；正式 Email、兩個 Google Form URL、Founder 與 Contact 內容值均與 HEAD 基準一致。
+- restricted-file diff：PASS；`.env.local`、package manifests、content JSON/seed、types、content store、API、PageBlockFrame、globals CSS、公開 pages 與 Design Editor 均無 diff。
+- `immediatelyRender: false` 保留；`suppressHydrationWarning` 不存在。
 
-## 11. Manual QA
+## 9. Manual QA
 
-後台：`http://localhost:3000/admin`、`/admin/pages/home`、`/admin/pages/services`、`/admin/pages/about`、`/admin/pages/contact`、`/admin/design`、`/admin/contact`。
+後台：
 
-前台：`http://localhost:3000`、`/services`、`/about`、`/contact`。
+- `http://localhost:3000/admin/pages/home`
+- `http://localhost:3000/admin/pages/services`
+- `http://localhost:3000/admin/pages/about`
+- `http://localhost:3000/admin/pages/contact`
+- `http://localhost:3000/admin/design`
 
-請由 OpenClaw／使用者驗證：隱藏與恢復 contact-methods、交換 contact-methods／faq、其他三頁設定不變、soft-grid／deep-panel 對比、Email／Badge／CTA／Social／FAQ focus、fly-left／fly-right、reduced-motion、390px 無水平捲動、mailto 與 `/services` CTA、Contact reset 不修改其他頁或 Email、重啟後設定持久，以及 Console 無 Hydration／Tiptap／Runtime Error。
+前台：
 
-## 12. Git
+- `http://localhost:3000`
+- `http://localhost:3000/services`
+- `http://localhost:3000/about`
+- `http://localhost:3000/contact`
 
-- 分支：`feature/contact-page-block-editor-v1`。
-- 開工基準：`b1d3ff8 feat: add about page block editor`。
+請由 OpenClaw／使用者逐頁驗證非 Hero toggle、move、背景、動畫、支援版型、save、成功 refresh、reset、Hero lock、三種 preview 寬度、390px 無水平捲動及 Console 無 Hydration／Runtime Error；並交叉確認四頁 nested save 不互相覆蓋、Design Console 與 Tiptap 正常。
+
+## 10. Git
+
+- 分支：`refactor/shared-page-block-editor-v1`。
+- 基準／HEAD：`4b69098 feat: add contact page block editor`。
 - 沒有 Commit、沒有 Push、沒有部署。
-- 沒有修改 `.env.local`，沒有新增套件，package manifests／lockfile 未修改。
-- build 前確認沒有 dev server；目前 dev server 未執行。
-- 工作樹僅包含第 9 節所列 Contact 功能、必要測試、文件與本 handoff 修改。
+- 沒有修改 `.env.local`，沒有新增套件，`package.json`／`package-lock.json` 無修改。
+- 工作樹只包含第 7 節的共用 Editor、薄 wrappers、必要測試、文件與本 handoff。
 
-## 13. Next phase
+## 11. Next phase
 
-- 草稿與發布工作流。
-- 持久化資料庫。
-- 全站 Page Block Editor 共用元件整理。
-- 正式 CMS 上線準備。
+只建議、不在本輪實作：Draft／Publish Workflow v1、持久化資料庫、正式 CMS 上線準備。
