@@ -19,6 +19,7 @@ export function RichTextEditor({ value, onChange, placeholder, category = "conte
   const [uploading, setUploading] = useState(false);
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       TextStyle,
