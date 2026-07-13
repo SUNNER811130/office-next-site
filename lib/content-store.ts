@@ -4,6 +4,7 @@ import path from "path";
 import { unstable_noStore as noStore } from "next/cache";
 
 import { siteContentSeed } from "@/data/site-content.seed";
+import { parseContentEnvelope, readPublishedSnapshot } from "@/lib/content-envelope";
 import { normalizeDesignSettings } from "@/lib/design-settings";
 import { normalizePageBlockSettings } from "@/lib/page-block-settings";
 import type { ContentSection, ContentSectionMap, SiteContent } from "@/types/content";
@@ -11,12 +12,18 @@ import type { ContentSection, ContentSectionMap, SiteContent } from "@/types/con
 const DATA_DIR = path.join(process.cwd(), "data");
 const CONTENT_FILE = path.join(DATA_DIR, "site-content.json");
 
-export interface IContentRepository {
+export interface ILegacyContentRepository {
   read(): Promise<SiteContent>;
   write(content: SiteContent): Promise<void>;
 }
 
-class LocalFileContentRepository implements IContentRepository {
+function isMissingFileError(error: unknown): boolean {
+  return error instanceof Error
+    && "code" in error
+    && (error as Error & { code?: unknown }).code === "ENOENT";
+}
+
+class LocalFileContentRepository implements ILegacyContentRepository {
   private async ensureContentFile() {
     await fs.mkdir(DATA_DIR, { recursive: true });
 
@@ -28,15 +35,13 @@ class LocalFileContentRepository implements IContentRepository {
   }
 
   async read(): Promise<SiteContent> {
-    await this.ensureContentFile();
-    const raw = await fs.readFile(CONTENT_FILE, "utf8");
-    const parsed = JSON.parse(raw) as Partial<SiteContent>;
-    return {
-      ...siteContentSeed,
-      ...parsed,
-      design: normalizeDesignSettings(parsed.design),
-      pageBlocks: normalizePageBlockSettings(parsed.pageBlocks)
-    };
+    try {
+      const raw = await fs.readFile(CONTENT_FILE, "utf8");
+      return readPublishedSnapshot(parseContentEnvelope(JSON.parse(raw))).content;
+    } catch (error: unknown) {
+      if (isMissingFileError(error)) return siteContentSeed;
+      throw error;
+    }
   }
 
   async write(content: SiteContent): Promise<void> {
@@ -45,7 +50,7 @@ class LocalFileContentRepository implements IContentRepository {
   }
 }
 
-function getRepository(): IContentRepository {
+function getRepository(): ILegacyContentRepository {
   return new LocalFileContentRepository();
 }
 

@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 
 import { unstable_noStore as noStore } from "next/cache";
 
+import { createEnvelopeFromLegacy } from "@/lib/content-envelope";
 import { readContent, writeContent, updateContentSection, updatePageBlockPage, resetContentToSeed, siteContentSeed } from "@/lib/content-store";
 
 jest.mock("fs", () => ({
@@ -30,9 +31,36 @@ describe("Content Store", () => {
     const content = await readContent();
 
     expect(noStore).toHaveBeenCalled();
-    expect(fs.mkdir).toHaveBeenCalled();
-    expect(fs.access).toHaveBeenCalled();
+    expect(fs.mkdir).not.toHaveBeenCalled();
+    expect(fs.access).not.toHaveBeenCalled();
+    expect(fs.writeFile).not.toHaveBeenCalled();
     expect(content.brand.name).toBe("Test Brand");
+  });
+
+  it("returns seed in memory without writing when the content file is missing", async () => {
+    const missing = Object.assign(new Error("missing"), { code: "ENOENT" });
+    (fs.readFile as jest.Mock).mockRejectedValueOnce(missing);
+
+    await expect(readContent()).resolves.toEqual(siteContentSeed);
+    expect(fs.mkdir).not.toHaveBeenCalled();
+    expect(fs.access).not.toHaveBeenCalled();
+    expect(fs.writeFile).not.toHaveBeenCalled();
+  });
+
+  it("reads only Published content from a v1 envelope", async () => {
+    const envelope = createEnvelopeFromLegacy(mockContent, "2026-07-13T00:00:00.000Z");
+    envelope.drafts.brand = {
+      value: { ...mockContent.brand, name: "Unpublished Brand" },
+      revision: 1,
+      basedOnPublishedRevision: 1,
+      updatedAt: "2026-07-13T01:00:00.000Z"
+    };
+    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(envelope));
+
+    const content = await readContent();
+    expect(content.brand.name).toBe("Test Brand");
+    expect(content.brand.name).not.toBe("Unpublished Brand");
+    expect(fs.writeFile).not.toHaveBeenCalled();
   });
 
   it("uses design defaults when an older JSON file has no design section", async () => {
