@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { rejectIfNotAdmin } from "@/lib/admin-auth";
+import { workflowErrorResponse } from "@/lib/content-workflow-api";
 import { readContent, updateContentSection, updatePageBlockPage } from "@/lib/content-store";
 import type { ContentSection } from "@/types/content";
 
@@ -29,8 +30,12 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ se
     return NextResponse.json({ error: "Unknown section" }, { status: 404 });
   }
 
-  const content = await readContent();
-  return NextResponse.json({ data: content[section as ContentSection] });
+  try {
+    const content = await readContent();
+    return NextResponse.json({ data: content[section as ContentSection] });
+  } catch (error: unknown) {
+    return workflowErrorResponse(error);
+  }
 }
 
 export async function PUT(request: NextRequest, context: { params: Promise<{ section: string }> }) {
@@ -44,13 +49,17 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ sec
     return NextResponse.json({ error: "Unknown section" }, { status: 404 });
   }
 
-  const payload = await request.json();
-  if (section === "pageBlocks" && payload && typeof payload === "object" && "page" in payload && "blocks" in payload) {
-    const page = (payload as { page?: unknown }).page;
-    if (page !== "home" && page !== "services" && page !== "about" && page !== "contact") return NextResponse.json({ error: "Unknown page" }, { status: 400 });
-    const content = await updatePageBlockPage(page, (payload as { blocks: unknown }).blocks);
-    return NextResponse.json({ ok: true, data: content.pageBlocks });
+  try {
+    const payload = await request.json();
+    if (section === "pageBlocks" && payload && typeof payload === "object" && "page" in payload && "blocks" in payload) {
+      const page = (payload as { page?: unknown }).page;
+      if (page !== "home" && page !== "services" && page !== "about" && page !== "contact") return NextResponse.json({ error: "Unknown page" }, { status: 400 });
+      const content = await updatePageBlockPage(page, (payload as { blocks: unknown }).blocks);
+      return NextResponse.json({ ok: true, data: content.pageBlocks });
+    }
+    const content = await updateContentSection(section as ContentSection, payload);
+    return NextResponse.json({ ok: true, data: content[section as ContentSection] });
+  } catch (error: unknown) {
+    return workflowErrorResponse(error);
   }
-  const content = await updateContentSection(section as ContentSection, payload);
-  return NextResponse.json({ ok: true, data: content[section as ContentSection] });
 }

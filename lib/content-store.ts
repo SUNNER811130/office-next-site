@@ -13,11 +13,15 @@ const CONTENT_FILE = path.join(DATA_DIR, "site-content.json");
 
 export type ContentStoreRepository = LocalFileContentWorkflowRepository;
 
-function getRepository(): ContentStoreRepository {
+export function getContentWorkflowRepository(): ContentStoreRepository {
   return new LocalFileContentWorkflowRepository({
     persistencePath: CONTENT_FILE,
     seed: siteContentSeed
   });
+}
+
+function getRepository(): ContentStoreRepository {
+  return getContentWorkflowRepository();
 }
 
 export async function readContent(repository = getRepository()): Promise<SiteContent> {

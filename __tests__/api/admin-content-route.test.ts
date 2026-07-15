@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { PUT } from "@/app/api/admin/content/[section]/route";
+import { GET, PUT } from "@/app/api/admin/content/[section]/route";
 import { rejectIfNotAdmin } from "@/lib/admin-auth";
-import { updateContentSection, updatePageBlockPage } from "@/lib/content-store";
+import { readContent, updateContentSection, updatePageBlockPage } from "@/lib/content-store";
+import { LegacyContentWriteBlockedError } from "@/lib/content-workflow-errors";
 import { siteContentSeed } from "@/data/site-content.seed";
 
 jest.mock("@/lib/admin-auth", () => ({ rejectIfNotAdmin: jest.fn() }));
@@ -14,6 +15,34 @@ jest.mock("@/lib/content-store", () => ({
 
 describe("admin design content API", () => {
   beforeEach(() => jest.clearAllMocks());
+
+  it("keeps the authenticated legacy GET success payload unchanged", async () => {
+    (rejectIfNotAdmin as jest.Mock).mockResolvedValue(null);
+    (readContent as jest.Mock).mockResolvedValue(siteContentSeed);
+
+    const response = await GET(
+      new NextRequest("http://localhost/api/admin/content/home"),
+      { params: Promise.resolve({ section: "home" }) }
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ data: siteContentSeed.home });
+  });
+
+  it("keeps the unauthenticated legacy GET behavior unchanged", async () => {
+    (rejectIfNotAdmin as jest.Mock).mockResolvedValue(
+      NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    );
+
+    const response = await GET(
+      new NextRequest("http://localhost/api/admin/content/home"),
+      { params: Promise.resolve({ section: "home" }) }
+    );
+
+    expect(response.status).toBe(401);
+    expect(readContent).not.toHaveBeenCalled();
+    await expect(response.json()).resolves.toEqual({ error: "Unauthorized" });
+  });
 
   it("rejects unauthenticated writes", async () => {
     (rejectIfNotAdmin as jest.Mock).mockResolvedValue(NextResponse.json({ error: "Unauthorized" }, { status: 401 }));
@@ -96,5 +125,27 @@ describe("admin design content API", () => {
     expect(response.status).toBe(200);
     expect(updateContentSection).toHaveBeenCalledWith("design", siteContentSeed.design);
     await expect(response.json()).resolves.toEqual({ ok: true, data: siteContentSeed.design });
+  });
+
+  it("maps an Envelope legacy write block to a safe 409 without changing success contracts", async () => {
+    (rejectIfNotAdmin as jest.Mock).mockResolvedValue(null);
+    (updateContentSection as jest.Mock).mockRejectedValue(new LegacyContentWriteBlockedError());
+    const request = new NextRequest("http://localhost/api/admin/content/home", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(siteContentSeed.home)
+    });
+
+    const response = await PUT(request, { params: Promise.resolve({ section: "home" }) });
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      error: {
+        code: "LEGACY_WRITE_BLOCKED",
+        message: "Legacy content write is blocked after workflow migration"
+      }
+    });
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
   });
 });
