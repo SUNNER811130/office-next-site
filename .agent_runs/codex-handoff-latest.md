@@ -1,199 +1,176 @@
 # Codex Handoff
 
-## 1. L1 Summary
+## 1. L2 Summary
 
-完成 OFFICE NEXT Draft／Publish Workflow v1 的 L1｜Persistence model 與 legacy read。新增 workflow domain types、typed ContentScope allowlist、scope extractor／merger／normalizer registry、legacy v0 與 envelope v1 parser、in-memory migration、Published／Editor／single-scope Preview composition、Repository contract 與 `hasDrafts` 純函式基礎。
+完成 OFFICE NEXT Draft／Publish Workflow v1 的 L2｜Local File atomic repository 與 concurrency。新增 path-keyed module-level mutation coordinator、可注入 atomic file writer、Local File `ContentWorkflowRepository`、typed workflow mutation errors，以及 legacy CMS mutation 的 atomic／Envelope write protection。
 
-本輪沒有實作 L2 atomic mutation、L3 API、L4/L5 Admin UI 或 L6 Preview route；沒有建立或寫入真實 Draft。
+本輪所有 persistence mutation 測試都使用 OS temp directory、temp fixture、可控制 clock、barrier／deferred promise 或 filesystem／writer injection；沒有對真實 `data/site-content.json` 執行 migration、Draft mutation 或 atomic failure 測試。
 
 ## 2. Files added / changed
 
-- `types/content-workflow.ts`：新增 Revision、ContentScope、ScopeValueMap、PublishedSnapshot、DraftRecord、ContentEnvelopeV1、EditorSnapshot、mutation inputs 與 ContentWorkflowRepository contract。
-- `lib/content-scopes.ts`：新增固定 scope allowlist、scope validation、typed extractor／merger，以及重用既有 Design/Page Block normalizers 的 registry。
-- `lib/content-envelope.ts`：新增 workflow schema errors、legacy/envelope 判別與 parser、in-memory migration、Published／Editor／Preview composition 與 Draft inspection。
-- `lib/content-store.ts`：legacy adapter 明確改名；`readContent()` 解析 legacy 或 v1 envelope 後只回 Published；讀檔不存在時在 memory 回 seed，不因 read 建檔或寫檔。
-- `__tests__/lib/content-scopes.test.ts`：新增 scope allowlist、任意 path 拒絕、extract/merge/isolation、normalizer 與 Cases 邊界測試。
-- `__tests__/lib/content-envelope.test.ts`：新增 legacy migration、v1 parser、schema errors、snapshot composition、single-scope Preview、hasDrafts 與 Draft normalization 測試。
-- `__tests__/lib/content-store.test.ts`：更新 read-no-write expectation，新增 missing file memory fallback 與 envelope Published-only read 測試。
-- `.agent_runs/codex-handoff-latest.md`：本 handoff；舊 handoff 保留於下方 archive。
+- `lib/content-mutation-coordinator.ts`：新增以 resolved persistence path 為 key 的 module-level serialized queue。
+- `lib/atomic-content-file.ts`：新增 same-directory temp、完整 JSON write、file sync、close、atomic rename 與 best-effort cleanup。
+- `lib/content-workflow-errors.ts`：新增 revision conflict、Draft not found、legacy write blocked 與 storage mutation errors。
+- `lib/content-workflow-repository.ts`：新增 Local File workflow reads、Save／Publish／Discard、Legacy first-mutation migration 與受限 legacy Published mutation。
+- `lib/content-store.ts`：公開 read 保持 Published-only；既有 CMS mutation 改走共用 coordinator 與 atomic writer；舊 full write 標示 deprecated/restricted。
+- `__tests__/lib/content-mutation-coordinator.test.ts`：新增 deterministic serialization 與 rejection recovery tests。
+- `__tests__/lib/atomic-content-file.test.ts`：新增 success、LF、same-directory temp、write/sync/rename/cleanup failure tests。
+- `__tests__/lib/content-workflow-repository.test.ts`：新增 migration、CAS、normalization、isolation、failure preservation 與跨 instance concurrency tests。
+- `__tests__/lib/content-store.test.ts`：改用 temp persistence repository，保留 legacy CMS compatibility 與 Published-only read tests。
+- `.agent_runs/codex-handoff-latest.md`：本 handoff。
 
-## 3. Workflow types
+## 3. Coordinator architecture
 
-- ContentScope 共 14 個固定值；`cases` 僅對應 `SiteContent.cases`，不包含 `data/cases.json`、Insights 或 Media。
-- `ScopeValueMap` 逐 scope 對應正確的 `SiteContent`／`PageBlockSettings` value。
-- PublishedSnapshot 包含 global/scope revisions、global `updatedAt` 與 `scopeUpdatedAt`。
-- EditorSnapshot 的 `publishedUpdatedAt` 固定取自目標 scope 的 `scopeUpdatedAt`。
-- Repository contract 宣告 `readPublished`、`readEditor`、`readPreview`、`hasDrafts`、`saveDraft`、`publishDraft`、`discardDraft`；三個 mutation method 本輪只有 interface，沒有 filesystem 實作。
-- 新增程式未使用 `any` 型別。
+- `runSerializedContentMutation()` 使用 module-level `Map<resolvedPath, Promise<void>>`。
+- 相同 persistence path 的不同 Repository instance 共用同一 queue；instance field 沒有 mutex。
+- workflow Save／Publish／Discard、first-mutation migration、legacy `writeContent()`、`updateContentSection()` 與 `updatePageBlockPage()` 全部進入同一 coordinator。
+- critical section 內完成 latest read、parse、revision check、normalize、merge、serialize 與 atomic replace。
+- queue node 本身只由 release resolve，不承接 mutation rejection；前一筆 mutation failure 不會污染後續 queue。
+- 本方案只承諾單 process／單機 v1；多 process／多 instance deployment 仍需資料庫 transaction。
 
-## 4. Scope registry
+## 4. Atomic file strategy
 
-- 只接受 allowlist，不解析或接受任意 JSON path。
-- 一般 section extractor／merger 使用 typed registry。
-- `pageBlocks.home/services/about/contact` 各自只抽取或合併目標頁，不會覆蓋其他三頁。
-- Design 重用 `normalizeDesignSettings()`。
-- 四個 Page Blocks scopes 分別重用既有 `normalizeHomeBlocks()`、`normalizeServicesBlocks()`、`normalizeAboutBlocks()`、`normalizeContactBlocks()`；Hero lock、supported layouts、defaults 與 allowlist 不變。
-- 一般 section 只保留既有 runtime 相容行為，沒有假裝新增完整 schema validation。
+- persistence path 與 directory 先 resolve；temp file 固定為同目錄 `.<target>.tmp-<safe-token>`。
+- token 只接受英數、底線與連字號，不能以 path traversal 逃出目錄。
+- JSON 先完整 serialize，固定單一 LF newline 結尾。
+- 以 exclusive `open("wx")` 建立 temp，依序 write、file sync、close，再 rename 到正式檔。
+- 正式檔不會先 truncate；rename 成功後 mutation 才回 success。
+- 任一步驟失敗只 cleanup 本次已知 temp path，不掃描或清除資料夾。
+- cleanup failure 不掩蓋 primary mutation error。
 
-## 5. Legacy parser behavior
+## 5. Workflow repository methods
 
-- 無 `schemaVersion`、無 `published` 的 object 視為 legacy v0。
-- 使用現有 seed shallow fallback，並對 Design/Page Blocks 套既有 normalizers。
-- 只在 memory 包成 schema v1 envelope；global 與各 scope revision 初始為 1、Drafts 空、所有 scope 使用同一 migration baseline timestamp。
-- 公開 read 與 legacy read 都不因讀取寫回或轉換 `data/site-content.json`。
+- `readPublished()`：讀 legacy 或 Envelope，永遠只回 Published snapshot；missing file 回 seed memory snapshot。
+- `readEditor(scope)`：Draft 優先，否則 Published，回 scope revision/timestamps。
+- `readPreview(scope)`：只 compose 指定 scope Draft。
+- `hasDrafts()`：只回 boolean，不回 Draft value。
+- `saveDraft()`：CAS 後 normalize scope value，第一次 revision 1，後續 +1，不改 Published。
+- `publishDraft()`：CAS 後只 merge target scope，同一 atomic mutation 更新 global/scope revisions/timestamps 並刪除 target Draft。
+- `discardDraft()`：CAS 後只刪 target Draft，不改 Published metadata。
 
-## 6. Envelope parser behavior
+## 6. Revision semantics
 
-- `schemaVersion === 1` 時驗證 Published、Drafts、revisions、timestamps、scope metadata 與 Draft record 必要結構。
-- Published content 維持 legacy fallback／normalizer 相容；Draft scope 必須通過 allowlist，Draft value 經目標 scope normalizer。
-- Unknown schema version 丟出 `UnknownContentSchemaVersionError`，不得降級成 legacy。
-- Malformed envelope 丟出 `MalformedContentEnvelopeError`，不得靜默 fallback 或寫檔。
+- First Save 要求 `expectedDraftRevision: null` 與當前 scope Published revision；新 Draft revision 為 1。
+- Re-save 要求當前 Draft revision 與 scope Published revision；Draft base 若 stale 則 conflict；Draft revision +1，base 不變。
+- Publish 要求 Draft 存在、Draft/Published revisions 相符且 base 未 stale；target scope 與 global Published revision 各 +1。
+- Discard 只比 Draft revision；Published content、revisions、timestamps 全不變。
+- 不同 scope 經同一 queue 序列化後各自成功，不因 global revision 造成 false conflict。
 
-## 7. Public compatibility
+## 7. Legacy first-mutation migration
 
-- `readContent()` 介面與現有 callers 保留，且只回 Published content，caller 不能傳入 draft mode。
-- v1 envelope 即使存在 Draft，`readContent()` 測試確認仍回 Published。
-- legacy JSON、缺 Design、缺 Page Blocks 與 missing file 的公開結果維持 seed/default 相容。
-- 公開 pages、API、Admin UI、Preview iframe、Design Console、Tiptap 與 CSS 均未修改。
+- Legacy public read 與 missing-file read 都只做 memory composition，不寫檔。
+- 第一次成功 workflow Save 在 coordinator 內把 latest Legacy／seed memory 組成 Envelope，與 Draft mutation 一次 atomic replace。
+- 不存在單獨 migration write，因此不會留下「只 migration、mutation 未完成」狀態。
+- 第一次 mutation writer failure 時，Legacy 原 bytes 保持完全一致。
+- Legacy／missing 狀態 Publish 或 Discard 找不到 Draft 時回 `ContentDraftNotFoundError`，不建立 Envelope、不改檔。
+- Unknown schema 與 malformed Envelope 繼續由 L1 schema errors 拒絕，原檔不被覆蓋。
 
-## 8. Tests
+## 8. Legacy writeContent protection
 
-- `npm run anti:check`：PASS。
-- TypeScript：PASS。
-- Jest：9 suites、112 tests PASS。
-- L1 定向 suites：3 suites、64 tests PASS。
-- `git diff --check`：PASS。
-- 未執行 production build；本輪無 UI/API route 行為變更，建議由 OpenClaw 決定完整 QA 是否需要 build。
+- `writeContent()` 標示 deprecated/restricted，仍支援 Legacy persistence 的立即公開行為，但走 coordinator 與 atomic replace。
+- `updateContentSection()` 的 latest read、normalization、merge 與 write 位於同一 critical section，不再 read outside lock。
+- `updatePageBlockPage()` 在 lock 內讀 latest，只替換目標 page 並 normalize 完整 Page Blocks，保留其他三頁。
+- persistence 已是 Envelope v1 時，`writeContent()`、section update、Page Block update 與 reset 都丟 `LegacyContentWriteBlockedError`，不會移除 schema、Draft 或 revision metadata，也不會偷轉成 Draft／Publish。
+- `readContent()` 保持 Published-only，沒有 draft mode，也不因 read 寫檔。
 
-## 9. Not implemented
+## 9. Typed errors
 
-- 沒有 mutation coordinator、atomic temp write/rename、CAS 或 revision updates（L2）。
-- 沒有 save/publish/discard API（L3）。
-- 沒有 Section/Design/Page Block Editor workflow UI（L4/L5）。
-- 沒有 Admin Preview route 或 iframe 改造（L6）。
-- 沒有將 persistence file 轉成 envelope，沒有真實 Draft。
+- `ContentRevisionConflictError`：只包含 scope、expected/current Draft revision、expected/current Published revision。
+- `ContentDraftNotFoundError`：只包含 scope。
+- `LegacyContentWriteBlockedError`：Envelope 上阻擋 legacy write boundary。
+- `ContentStorageMutationError`：安全檔名與 cause；不夾帶 Draft value 或完整 SiteContent。
+- Unknown schema 與 malformed Envelope 沿用 L1 errors；HTTP mapping 留給 L3。
 
-## 10. Restricted-file check
+## 10. Concurrency tests
 
-- `data/site-content.json`：無 diff、未寫入。
-- `data/site-content.seed.ts`：無 diff、內容未修改。
+- 相同 resolved path 的兩個 critical section不重疊。
+- 不同 Repository instance 對相同 path 共用 coordinator。
+- 第一筆 mutation 在 injected barrier 中時，第二筆不會進 writer／critical section。
+- 第一筆 rejection 後第二筆仍可執行。
+- 不同 scope Save 依序讀 latest 後各自保留，無 false conflict。
+- 兩個 legacy Repository instance 的 read-merge-write 依序執行，兩個 section update 都保留。
+- 測試不使用 sleep 或不穩定 timing race。
+
+## 11. Failure preservation tests
+
+- Atomic success 完整替換且固定 LF newline。
+- temp path 與 persistence file 位於同一 directory。
+- temp write、sync、rename failure 都保留原正式檔並嘗試 cleanup 已知 temp。
+- cleanup failure 不覆蓋 primary write error。
+- unsafe temp token 被拒絕。
+- Legacy first workflow mutation failure 保留原 bytes。
+- Publish persistence failure 保留完整 Published Envelope 與 Draft。
+
+## 12. Existing CMS compatibility
+
+- Legacy file 上一般 section、Design、整份 Page Blocks、單頁 Page Blocks、full write 與 reset 行為仍可用。
+- Design 仍使用 `normalizeDesignSettings()`。
+- 四個 Page Blocks scope 仍使用既有 normalizers，Hero lock、supported layouts、defaults 與跨頁 isolation 不變。
+- Envelope 上舊 Admin immediate-Publish paths會明確被阻擋；L3/L4/L5 完成前不會靜默破壞 workflow metadata。
+- API routes、Admin UI、公開 pages、Tiptap、CSS 均未修改。
+
+## 13. Runtime smoke
+
+- `npm run dev`：啟動成功，Next.js ready。
+- `/`、`/services`、`/about`、`/contact`、`/admin/login`：HTTP 200、meaningful HTML、單一 H1、無 server-rendered Next error overlay。
+- 四個公開頁：Header／Footer 存在。
+- server log：五個 route 全為 200，無 Runtime Error。
+- 2026-07-15 最終 Browser Smoke follow-up preflight：branch `feature/draft-publish-workflow-v1`、HEAD `1016588`、工作樹只含 L2 預期修改、無 staged changes，PASS。
+- 最終 Browser Smoke 結果：**BLOCKED**。PATH 內沒有 `agent-browser`、Playwright CLI、Chromium／Chrome／Firefox executable；已連接工具也沒有 browser runner／connector。
+- 環境只存在 Playwright Core library cache，沒有可啟動的 browser executable；取得 browser 需要重新安裝，違反本輪「不要重新安裝套件」限制，因此沒有啟動 dev server，也沒有以 HTTP fallback 冒充 Browser PASS。
+- 尚未完成：1280px／390px 真實 render、390px horizontal overflow、browser console、Hydration Error、Runtime Error、Next overlay 與主要內容視覺一致性；延後至下一個具備 browser runner 的回歸階段或 L7 完整 QA 補驗。
+- 此 BLOCKED 為驗收工具環境限制，不是已知產品缺陷；Browser visual smoke、390px horizontal overflow 與 Browser Console／Hydration 本輪均未實際執行或重新驗收。
+- 未登入後台，未執行 Save／Reset；dev server 已停止。
+
+## 14. Restricted-file check
+
+- `data/site-content.json`：無 diff，未 migration、未建立 Draft、未寫 Envelope。
+- `data/site-content.seed.ts`：無 diff。
 - `.env.local`：無 diff、未讀取內容。
 - `package.json`／`package-lock.json`：無 diff、未新增套件。
 - `data/cases.json`／`data/insights.json`：無 diff。
-- API、Admin/Public pages、Editor components、Media repository、CSS：無 diff。
-- 無 staged changes。
+- `data/` 無 `.site-content.json.tmp-*` 殘留。
+- API routes、Admin/Public UI、Editor、Preview、Media repository、CSS：無 diff。
+- 沒有 staged changes。
 
-## 11. Git status
+## 15. Tests
+
+- L2 定向：4 suites、43 tests PASS。
+- `npm run anti:check`：PASS。
+- TypeScript：PASS。
+- Jest：12 suites、133 tests PASS。
+- `npm run build`：PASS；Next.js 15.5.10 compile、type validation、45 pages generation、exit code 0。
+- `git diff --check`：PASS。
+- 未出現 dynamic font fetch blocking error。
+
+## 16. Git status
 
 - Branch：`feature/draft-publish-workflow-v1`。
-- Start HEAD：`61e5cb9 docs: design draft publish workflow v1`。
-- 工作樹只有第 2 節列出的 L1 code/tests；`.agent_runs` handoff 依專案規則更新。
+- Start／current HEAD：`1016588 feat: add draft publish persistence model`。
+- 起始時與 `origin/feature/draft-publish-workflow-v1` 同步且工作樹乾淨。
+- 工作樹只包含第 2 節列出的 L2 code/tests 與本 handoff。
 - 未 Commit、未 Push、未 Merge、未建立 PR、未部署。
 
-## 12. L2 recommendation
+## 17. Not implemented
 
-下一階段只建議實作 module-level singleton mutation coordinator（或共用 Repository singleton）、serialized atomic save/publish/discard/migration、revision CAS 與 failure preservation。所有 mutation 必須共用同一 critical section；開始前仍需新的明確授權與 preflight。本輪到此停止，不自動開始 L2。
+- L3 Draft API 與 HTTP error mapping。
+- L4 一般 Section／Design workflow UI。
+- L5 Page Block workflow UI。
+- L6 Admin Draft Preview route／iframe。
+- 真實後台 Draft 操作、真實 persistence migration、資料庫 transaction 或多 process lock。
 
----
+## 18. L3 recommendation
 
-# Archived Previous Handoff — Shared Page Block Editor Components v1
+下一階段只建議實作 L3 Draft API：Admin auth、scope/page allowlist、Editor read、Save／Publish／Discard endpoints、typed error-to-HTTP mapping 與 no-store response。開始前需新的明確授權與 preflight；不得自動進入 L4/L5/L6。
 
-## 1. Summary
+## 19. Delivery state
 
-完成 OFFICE NEXT Shared Page Block Editor Components v1 安全重構。Home、Services、About、Contact 四份 Editor 原有的 state、排序、toggle、select、PUT save、reset 二次確認、status、preview refresh、裝置切換、control card 與 options 已集中為單一共用架構；四份 wrapper 由原本合計 263 行縮為合計 60 行，只保留頁面差異設定。沒有新增功能或改變四頁可觀察行為。
-
-## 2. Shared architecture
-
-- `page-block-editor.tsx`：管理 blocks、saving/saved/error、重複送出保護、move/update、nested save、reset、成功後 preview refresh，以及 unmount state guard。
-- `page-block-control-card.tsx`：統一 block metadata、locked Hero、checkbox、move buttons、background/motion/layout selects。
-- `page-block-preview.tsx`：統一 390px／768px／1280px iframe、sticky preview、手動刷新與新分頁開啟。
-- `page-block-editor-types.ts`：泛型 `PageBlockEditorConfig`、definition、page key 與 status 型別，未使用 `any`。
-- `page-block-editor-options.ts`：背景、動畫、layout labels 與裝置寬度單一來源。
-- `page-block-editor-helpers.ts`：可測試的 update、move、nested payload 與 PUT request helper。
-
-## 3. Page wrappers
-
-- Home：只傳入 `home`、`/`、Home definitions/defaults 與既有中文 save/reset 文案。
-- Services：只傳入 `services`、`/services`、Services definitions/defaults 與既有中文 save/reset 文案。
-- About：只傳入 `about`、`/about`、About definitions/defaults 與既有中文 save/reset 文案。
-- Contact：只傳入 `contact`、`/contact`、Contact definitions/defaults 與既有中文 save/reset 文案。
-
-四份 wrapper 不再保留 fetch、reorder、reset、iframe、裝置按鈕、control card JSX 或 options arrays。
-
-## 4. Behavior preservation
-
-- Home 9、Services 4、About 5、Contact 3 個 block definitions 與 block IDs 未改。
-- Hero 仍固定第一、不可 disabled、不可移動；第一個非 Hero 不能移到 Hero 前面。
-- supported layouts 仍只取自各 block definition。
-- 既有背景、動畫、layout labels、390／768／1280 preview、save/reset 文案與 responsive layout 保留。
-- save/reset 成功才刷新 iframe；失敗保留目前設定且不刷新。saving ref 防止快速重複 PUT。
-- Design Console、前台 registries、PageBlockFrame、公開頁排序與 CSS 均未修改。
-
-## 5. Accessibility
-
-保留原生 button、checkbox、select 與 anchor；checkbox 使用包覆 label；move buttons 保留 aria-label、Hero/邊界 disabled、鍵盤操作與 focus-visible；裝置按鈕保留 aria-pressed；status 保留 aria-live；reset 保留 alertdialog 與 aria-labelledby；iframe title 與可理解的新分頁文字保留。
-
-## 6. Data and API
-
-- `PageBlockSettings` JSON 結構未改。
-- Generic API payload 仍為 `{ page: "home" | "services" | "about" | "contact", blocks }`。
-- Reset 只將目前頁 defaults 送入相同 nested update，未提交其他頁設定。
-- `updatePageBlockPage()`、Repository、normalizers 與 lost-update protection 未修改。
-- `data/site-content.json`、正式 Email、兩個 Google Form URL、Founder、Contact 與其他公開內容檔均無 diff。
-
-## 7. Files changed
-
-- `components/admin/page-block-editor/page-block-editor.tsx`：新增共用 Editor orchestration。
-- `components/admin/page-block-editor/page-block-control-card.tsx`：新增共用 control card。
-- `components/admin/page-block-editor/page-block-preview.tsx`：新增共用 preview。
-- `components/admin/page-block-editor/page-block-editor-types.ts`：新增共用泛型型別。
-- `components/admin/page-block-editor/page-block-editor-options.ts`：新增共用 allowlisted UI options。
-- `components/admin/page-block-editor/page-block-editor-helpers.ts`：新增純 helper 與 PUT request helper。
-- `components/admin/home-block-editor.tsx`：改為 Home 薄 wrapper。
-- `components/admin/services-block-editor.tsx`：改為 Services 薄 wrapper。
-- `components/admin/about-block-editor.tsx`：改為 About 薄 wrapper。
-- `components/admin/contact-block-editor.tsx`：改為 Contact 薄 wrapper。
-- `__tests__/lib/page-block-editor.test.ts`：新增 wrapper、payload、reset defaults、Hero lock、move/update、options、supportedLayouts 與 save 成敗測試。
-- `docs/admin-page-block-editor-guide.md`：新增共用架構、第五頁 wrapper、save/reset 與 nested update 維護章節。
-- `.agent_runs/codex-handoff-latest.md`：本 handoff。
-
-## 8. Tests
-
-- `npm run anti:check`：PASS；TypeScript PASS；7 suites、68 tests PASS。
-- `rm -rf .next && npm run build`：PASS；Next.js 15.5.10 production build、lint/type check、45 pages generation、exit code 0；四個 Admin Page Editor routes 均生成。
-- Build 出現一筆動態字型 fetch `ETIMEDOUT`，Build 仍成功，依規則記為非阻塞外部網路警告，未修改字型架構。
-- `git diff --check`：PASS。
-- `data/site-content.json` parse：PASS。
-- restricted-file diff：PASS；`.env.local`、package manifests、content JSON/seed、types、content store、API、PageBlockFrame、globals CSS、公開 pages 與 Design Editor 均無 diff。
-- `immediatelyRender: false` 保留；`suppressHydrationWarning` 不存在。
-
-## 9. Manual QA
-
-後台：
-
-- `http://localhost:3000/admin/pages/home`
-- `http://localhost:3000/admin/pages/services`
-- `http://localhost:3000/admin/pages/about`
-- `http://localhost:3000/admin/pages/contact`
-- `http://localhost:3000/admin/design`
-
-前台：
-
-- `http://localhost:3000`
-- `http://localhost:3000/services`
-- `http://localhost:3000/about`
-- `http://localhost:3000/contact`
-
-請由 OpenClaw／使用者逐頁驗證非 Hero toggle、move、背景、動畫、支援版型、save、成功 refresh、reset、Hero lock、三種 preview 寬度、390px 無水平捲動及 Console 無 Hydration／Runtime Error；並交叉確認四頁 nested save 不互相覆蓋、Design Console 與 Tiptap 正常。
-
-## 10. Git
-
-- 分支：`refactor/shared-page-block-editor-v1`。
-- 基準／HEAD：`4b69098 feat: add contact page block editor`。
-- 沒有 Commit、沒有 Push、沒有部署。
-- 沒有修改 `.env.local`，沒有新增套件，`package.json`／`package-lock.json` 無修改。
-- 工作樹只包含第 7 節的共用 Editor、薄 wrappers、必要測試、文件與本 handoff。
-
-## 11. Next phase
-
-只建議、不在本輪實作：Draft／Publish Workflow v1、持久化資料庫、正式 CMS 上線準備。
+- Final Browser Smoke：**BLOCKED — browser runner unavailable**。
+- L2 Commit gate：**可以進入 L2 Commit 階段**。
+- Risk / residual QA：Browser-side visual／hydration smoke 尚待後續補驗，但因 L2 無公開頁、Admin UI、CSS、Client Component、Preview iframe 或 route JSX 變更，加上 Build、Server Runtime、HTTP smoke 與完整 persistence tests 均 PASS，本項列為非阻塞殘餘 QA。
+- Needs OpenClaw QA：Yes，於下一個具備 browser runner 的回歸階段或 L7 完整 QA 補做 1280px／390px visual、horizontal overflow、console/hydration/overlay checks；restricted-file recheck 已 PASS。
+- Needs deploy：No。
+- Needs clasp push：No。
+- Needs Cloud Run deploy：No。
+- Needs manual verification：公開五 route visual smoke；不得登入或 mutation。
+- Commit：None（依本輪禁止事項）。

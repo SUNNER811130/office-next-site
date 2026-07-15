@@ -1,10 +1,9 @@
-import { promises as fs } from "fs";
 import path from "path";
 
 import { unstable_noStore as noStore } from "next/cache";
 
 import { siteContentSeed } from "@/data/site-content.seed";
-import { parseContentEnvelope, readPublishedSnapshot } from "@/lib/content-envelope";
+import { LocalFileContentWorkflowRepository } from "@/lib/content-workflow-repository";
 import { normalizeDesignSettings } from "@/lib/design-settings";
 import { normalizePageBlockSettings } from "@/lib/page-block-settings";
 import type { ContentSection, ContentSectionMap, SiteContent } from "@/types/content";
@@ -12,55 +11,23 @@ import type { ContentSection, ContentSectionMap, SiteContent } from "@/types/con
 const DATA_DIR = path.join(process.cwd(), "data");
 const CONTENT_FILE = path.join(DATA_DIR, "site-content.json");
 
-export interface ILegacyContentRepository {
-  read(): Promise<SiteContent>;
-  write(content: SiteContent): Promise<void>;
+export type ContentStoreRepository = LocalFileContentWorkflowRepository;
+
+function getRepository(): ContentStoreRepository {
+  return new LocalFileContentWorkflowRepository({
+    persistencePath: CONTENT_FILE,
+    seed: siteContentSeed
+  });
 }
 
-function isMissingFileError(error: unknown): boolean {
-  return error instanceof Error
-    && "code" in error
-    && (error as Error & { code?: unknown }).code === "ENOENT";
-}
-
-class LocalFileContentRepository implements ILegacyContentRepository {
-  private async ensureContentFile() {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-
-    try {
-      await fs.access(CONTENT_FILE);
-    } catch {
-      await fs.writeFile(CONTENT_FILE, JSON.stringify(siteContentSeed, null, 2), "utf8");
-    }
-  }
-
-  async read(): Promise<SiteContent> {
-    try {
-      const raw = await fs.readFile(CONTENT_FILE, "utf8");
-      return readPublishedSnapshot(parseContentEnvelope(JSON.parse(raw))).content;
-    } catch (error: unknown) {
-      if (isMissingFileError(error)) return siteContentSeed;
-      throw error;
-    }
-  }
-
-  async write(content: SiteContent): Promise<void> {
-    await this.ensureContentFile();
-    await fs.writeFile(CONTENT_FILE, JSON.stringify(content, null, 2), "utf8");
-  }
-}
-
-function getRepository(): ILegacyContentRepository {
-  return new LocalFileContentRepository();
-}
-
-export async function readContent(): Promise<SiteContent> {
+export async function readContent(repository = getRepository()): Promise<SiteContent> {
   noStore();
-  return getRepository().read();
+  return (await repository.readPublished()).content;
 }
 
-export async function writeContent(content: SiteContent) {
-  await getRepository().write(content);
+/** @deprecated Restricted to legacy persistence before workflow migration. */
+export async function writeContent(content: SiteContent, repository = getRepository()) {
+  await repository.replaceLegacyPublished(content);
 }
 
 const sectionNormalizers: Partial<Record<ContentSection, (payload: unknown) => unknown>> = {
@@ -70,35 +37,34 @@ const sectionNormalizers: Partial<Record<ContentSection, (payload: unknown) => u
 
 export async function updateContentSection<K extends ContentSection>(
   section: K,
-  payload: ContentSectionMap[K]
+  payload: ContentSectionMap[K],
+  repository = getRepository()
 ): Promise<SiteContent> {
-  const current = await readContent();
-  const normalizedPayload = (sectionNormalizers[section]?.(payload) ?? payload) as ContentSectionMap[K];
-  const next = {
-    ...current,
-    [section]: normalizedPayload
-  } satisfies SiteContent;
-
-  await writeContent(next);
-  return next;
+  return repository.mutateLegacyPublished((current) => {
+    const normalizedPayload = (sectionNormalizers[section]?.(payload) ?? payload) as ContentSectionMap[K];
+    return {
+      ...current,
+      [section]: normalizedPayload
+    } satisfies SiteContent;
+  });
 }
 
 export async function updatePageBlockPage(
   page: "home" | "services" | "about" | "contact",
-  blocks: unknown
+  blocks: unknown,
+  repository = getRepository()
 ): Promise<SiteContent> {
-  const current = await readContent();
-  const pageBlocks = normalizePageBlockSettings({
-    ...current.pageBlocks,
-    [page]: blocks
+  return repository.mutateLegacyPublished((current) => {
+    const pageBlocks = normalizePageBlockSettings({
+      ...current.pageBlocks,
+      [page]: blocks
+    });
+    return { ...current, pageBlocks } satisfies SiteContent;
   });
-  const next = { ...current, pageBlocks } satisfies SiteContent;
-  await writeContent(next);
-  return next;
 }
 
-export async function resetContentToSeed() {
-  await writeContent(siteContentSeed);
+export async function resetContentToSeed(repository = getRepository()) {
+  await writeContent(siteContentSeed, repository);
   return siteContentSeed;
 }
 

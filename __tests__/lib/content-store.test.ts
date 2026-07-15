@@ -1,50 +1,67 @@
 import { promises as fs } from "fs";
+import os from "os";
+import path from "path";
 
 import { unstable_noStore as noStore } from "next/cache";
 
 import { createEnvelopeFromLegacy } from "@/lib/content-envelope";
-import { readContent, writeContent, updateContentSection, updatePageBlockPage, resetContentToSeed, siteContentSeed } from "@/lib/content-store";
-
-jest.mock("fs", () => ({
-  promises: {
-    mkdir: jest.fn(),
-    access: jest.fn(),
-    readFile: jest.fn(),
-    writeFile: jest.fn(),
-  }
-}));
+import {
+  readContent,
+  resetContentToSeed,
+  siteContentSeed,
+  updateContentSection,
+  updatePageBlockPage,
+  writeContent
+} from "@/lib/content-store";
+import { LegacyContentWriteBlockedError } from "@/lib/content-workflow-errors";
+import { LocalFileContentWorkflowRepository } from "@/lib/content-workflow-repository";
+import type { SiteContent } from "@/types/content";
 
 jest.mock("next/cache", () => ({
-  unstable_noStore: jest.fn(),
+  unstable_noStore: jest.fn()
 }));
+
+async function createFixture(initial?: unknown) {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "office-next-store-"));
+  const persistencePath = path.join(directory, "site-content.json");
+  if (initial !== undefined) {
+    await fs.writeFile(persistencePath, JSON.stringify(initial, null, 2), "utf8");
+  }
+  return {
+    persistencePath,
+    repository: new LocalFileContentWorkflowRepository({
+      persistencePath,
+      seed: siteContentSeed,
+      clock: () => "2026-07-15T00:00:00.000Z"
+    })
+  };
+}
 
 describe("Content Store", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  const mockContent = { ...siteContentSeed, brand: { ...siteContentSeed.brand, name: "Test Brand" } };
+  const mockContent: SiteContent = {
+    ...siteContentSeed,
+    brand: { ...siteContentSeed.brand, name: "Test Brand" }
+  };
 
-  it("should read content from file", async () => {
-    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(mockContent));
+  it("reads legacy content without writing", async () => {
+    const { persistencePath, repository } = await createFixture(mockContent);
+    const before = await fs.readFile(persistencePath, "utf8");
 
-    const content = await readContent();
+    const content = await readContent(repository);
 
     expect(noStore).toHaveBeenCalled();
-    expect(fs.mkdir).not.toHaveBeenCalled();
-    expect(fs.access).not.toHaveBeenCalled();
-    expect(fs.writeFile).not.toHaveBeenCalled();
     expect(content.brand.name).toBe("Test Brand");
+    await expect(fs.readFile(persistencePath, "utf8")).resolves.toBe(before);
   });
 
-  it("returns seed in memory without writing when the content file is missing", async () => {
-    const missing = Object.assign(new Error("missing"), { code: "ENOENT" });
-    (fs.readFile as jest.Mock).mockRejectedValueOnce(missing);
-
-    await expect(readContent()).resolves.toEqual(siteContentSeed);
-    expect(fs.mkdir).not.toHaveBeenCalled();
-    expect(fs.access).not.toHaveBeenCalled();
-    expect(fs.writeFile).not.toHaveBeenCalled();
+  it("returns the seed in memory without creating a missing file", async () => {
+    const { persistencePath, repository } = await createFixture();
+    await expect(readContent(repository)).resolves.toEqual(siteContentSeed);
+    await expect(fs.access(persistencePath)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
   it("reads only Published content from a v1 envelope", async () => {
@@ -55,180 +72,87 @@ describe("Content Store", () => {
       basedOnPublishedRevision: 1,
       updatedAt: "2026-07-13T01:00:00.000Z"
     };
-    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(envelope));
-
-    const content = await readContent();
-    expect(content.brand.name).toBe("Test Brand");
-    expect(content.brand.name).not.toBe("Unpublished Brand");
-    expect(fs.writeFile).not.toHaveBeenCalled();
+    const { repository } = await createFixture(envelope);
+    await expect(readContent(repository)).resolves.toEqual(mockContent);
   });
 
-  it("uses design defaults when an older JSON file has no design section", async () => {
-    const { design: _design, ...legacyContent } = mockContent;
-    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(legacyContent));
-    const content = await readContent();
+  it("uses design and page-block defaults for older legacy files", async () => {
+    const { design: _design, pageBlocks: _pageBlocks, ...older } = mockContent;
+    const { repository } = await createFixture(older);
+    const content = await readContent(repository);
     expect(content.design).toEqual(siteContentSeed.design);
-  });
-
-  it("uses page block defaults when an older JSON file has no pageBlocks section", async () => {
-    const { pageBlocks: _pageBlocks, ...legacyContent } = mockContent;
-    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(legacyContent));
-    const content = await readContent();
     expect(content.pageBlocks).toEqual(siteContentSeed.pageBlocks);
   });
 
-  it("normalizes page blocks before storing them", async () => {
-    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(mockContent));
-    const nextContent = await updateContentSection("pageBlocks", { ...siteContentSeed.pageBlocks, home: [
-      { ...siteContentSeed.pageBlocks.home[0], enabled: false, order: 99 },
-      { ...siteContentSeed.pageBlocks.home[1], background: "unsafe" as "default" }
-    ] });
-    expect(nextContent.pageBlocks.home[0]).toEqual(expect.objectContaining({ id: "hero", enabled: true, order: 0 }));
-    expect(nextContent.pageBlocks.home.find((block) => block.id === "work-upgrade")?.background).toBe("default");
-    const stored = JSON.parse((fs.writeFile as jest.Mock).mock.calls.at(-1)?.[1] as string);
-    expect(stored.pageBlocks.home).toHaveLength(siteContentSeed.pageBlocks.home.length);
-  });
-
-  it("updates services blocks while preserving the latest home settings", async () => {
-    const latest = { ...mockContent, pageBlocks: { ...mockContent.pageBlocks, home: mockContent.pageBlocks.home.map((block) => block.id === "faq" ? { ...block, enabled: false } : block) } };
-    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(latest));
-    const next = await updatePageBlockPage("services", [{ ...siteContentSeed.pageBlocks.services[0] }]);
-    expect(next.pageBlocks.home.find((block) => block.id === "faq")?.enabled).toBe(false);
-    expect(next.pageBlocks.services).toHaveLength(siteContentSeed.pageBlocks.services.length);
-  });
-
-  it("updates home blocks while preserving the latest services settings", async () => {
-    const latest = { ...mockContent, pageBlocks: { ...mockContent.pageBlocks, services: mockContent.pageBlocks.services.map((block) => block.id === "faq" ? { ...block, enabled: false } : block) } };
-    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(latest));
-    const next = await updatePageBlockPage("home", siteContentSeed.pageBlocks.home);
-    expect(next.pageBlocks.services.find((block) => block.id === "faq")?.enabled).toBe(false);
-  });
-
-  it("resets services defaults without changing home", async () => {
-    const latest = { ...mockContent, pageBlocks: { ...mockContent.pageBlocks, home: mockContent.pageBlocks.home.map((block) => block.id === "faq" ? { ...block, enabled: false } : block) } };
-    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(latest));
-    const next = await updatePageBlockPage("services", siteContentSeed.pageBlocks.services);
-    expect(next.pageBlocks.home.find((block) => block.id === "faq")?.enabled).toBe(false);
-    expect(next.pageBlocks.services).toEqual(siteContentSeed.pageBlocks.services);
-  });
-
-  it("updates about while preserving home, services, and founder content", async () => {
-    const latest = { ...mockContent, pageBlocks: {
-      ...mockContent.pageBlocks,
-      home: mockContent.pageBlocks.home.map((block) => block.id === "faq" ? { ...block, enabled: false } : block),
-      services: mockContent.pageBlocks.services.map((block) => block.id === "faq" ? { ...block, enabled: false } : block)
-    } };
-    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(latest));
-    const next = await updatePageBlockPage("about", [{ ...siteContentSeed.pageBlocks.about[0] }]);
-    expect(next.pageBlocks.home.find((block) => block.id === "faq")?.enabled).toBe(false);
-    expect(next.pageBlocks.services.find((block) => block.id === "faq")?.enabled).toBe(false);
-    expect(next.founder).toEqual(latest.founder);
-  });
-
-  it("preserves the latest about settings when services are updated", async () => {
-    const latest = { ...mockContent, pageBlocks: { ...mockContent.pageBlocks, about: mockContent.pageBlocks.about.map((block) => block.id === "faq" ? { ...block, enabled: false } : block) } };
-    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(latest));
-    const next = await updatePageBlockPage("services", siteContentSeed.pageBlocks.services);
-    expect(next.pageBlocks.about.find((block) => block.id === "faq")?.enabled).toBe(false);
-  });
-
-  it("preserves the latest about settings when home is updated", async () => {
-    const latest = { ...mockContent, pageBlocks: { ...mockContent.pageBlocks, about: mockContent.pageBlocks.about.map((block) => block.id === "faq" ? { ...block, enabled: false } : block) } };
-    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(latest));
-    const next = await updatePageBlockPage("home", siteContentSeed.pageBlocks.home);
-    expect(next.pageBlocks.about.find((block) => block.id === "faq")?.enabled).toBe(false);
-  });
-
-  it("resets about defaults without changing home or services", async () => {
-    const latest = { ...mockContent, pageBlocks: {
-      ...mockContent.pageBlocks,
-      home: mockContent.pageBlocks.home.map((block) => block.id === "faq" ? { ...block, enabled: false } : block),
-      services: mockContent.pageBlocks.services.map((block) => block.id === "faq" ? { ...block, enabled: false } : block)
-    } };
-    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(latest));
-    const next = await updatePageBlockPage("about", siteContentSeed.pageBlocks.about);
-    expect(next.pageBlocks.home.find((block) => block.id === "faq")?.enabled).toBe(false);
-    expect(next.pageBlocks.services.find((block) => block.id === "faq")?.enabled).toBe(false);
-    expect(next.pageBlocks.about).toEqual(siteContentSeed.pageBlocks.about);
-  });
-
-  it("updates contact while preserving home, services, about, and contact content", async () => {
-    const latest = { ...mockContent, pageBlocks: {
-      ...mockContent.pageBlocks,
-      home: mockContent.pageBlocks.home.map((block) => block.id === "faq" ? { ...block, enabled: false } : block),
-      services: mockContent.pageBlocks.services.map((block) => block.id === "faq" ? { ...block, enabled: false } : block),
-      about: mockContent.pageBlocks.about.map((block) => block.id === "faq" ? { ...block, enabled: false } : block)
-    } };
-    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(latest));
-    const next = await updatePageBlockPage("contact", [{ ...siteContentSeed.pageBlocks.contact[0] }]);
-    expect(next.pageBlocks.home.find((block) => block.id === "faq")?.enabled).toBe(false);
-    expect(next.pageBlocks.services.find((block) => block.id === "faq")?.enabled).toBe(false);
-    expect(next.pageBlocks.about.find((block) => block.id === "faq")?.enabled).toBe(false);
-    expect(next.contact).toEqual(latest.contact);
-  });
-
-  it.each(["home", "services", "about"] as const)("preserves the latest contact settings when %s is updated", async (page) => {
-    const latest = { ...mockContent, pageBlocks: { ...mockContent.pageBlocks, contact: mockContent.pageBlocks.contact.map((block) => block.id === "faq" ? { ...block, enabled: false } : block) } };
-    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(latest));
-    const next = await updatePageBlockPage(page, siteContentSeed.pageBlocks[page]);
-    expect(next.pageBlocks.contact.find((block) => block.id === "faq")?.enabled).toBe(false);
-  });
-
-  it("resets contact defaults without changing other pages or contact content", async () => {
-    const latest = { ...mockContent, pageBlocks: {
-      ...mockContent.pageBlocks,
-      home: mockContent.pageBlocks.home.map((block) => block.id === "faq" ? { ...block, enabled: false } : block),
-      services: mockContent.pageBlocks.services.map((block) => block.id === "faq" ? { ...block, enabled: false } : block),
-      about: mockContent.pageBlocks.about.map((block) => block.id === "faq" ? { ...block, enabled: false } : block)
-    } };
-    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(latest));
-    const next = await updatePageBlockPage("contact", siteContentSeed.pageBlocks.contact);
-    expect(next.pageBlocks.home.find((block) => block.id === "faq")?.enabled).toBe(false);
-    expect(next.pageBlocks.services.find((block) => block.id === "faq")?.enabled).toBe(false);
-    expect(next.pageBlocks.about.find((block) => block.id === "faq")?.enabled).toBe(false);
-    expect(next.pageBlocks.contact).toEqual(siteContentSeed.pageBlocks.contact);
-    expect(next.contact).toEqual(latest.contact);
-  });
-
-  it("normalizes the design section before storing it", async () => {
-    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(mockContent));
-    const nextContent = await updateContentSection("design", {
+  it("normalizes Design and Page Blocks legacy updates", async () => {
+    const first = await createFixture(mockContent);
+    const design = await updateContentSection("design", {
       ...siteContentSeed.design,
-      layout: { ...siteContentSeed.design.layout, desktopContainer: 9999 as 1400 }
-    });
-    expect(nextContent.design.layout.desktopContainer).toBe(1400);
-    const stored = (fs.writeFile as jest.Mock).mock.calls.at(-1)?.[1] as string;
-    expect(JSON.parse(stored).design.layout.desktopContainer).toBe(1400);
+      layout: { ...siteContentSeed.design.layout, mobileGutter: 999 as 16 }
+    }, first.repository);
+    expect(design.design.layout.mobileGutter).toBe(siteContentSeed.design.layout.mobileGutter);
+
+    const second = await createFixture(mockContent);
+    const blocks = await updateContentSection("pageBlocks", {
+      ...siteContentSeed.pageBlocks,
+      home: [{ ...siteContentSeed.pageBlocks.home[0], enabled: false, order: 99 }]
+    }, second.repository);
+    expect(blocks.pageBlocks.home[0]).toEqual(expect.objectContaining({
+      id: "hero",
+      enabled: true,
+      order: 0
+    }));
   });
 
-  it("should write content to file", async () => {
-    await writeContent(mockContent);
+  it.each(["home", "services", "about", "contact"] as const)(
+    "updates only the %s Page Blocks page from the latest legacy file",
+    async (page) => {
+      const changedHome = mockContent.pageBlocks.home.map((block) => (
+        block.id === "faq" ? { ...block, enabled: false } : block
+      ));
+      const latest = {
+        ...mockContent,
+        pageBlocks: { ...mockContent.pageBlocks, home: changedHome }
+      };
+      const { repository } = await createFixture(latest);
+      const next = await updatePageBlockPage(page, siteContentSeed.pageBlocks[page], repository);
 
-    expect(fs.writeFile).toHaveBeenCalledWith(
-      expect.any(String),
-      JSON.stringify(mockContent, null, 2),
-      "utf8"
-    );
+      if (page !== "home") {
+        expect(next.pageBlocks.home.find((block) => block.id === "faq")?.enabled).toBe(false);
+      }
+      for (const other of ["home", "services", "about", "contact"] as const) {
+        if (other !== page && other !== "home") {
+          expect(next.pageBlocks[other]).toEqual(latest.pageBlocks[other]);
+        }
+      }
+    }
+  );
+
+  it("writes and resets legacy content through atomic persistence", async () => {
+    const fixture = await createFixture(mockContent);
+    await writeContent({ ...mockContent, brand: { ...mockContent.brand, name: "Replacement" } }, fixture.repository);
+    await expect(readContent(fixture.repository)).resolves.toMatchObject({ brand: { name: "Replacement" } });
+
+    await resetContentToSeed(fixture.repository);
+    await expect(readContent(fixture.repository)).resolves.toEqual(siteContentSeed);
+    const raw = await fs.readFile(fixture.persistencePath, "utf8");
+    expect(raw.endsWith("\n")).toBe(true);
   });
 
-  it("should update specific section", async () => {
-    (fs.readFile as jest.Mock).mockResolvedValueOnce(JSON.stringify(mockContent));
-    
-    const nextContent = await updateContentSection("brand", {
-      ...siteContentSeed.brand,
-      name: "Updated Test Brand"
-    });
+  it("blocks all legacy write boundaries after Envelope migration", async () => {
+    const envelope = createEnvelopeFromLegacy(mockContent, "2026-07-15T00:00:00.000Z");
+    envelope.drafts.brand = {
+      value: { ...mockContent.brand, name: "Draft" },
+      revision: 1,
+      basedOnPublishedRevision: 1,
+      updatedAt: "2026-07-15T01:00:00.000Z"
+    };
+    const fixture = await createFixture(envelope);
+    const before = await fs.readFile(fixture.persistencePath, "utf8");
 
-    expect(nextContent.brand.name).toBe("Updated Test Brand");
-    expect(fs.writeFile).toHaveBeenCalled();
-  });
-
-  it("should reset to seed", async () => {
-    await resetContentToSeed();
-    expect(fs.writeFile).toHaveBeenCalledWith(
-      expect.any(String),
-      JSON.stringify(siteContentSeed, null, 2),
-      "utf8"
-    );
+    await expect(writeContent(mockContent, fixture.repository)).rejects.toBeInstanceOf(LegacyContentWriteBlockedError);
+    await expect(updateContentSection("brand", mockContent.brand, fixture.repository)).rejects.toBeInstanceOf(LegacyContentWriteBlockedError);
+    await expect(updatePageBlockPage("home", mockContent.pageBlocks.home, fixture.repository)).rejects.toBeInstanceOf(LegacyContentWriteBlockedError);
+    await expect(fs.readFile(fixture.persistencePath, "utf8")).resolves.toBe(before);
   });
 });
