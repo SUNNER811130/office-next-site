@@ -285,6 +285,48 @@ describe("LocalFileContentWorkflowRepository", () => {
     expect(stored.drafts.home?.revision).toBe(4);
   });
 
+  it("keeps a public home field unchanged for Save Draft, updates it on Publish, and restores the baseline", async () => {
+    const fixture = await createFixture(siteContentSeed);
+    const baselineTitle = siteContentSeed.home.hero.title;
+    const publishedTitle = "Published HTTP-visible Hero";
+
+    const firstDraft = await fixture.repository.saveDraft({
+      scope: "home",
+      value: {
+        ...siteContentSeed.home,
+        hero: { ...siteContentSeed.home.hero, title: publishedTitle }
+      },
+      expectedDraftRevision: null,
+      expectedPublishedRevision: 1
+    });
+    expect((await fixture.repository.readPublished()).content.home.hero.title).toBe(baselineTitle);
+
+    const firstPublish = await fixture.repository.publishDraft({
+      scope: "home",
+      expectedDraftRevision: firstDraft.draftRevision!,
+      expectedPublishedRevision: firstDraft.publishedRevision
+    });
+    expect(firstPublish).toMatchObject({ draftRevision: null, publishedRevision: 2 });
+    expect((await fixture.repository.readPublished()).content.home.hero.title).toBe(publishedTitle);
+
+    const restoreDraft = await fixture.repository.saveDraft({
+      scope: "home",
+      value: siteContentSeed.home,
+      expectedDraftRevision: null,
+      expectedPublishedRevision: 2
+    });
+    expect((await fixture.repository.readPublished()).content.home.hero.title).toBe(publishedTitle);
+
+    const restored = await fixture.repository.publishDraft({
+      scope: "home",
+      expectedDraftRevision: restoreDraft.draftRevision!,
+      expectedPublishedRevision: restoreDraft.publishedRevision
+    });
+    expect(restored).toMatchObject({ draftRevision: null, publishedRevision: 3 });
+    expect((await fixture.repository.readPublished()).content.home.hero.title).toBe(baselineTitle);
+    await expect(fixture.repository.hasDrafts()).resolves.toBe(false);
+  });
+
   it("publishes pageBlocks.home without changing services, about, or contact", async () => {
     const envelope = createEnvelopeFromLegacy(siteContentSeed, "2026-07-14T00:00:00.000Z");
     const homeDraft = siteContentSeed.pageBlocks.home.map((block) => (

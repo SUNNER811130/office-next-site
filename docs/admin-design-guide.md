@@ -2,7 +2,7 @@
 
 ## 進入與儲存
 
-管理員登入後，從後台導覽選擇「視覺設計」，或直接前往 `/admin/design`。調整完成後按「儲存變更」；伺服器會再次驗證所有選項，成功後右側預覽會自動重新載入。請勿直接編輯 JSON。
+管理員登入後，從後台導覽選擇「視覺設計」，或直接前往 `/admin/design`。調整完成後按「儲存草稿」，伺服器會再次驗證所有選項，但公開網站不會改變；二次確認「發布」後才會更新 Published design。可用「放棄草稿」回到目前 Published。請勿直接編輯 JSON。
 
 ## 可調整設定
 
@@ -16,10 +16,14 @@
 
 ## 裝置預覽
 
-右側 Preview 可切換手機 390px、平板 768px 與桌機 1280px。可手動重新整理，或在新分頁開啟前台。手機後台會把預覽放在表單下方。MVP 不即時顯示未儲存變更，只有成功儲存才刷新。
+右側 Preview 可切換手機 390px、平板 768px 與桌機 1280px。可手動重新整理，或在新分頁開啟前台。手機後台會把預覽放在表單下方。L6 Draft Preview 完成前，iframe 只顯示 Published；Save Draft 與 Reset Draft 不會刷新它，只有 Publish 成功後才自動刷新。
 
 ## 資料與恢復預設
 
 目前 Design 設定與其他內容共用 `data/site-content.json`，由 `LocalFileContentRepository` 存取。正式部署 Vercel 前仍應遷移到持久化資料庫；Repository abstraction 可讓未來替換資料來源而不需重寫前台元件。
 
-頁面底部的「恢復預設設計」需二次確認，只會 PUT 預設值至 `design` section，不影響品牌、首頁文案、課程、聯絡資訊、Founder、Cases、Insights 或 Media。
+「恢復預設設計」需二次確認，只會把安全預設值 PUT 至 `/api/admin/content/design/draft` 建立 Draft，不會立即改公開設計，也不影響品牌、首頁文案、課程、聯絡資訊、Founder、Cases、Insights 或 Media；仍需 Publish 才會生效。
+
+Draft 與 Published revision 會顯示在操作列。若其他分頁先更新造成 conflict，本地設定會保留且不自動覆蓋或重試；請先記錄需要保留的值，再確認重新載入伺服器 snapshot。
+
+> 過渡期警告：L5 四個 Page Block Editor 完成前，不得對正式 persistence 執行第一次真實「儲存草稿」或 Design Reset。第一次 workflow write 會把 Legacy JSON 轉為 Envelope，舊 Page Block immediate-Publish API 隨後會被 write protection 阻擋。

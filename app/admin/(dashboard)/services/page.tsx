@@ -1,8 +1,8 @@
 import { SectionEditor } from "@/components/admin/section-editor";
 import { servicesFields } from "@/lib/admin-field-config";
-import { readContent } from "@/lib/content-store";
+import { getContentWorkflowRepository } from "@/lib/content-store";
 
 export default async function AdminServicesPage() {
-  const content = await readContent();
-  return <SectionEditor section="services" initialValue={content.services} fields={servicesFields} />;
+  const snapshot = await getContentWorkflowRepository().readEditor("services");
+  return <SectionEditor section="services" initialSnapshot={snapshot} fields={servicesFields} />;
 }

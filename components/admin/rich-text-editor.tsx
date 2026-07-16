@@ -5,7 +5,9 @@ import StarterKit from "@tiptap/starter-kit";
 import { Color } from "@tiptap/extension-color";
 import { TextStyle } from "@tiptap/extension-text-style";
 import Image from "@tiptap/extension-image";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import { syncExternalRichTextValue } from "@/components/admin/rich-text-editor-helpers";
 
 type RichTextEditorProps = {
   value: string;
@@ -39,6 +41,10 @@ export function RichTextEditor({ value, onChange, placeholder, category = "conte
       onChange(editor.getHTML());
     },
   });
+
+  useEffect(() => {
+    syncExternalRichTextValue(editor, value);
+  }, [editor, value]);
 
   const uploadImage = useCallback(async (file: File) => {
     try {
