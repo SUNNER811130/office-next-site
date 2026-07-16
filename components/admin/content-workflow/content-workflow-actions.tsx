@@ -4,15 +4,13 @@ import { useState } from "react";
 
 import { ContentWorkflowConfirmDialog } from "@/components/admin/content-workflow/content-workflow-confirm-dialog";
 import { ContentWorkflowConflict } from "@/components/admin/content-workflow/content-workflow-conflict";
-import { getWorkflowActionAvailability, workflowScopeLabels } from "@/components/admin/content-workflow/content-workflow-helpers";
+import { getWorkflowActionAvailability, workflowScopeLabels, type WorkflowUiScope, type WorkflowUiSnapshot } from "@/components/admin/content-workflow/content-workflow-helpers";
 import { ContentWorkflowStatus } from "@/components/admin/content-workflow/content-workflow-status";
 import type { WorkflowConflict, WorkflowNotice, WorkflowOperation } from "@/components/admin/content-workflow/content-workflow-types";
-import type { AdminWorkflowSection } from "@/lib/content-workflow-client";
-import type { EditorSnapshot } from "@/types/content-workflow";
 
 type DialogName = "publish" | "discard" | "reload" | null;
 
-export function ContentWorkflowActions<TScope extends AdminWorkflowSection>({
+export function ContentWorkflowActions<TScope extends WorkflowUiScope>({
   snapshot,
   dirty,
   operation,
@@ -24,7 +22,7 @@ export function ContentWorkflowActions<TScope extends AdminWorkflowSection>({
   onDiscard,
   onReload
 }: {
-  snapshot: EditorSnapshot<TScope>;
+  snapshot: WorkflowUiSnapshot<TScope>;
   dirty: boolean;
   operation: WorkflowOperation;
   notice: WorkflowNotice;
@@ -44,6 +42,7 @@ export function ContentWorkflowActions<TScope extends AdminWorkflowSection>({
     hasConflict: conflict !== null
   });
   const label = workflowScopeLabels[snapshot.scope];
+  const pageBlocks = snapshot.scope.startsWith("pageBlocks.");
 
   const confirm = (action: () => void) => {
     setDialog(null);
@@ -71,11 +70,13 @@ export function ContentWorkflowActions<TScope extends AdminWorkflowSection>({
           <p>Draft revision：{snapshot.draftRevision ?? "無草稿"}</p>
           <p>Published revision：{snapshot.publishedRevision}</p>
           <p>發布後公開網站才會更新。</p>
+          {pageBlocks ? <p>發布只影響目前頁的 Page Blocks。</p> : null}
         </ContentWorkflowConfirmDialog>
       ) : null}
       {dialog === "discard" ? (
         <ContentWorkflowConfirmDialog id={`${snapshot.scope}-discard`} title={`放棄「${label}」草稿？`} confirmLabel="確認放棄草稿" tone="danger" onCancel={() => setDialog(null)} onConfirm={() => confirm(onDiscard)}>
           <p>未發布草稿會被刪除，並回到目前已發布內容。</p>
+          {pageBlocks ? <p>此操作不會修改公開 Published Page Blocks。</p> : null}
           <p>此操作不是歷史版本還原。</p>
           {dirty ? <p className="font-medium text-red-800">尚未儲存的本地修改也會消失。</p> : null}
         </ContentWorkflowConfirmDialog>

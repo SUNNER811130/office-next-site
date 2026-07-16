@@ -819,6 +819,8 @@ Draft exists
 
 人工 QA：四頁各自建立 Draft；publish 其中一頁不改其他三頁 Draft 或 Published。
 
+實作狀態（2026-07-16）：四個 server pages 已各自讀取 `pageBlocks.<page>` EditorSnapshot；shared Editor 使用 L3 nested Draft／Publish／Discard API，Reset 只建立 Draft，並重用 L4 status/actions/conflict/dialog。L6 前 iframe 與新分頁維持 Published-only，只有 Publish 成功自動刷新。Browser mutation QA 必須在持久型隔離副本完成。
+
 ### L6｜受保護 Draft Preview
 
 範圍：抽取可共用 page views、Admin preview routes、scope composition、iframe/new-tab URL、cache/robots headers。

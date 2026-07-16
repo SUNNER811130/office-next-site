@@ -79,7 +79,7 @@ async function readJson(response: Response): Promise<unknown> {
   }
 }
 
-export function parseWorkflowResponse<TScope extends AdminWorkflowSection>(
+export function parseWorkflowResponse<TScope extends ContentScope>(
   section: TScope,
   response: Response,
   body: unknown
@@ -120,12 +120,19 @@ export function parseWorkflowResponse<TScope extends AdminWorkflowSection>(
   return snapshot as EditorSnapshot<TScope>;
 }
 
+export async function parseWorkflowFetchResponse<TScope extends ContentScope>(
+  section: TScope,
+  response: Response
+): Promise<EditorSnapshot<TScope>> {
+  return parseWorkflowResponse(section, response, await readJson(response));
+}
+
 async function requestSnapshot<TScope extends AdminWorkflowSection>(
   section: TScope,
   init: RequestInit
 ): Promise<EditorSnapshot<TScope>> {
   const response = await fetch(`/api/admin/content/${section}/${init.method === "GET" ? "editor" : init.method === "POST" ? "publish" : "draft"}`, init);
-  return parseWorkflowResponse(section, response, await readJson(response));
+  return parseWorkflowFetchResponse(section, response);
 }
 
 export function loadEditorSnapshot<TScope extends AdminWorkflowSection>(

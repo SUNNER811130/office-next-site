@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 import { POST } from "@/app/api/admin/content/[section]/publish/route";
@@ -5,7 +6,11 @@ import { siteContentSeed } from "@/data/site-content.seed";
 import { rejectIfNotAdmin } from "@/lib/admin-auth";
 import { getScopeValue } from "@/lib/content-scopes";
 import { getContentWorkflowRepository } from "@/lib/content-store";
-import { ContentRevisionConflictError } from "@/lib/content-workflow-errors";
+import {
+  ContentDraftNotFoundError,
+  ContentRevisionConflictError,
+  ContentStorageMutationError
+} from "@/lib/content-workflow-errors";
 import type {
   ContentScope,
   ContentWorkflowRepository,
@@ -14,9 +19,11 @@ import type {
 
 jest.mock("@/lib/admin-auth", () => ({ rejectIfNotAdmin: jest.fn() }));
 jest.mock("@/lib/content-store", () => ({ getContentWorkflowRepository: jest.fn() }));
+jest.mock("next/cache", () => ({ revalidatePath: jest.fn() }));
 
 const mockedRejectIfNotAdmin = jest.mocked(rejectIfNotAdmin);
 const mockedGetRepository = jest.mocked(getContentWorkflowRepository);
+const mockedRevalidatePath = jest.mocked(revalidatePath);
 
 function createRepository(): jest.Mocked<ContentWorkflowRepository> {
   return {
@@ -100,10 +107,16 @@ describe("admin content workflow publish route", () => {
   });
 
   it.each(["home", "services", "about", "contact"] as const)(
-    "maps pageBlocks.%s for Publish",
+    "maps pageBlocks.%s for Publish and revalidates its public page",
     async (page) => {
       const scope = `pageBlocks.${page}` as const;
       repository.publishDraft.mockResolvedValue(createPublishedSnapshot(scope));
+      const expectedPath = {
+        home: "/",
+        services: "/services",
+        about: "/about",
+        contact: "/contact"
+      }[page];
 
       const response = await POST(requestFor("pageBlocks", {
         page,
@@ -117,8 +130,31 @@ describe("admin content workflow publish route", () => {
         expectedDraftRevision: 2,
         expectedPublishedRevision: 1
       });
+      expect(mockedRevalidatePath).toHaveBeenCalledWith(expectedPath, "page");
+      expect(mockedRevalidatePath).toHaveBeenCalledTimes(1);
+      expect(repository.publishDraft.mock.invocationCallOrder[0]).toBeLessThan(
+        mockedRevalidatePath.mock.invocationCallOrder[0]
+      );
+      await expect(response.json()).resolves.toEqual({
+        ok: true,
+        snapshot: createPublishedSnapshot(scope)
+      });
     }
   );
+
+  it("does not apply Page Block path revalidation to a general-section Publish", async () => {
+    const snapshot = createPublishedSnapshot("home");
+    repository.publishDraft.mockResolvedValue(snapshot);
+
+    const response = await POST(requestFor("home", {
+      expectedDraftRevision: 2,
+      expectedPublishedRevision: 1
+    }), context("home"));
+
+    expect(response.status).toBe(200);
+    expect(mockedRevalidatePath).not.toHaveBeenCalled();
+    await expect(response.json()).resolves.toEqual({ ok: true, snapshot });
+  });
 
   it.each([
     { expectedDraftRevision: 2, expectedPublishedRevision: 1, data: siteContentSeed.home },
@@ -184,6 +220,23 @@ describe("admin content workflow publish route", () => {
       }
     });
     expect(JSON.stringify(body)).not.toContain(siteContentSeed.home.hero.title);
+    expect(mockedRevalidatePath).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [new ContentDraftNotFoundError("pageBlocks.home"), 404],
+    [new ContentStorageMutationError("site-content.json", new Error("private path")), 500]
+  ])("does not revalidate when Page Block Publish fails", async (error, expectedStatus) => {
+    repository.publishDraft.mockRejectedValue(error);
+
+    const response = await POST(requestFor("pageBlocks", {
+      page: "home",
+      expectedDraftRevision: 1,
+      expectedPublishedRevision: 1
+    }), context("pageBlocks"));
+
+    expect(response.status).toBe(expectedStatus);
+    expect(mockedRevalidatePath).not.toHaveBeenCalled();
   });
 
   it("rejects unknown sections and pages before repository creation", async () => {

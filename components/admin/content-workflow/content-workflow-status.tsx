@@ -1,7 +1,5 @@
-import { formatWorkflowTime, workflowScopeLabels } from "@/components/admin/content-workflow/content-workflow-helpers";
+import { formatWorkflowTime, workflowScopeLabels, type WorkflowUiScope, type WorkflowUiSnapshot } from "@/components/admin/content-workflow/content-workflow-helpers";
 import type { WorkflowNotice, WorkflowOperation } from "@/components/admin/content-workflow/content-workflow-types";
-import type { AdminWorkflowSection } from "@/lib/content-workflow-client";
-import type { EditorSnapshot } from "@/types/content-workflow";
 
 const noticeLabels: Record<WorkflowNotice, string> = {
   idle: "內容已與伺服器版本同步",
@@ -9,7 +7,7 @@ const noticeLabels: Record<WorkflowNotice, string> = {
   saved: "草稿已儲存；公開網站尚未更新",
   published: "發布成功，公開網站已更新",
   discarded: "已放棄草稿並回到目前已發布內容",
-  reset: "預設設計已儲存為草稿；公開網站尚未更新",
+  reset: "預設值已儲存為草稿；公開網站尚未更新",
   error: "發生錯誤",
   conflict: "發生版本衝突"
 };
@@ -22,14 +20,14 @@ const operationLabels: Record<Exclude<WorkflowOperation, null>, string> = {
   reloading: "伺服器版本重新載入中"
 };
 
-export function ContentWorkflowStatus<TScope extends AdminWorkflowSection>({
+export function ContentWorkflowStatus<TScope extends WorkflowUiScope>({
   snapshot,
   dirty,
   operation,
   notice,
   error
 }: {
-  snapshot: EditorSnapshot<TScope>;
+  snapshot: WorkflowUiSnapshot<TScope>;
   dirty: boolean;
   operation: WorkflowOperation;
   notice: WorkflowNotice;

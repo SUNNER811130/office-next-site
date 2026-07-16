@@ -22,6 +22,22 @@ export type HomeBlockDefinition = {
 const backgrounds = ["default", "clean", "soft-grid", "soft-blue", "deep-panel"] as const;
 const motions = ["inherit", "none", "fade", "fly-up", "fly-left", "fly-right"] as const;
 
+export const pageBlockBackgroundClassNames = {
+  default: "page-block--default",
+  clean: "page-block--clean",
+  "soft-grid": "page-block--soft-grid",
+  "soft-blue": "page-block--soft-blue",
+  "deep-panel": "page-block--deep-panel"
+} as const satisfies Record<PageBlockBackground, string>;
+
+export const pageBlockLayoutClassNames = {
+  default: "page-block-layout--default",
+  contained: "page-block-layout--contained",
+  wide: "page-block-layout--wide",
+  "single-column": "page-block-layout--single-column",
+  "two-column": "page-block-layout--two-column"
+} as const satisfies Record<PageBlockLayout, string>;
+
 function define(
   id: HomeBlockId,
   label: string,
@@ -268,5 +284,9 @@ export function getPageBlockAttributes(config: PageBlockConfig) {
 }
 
 export function getPageBlockClassConfig(config: PageBlockConfig): string {
-  return `page-block page-block--${config.background} page-block-layout--${config.layout}`;
+  return [
+    "page-block",
+    pageBlockBackgroundClassNames[config.background],
+    pageBlockLayoutClassNames[config.layout]
+  ].join(" ");
 }

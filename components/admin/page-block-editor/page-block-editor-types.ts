@@ -1,6 +1,12 @@
 import type { PageBlockConfig, PageBlockId, PageBlockSettings } from "@/types/content";
+import type { EditorSnapshot } from "@/types/content-workflow";
 
 export type PageBlockEditorPage = keyof PageBlockSettings;
+export type PageBlockWorkflowScope<TPage extends PageBlockEditorPage = PageBlockEditorPage> = `pageBlocks.${TPage}`;
+export type PageBlockEditorSnapshot<TPage extends PageBlockEditorPage> = Omit<
+  EditorSnapshot<PageBlockWorkflowScope<TPage>>,
+  "data"
+> & { data: PageBlockSettings[TPage] };
 
 export type PageBlockDefinition<TId extends PageBlockId> = {
   id: TId;
@@ -21,5 +27,3 @@ export type PageBlockEditorConfig<TPage extends PageBlockEditorPage> = {
   resetDescription: string;
   resetConfirmation: string;
 };
-
-export type EditorStatus = "idle" | "saving" | "saved" | "error";

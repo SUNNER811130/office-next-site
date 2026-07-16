@@ -6,16 +6,68 @@ import {
   getOrderedEnabledHomeBlocks,
   getOrderedEnabledServicesBlocks,
   getPageBlockAttributes,
+  getPageBlockClassConfig,
   homeBlockDefinitions,
   normalizePageBlockSettings,
   normalizeAboutBlocks,
   normalizeContactBlocks,
   normalizeServicesBlocks,
+  pageBlockBackgroundClassNames,
+  pageBlockLayoutClassNames,
   pageBlockSettingsDefaults,
   servicesBlockDefinitions
 } from "@/lib/page-block-settings";
+import type { PageBlockBackground, PageBlockConfig, PageBlockLayout } from "@/types/content";
 
 describe("Page block settings", () => {
+  const classConfig = (
+    background: PageBlockBackground,
+    layout: PageBlockLayout = "default"
+  ): PageBlockConfig => ({
+    id: "hero",
+    enabled: true,
+    order: 0,
+    background,
+    motion: "inherit",
+    layout
+  });
+
+  it("keeps every Page Block presentation class as a complete static token", () => {
+    expect(pageBlockBackgroundClassNames).toEqual({
+      default: "page-block--default",
+      clean: "page-block--clean",
+      "soft-grid": "page-block--soft-grid",
+      "soft-blue": "page-block--soft-blue",
+      "deep-panel": "page-block--deep-panel"
+    });
+    expect(pageBlockLayoutClassNames).toEqual({
+      default: "page-block-layout--default",
+      contained: "page-block-layout--contained",
+      wide: "page-block-layout--wide",
+      "single-column": "page-block-layout--single-column",
+      "two-column": "page-block-layout--two-column"
+    });
+  });
+
+  it.each([
+    ["default", "page-block page-block--default page-block-layout--default"],
+    ["clean", "page-block page-block--clean page-block-layout--default"],
+    ["soft-grid", "page-block page-block--soft-grid page-block-layout--default"],
+    ["soft-blue", "page-block page-block--soft-blue page-block-layout--default"],
+    ["deep-panel", "page-block page-block--deep-panel page-block-layout--default"]
+  ] as const)("maps the %s background without changing the wrapper API", (background, expected) => {
+    expect(getPageBlockClassConfig(classConfig(background))).toBe(expected);
+  });
+
+  it.each([
+    ["contained", "page-block page-block--default page-block-layout--contained"],
+    ["wide", "page-block page-block--default page-block-layout--wide"],
+    ["single-column", "page-block page-block--default page-block-layout--single-column"],
+    ["two-column", "page-block page-block--default page-block-layout--two-column"]
+  ] as const)("maps the %s layout without changing the wrapper API", (layout, expected) => {
+    expect(getPageBlockClassConfig(classConfig("default", layout))).toBe(expected);
+  });
+
   it("uses defaults when pageBlocks or home is missing", () => {
     expect(normalizePageBlockSettings(undefined)).toEqual(pageBlockSettingsDefaults);
     expect(normalizePageBlockSettings({})).toEqual(pageBlockSettingsDefaults);

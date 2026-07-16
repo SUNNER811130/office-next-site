@@ -1,12 +1,27 @@
 import { aboutBlockEditorConfig } from "@/components/admin/about-block-editor";
 import { contactBlockEditorConfig } from "@/components/admin/contact-block-editor";
-import { createPageBlockSavePayload, movePageBlock, requestPageBlockSave, updatePageBlock } from "@/components/admin/page-block-editor/page-block-editor-helpers";
+import { movePageBlock, updatePageBlock } from "@/components/admin/page-block-editor/page-block-editor-helpers";
 import { pageBlockBackgroundOptions, pageBlockMotionOptions, pageBlockPreviewDevices } from "@/components/admin/page-block-editor/page-block-editor-options";
+import {
+  createPageBlockSaveDraftPayload,
+  savePageBlockDraft
+} from "@/components/admin/page-block-editor/page-block-workflow-helpers";
+import type { PageBlockEditorSnapshot } from "@/components/admin/page-block-editor/page-block-editor-types";
 import { homeBlockEditorConfig } from "@/components/admin/home-block-editor";
 import { servicesBlockEditorConfig } from "@/components/admin/services-block-editor";
 import { pageBlockSettingsDefaults } from "@/lib/page-block-settings";
 
 describe("Shared page block editor", () => {
+  const publishedHome: PageBlockEditorSnapshot<"home"> = {
+    scope: "pageBlocks.home",
+    data: pageBlockSettingsDefaults.home,
+    source: "published",
+    draftRevision: null,
+    publishedRevision: 1,
+    draftUpdatedAt: null,
+    publishedUpdatedAt: "2026-07-16T01:00:00.000Z"
+  };
+
   it("keeps page-specific wrappers declarative and correctly scoped", () => {
     expect([homeBlockEditorConfig.page, servicesBlockEditorConfig.page, aboutBlockEditorConfig.page, contactBlockEditorConfig.page]).toEqual(["home", "services", "about", "contact"]);
     expect([homeBlockEditorConfig.previewPath, servicesBlockEditorConfig.previewPath, aboutBlockEditorConfig.previewPath, contactBlockEditorConfig.previewPath]).toEqual(["/", "/services", "/about", "/contact"]);
@@ -15,9 +30,17 @@ describe("Shared page block editor", () => {
     ]);
   });
 
-  it("creates a nested save payload containing only the selected page and blocks", () => {
-    const payload = createPageBlockSavePayload("contact", pageBlockSettingsDefaults.contact);
-    expect(payload).toEqual({ page: "contact", blocks: pageBlockSettingsDefaults.contact });
+  it("creates a nested Draft payload containing only the selected page, blocks, and revisions", () => {
+    const payload = createPageBlockSaveDraftPayload("contact", pageBlockSettingsDefaults.contact, {
+      draftRevision: null,
+      publishedRevision: 4
+    });
+    expect(payload).toEqual({
+      page: "contact",
+      blocks: pageBlockSettingsDefaults.contact,
+      expectedDraftRevision: null,
+      expectedPublishedRevision: 4
+    });
     expect(payload).not.toHaveProperty("home");
     expect(payload).not.toHaveProperty("services");
     expect(payload).not.toHaveProperty("about");
@@ -46,14 +69,26 @@ describe("Shared page block editor", () => {
     expect(servicesBlockEditorConfig.definitions.find((definition) => definition.id === "service-cards")?.supportedLayouts).not.toContain("two-column");
   });
 
-  it("submits the selected page and returns settings only after a successful response", async () => {
-    const request = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ data: pageBlockSettingsDefaults }) });
-    await expect(requestPageBlockSave("home", pageBlockSettingsDefaults.home, request)).resolves.toEqual(pageBlockSettingsDefaults);
-    expect(JSON.parse(request.mock.calls[0][1].body)).toEqual({ page: "home", blocks: pageBlockSettingsDefaults.home });
+  it("submits the selected page to the Draft route and returns its snapshot", async () => {
+    const draftHome: PageBlockEditorSnapshot<"home"> = {
+      ...publishedHome,
+      source: "draft",
+      draftRevision: 1,
+      draftUpdatedAt: "2026-07-16T02:00:00.000Z"
+    };
+    const request = jest.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true, snapshot: draftHome })));
+    await expect(savePageBlockDraft("home", pageBlockSettingsDefaults.home, publishedHome, { request })).resolves.toEqual(draftHome);
+    expect(request.mock.calls[0][0]).toBe("/api/admin/content/pageBlocks/draft");
+    expect(JSON.parse(request.mock.calls[0][1].body)).toEqual({
+      page: "home",
+      blocks: pageBlockSettingsDefaults.home,
+      expectedDraftRevision: null,
+      expectedPublishedRevision: 1
+    });
   });
 
-  it("rejects a failed save so the editor does not refresh its preview", async () => {
-    const request = jest.fn().mockResolvedValue({ ok: false, json: async () => ({ error: "儲存失敗" }) });
-    await expect(requestPageBlockSave("about", pageBlockSettingsDefaults.about, request)).rejects.toThrow("儲存失敗");
+  it("rejects a failed Draft save with a safe message", async () => {
+    const request = jest.fn().mockResolvedValue(new Response(JSON.stringify({ ok: false, error: { code: "INTERNAL_ERROR", message: "secret" } }), { status: 500 }));
+    await expect(savePageBlockDraft("home", pageBlockSettingsDefaults.home, publishedHome, { request })).rejects.toThrow("伺服器暫時無法處理內容");
   });
 });

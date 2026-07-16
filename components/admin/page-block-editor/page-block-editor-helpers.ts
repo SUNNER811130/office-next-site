@@ -1,5 +1,4 @@
-import type { PageBlockConfig, PageBlockId, PageBlockSettings } from "@/types/content";
-import type { PageBlockEditorPage } from "./page-block-editor-types";
+import type { PageBlockConfig, PageBlockId } from "@/types/content";
 
 export function updatePageBlock<TId extends PageBlockId>(
   blocks: readonly PageBlockConfig<TId>[],
@@ -19,26 +18,4 @@ export function movePageBlock<TId extends PageBlockId>(
   const reordered = [...blocks];
   [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
   return reordered.map((block, order) => ({ ...block, order }));
-}
-
-export function createPageBlockSavePayload<TPage extends PageBlockEditorPage>(
-  page: TPage,
-  blocks: PageBlockSettings[TPage]
-) {
-  return { page, blocks };
-}
-
-export async function requestPageBlockSave<TPage extends PageBlockEditorPage>(
-  page: TPage,
-  blocks: PageBlockSettings[TPage],
-  request: typeof fetch = fetch
-): Promise<PageBlockSettings> {
-  const response = await request("/api/admin/content/pageBlocks", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(createPageBlockSavePayload(page, blocks))
-  });
-  const result = await response.json() as { data?: PageBlockSettings; error?: string };
-  if (!response.ok || !result.data) throw new Error(result.error || "儲存失敗");
-  return result.data;
 }

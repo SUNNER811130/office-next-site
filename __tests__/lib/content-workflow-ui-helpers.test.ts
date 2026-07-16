@@ -50,15 +50,18 @@ describe("content workflow UI contracts", () => {
     expect(formatWorkflowTime("2026-07-16T01:00:00.000Z")).not.toBe("—");
   });
 
-  it("uses server EditorSnapshot pages and does not touch Page Block pages", () => {
+  it("uses server EditorSnapshot pages for general and Page Block editors", () => {
     const sections = ["brand", "home", "founder", "services", "testimonials", "faq", "design"];
     for (const section of sections) {
       const source = readFileSync(path.join(process.cwd(), `app/admin/(dashboard)/${section}/page.tsx`), "utf8");
       expect(source).toContain(`readEditor("${section}")`);
       expect(source).not.toContain("readContent");
     }
-    const pageBlockSource = readFileSync(path.join(process.cwd(), "components/admin/page-block-editor/page-block-editor.tsx"), "utf8");
-    expect(pageBlockSource).toContain("requestPageBlockSave");
+    for (const page of ["home", "services", "about", "contact"]) {
+      const source = readFileSync(path.join(process.cwd(), `app/admin/(dashboard)/pages/${page}/page.tsx`), "utf8");
+      expect(source).toContain(`readEditor("pageBlocks.${page}")`);
+      expect(source).not.toContain("readContent");
+    }
   });
 
   it("keeps confirmation, accessibility, conflict, and Published-only preview copy explicit", () => {
