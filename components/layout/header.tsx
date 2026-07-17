@@ -2,12 +2,18 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { readContent } from "@/lib/content-store";
+import type { SiteContent } from "@/types/content";
 
 import { ButtonLink } from "../ui/button";
 import { Container } from "../ui/container";
 
 export async function Header() {
   const content = await readContent();
+
+  return <HeaderContent content={content} />;
+}
+
+export function HeaderContent({ content }: { content: SiteContent }) {
   const headerLogo = content.brand.logoWordmarkHeaderUrl || content.brand.logoWordmarkUrl;
 
   return (

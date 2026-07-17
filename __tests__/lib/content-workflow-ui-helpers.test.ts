@@ -64,11 +64,11 @@ describe("content workflow UI contracts", () => {
     }
   });
 
-  it("keeps confirmation, accessibility, conflict, and Published-only preview copy explicit", () => {
+  it("keeps confirmation, accessibility, conflict, and Draft preview controls explicit", () => {
     const actions = readFileSync(path.join(process.cwd(), "components/admin/content-workflow/content-workflow-actions.tsx"), "utf8");
     const dialog = readFileSync(path.join(process.cwd(), "components/admin/content-workflow/content-workflow-confirm-dialog.tsx"), "utf8");
     const status = readFileSync(path.join(process.cwd(), "components/admin/content-workflow/content-workflow-status.tsx"), "utf8");
-    const design = readFileSync(path.join(process.cwd(), "components/admin/design-editor.tsx"), "utf8");
+    const preview = readFileSync(path.join(process.cwd(), "components/admin/preview/admin-preview-frame.tsx"), "utf8");
     expect(actions).toContain("發布後公開網站才會更新");
     expect(actions).toContain("尚未儲存的本地修改也會消失");
     expect(dialog).toContain('role="alertdialog"');
@@ -87,7 +87,10 @@ describe("content workflow UI contracts", () => {
     expect(dialog).toContain("aria-busy={confirming}");
     expect(dialog).toContain("createPortal(");
     expect(status).toContain('aria-live="polite"');
-    expect(design).toContain("目前預覽顯示已發布版本；草稿預覽將於 Preview 功能完成後提供。");
+    expect(preview).toContain("草稿預覽｜此內容尚未發布");
+    expect(preview).toContain('aria-pressed={mode === "draft"}');
+    expect(preview).toContain("disabled={!hasDraft}");
+    expect(preview).toContain('aria-busy={loading}');
   });
 
   it("isolates and restores background inert state and body scrolling", () => {
@@ -232,8 +235,8 @@ describe("content workflow UI contracts", () => {
   });
 
   it("maps Publish QA fields to public routes and preserves Published-only reads", () => {
-    const home = readFileSync(path.join(process.cwd(), "app/page.tsx"), "utf8");
-    const about = readFileSync(path.join(process.cwd(), "app/about/page.tsx"), "utf8");
+    const home = readFileSync(path.join(process.cwd(), "components/public-pages/home-page-content.tsx"), "utf8");
+    const about = readFileSync(path.join(process.cwd(), "components/public-pages/about-page-content.tsx"), "utf8");
     const header = readFileSync(path.join(process.cwd(), "components/layout/header.tsx"), "utf8");
     const store = readFileSync(path.join(process.cwd(), "lib/content-store.ts"), "utf8");
 

@@ -4,6 +4,7 @@ import { Instrument_Serif, Noto_Sans_TC } from "next/font/google";
 import { Footer } from "@/components/layout/footer";
 import { FloatingCta } from "@/components/layout/floating-cta";
 import { Header } from "@/components/layout/header";
+import { RootSiteShell } from "@/components/layout/root-site-shell";
 import { JsonLd, createOrganizationSchema, createWebsiteSchema } from "@/lib/seo";
 import { readContent } from "@/lib/content-store";
 import { getDesignCssVariables, getDesignDataAttributes } from "@/lib/design-settings";
@@ -103,21 +104,15 @@ export default async function RootLayout({
   return (
     <html lang="zh-Hant" data-scroll-behavior="smooth" className={`${bodyFont.variable} ${displayFont.variable}`}>
       <body {...designAttributes} style={designStyle}>
-        <div className="relative flex min-h-screen flex-col">
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-paper"
-          >
-            跳到主要內容
-          </a>
-          <JsonLd data={[createOrganizationSchema(), createWebsiteSchema()]} />
-          <Header />
-          <main id="main-content" className={`flex-1 ${content.design.floatingCta.enabled ? "pb-24 lg:pb-0" : "pb-0"}`}>
-            {children}
-          </main>
-          <FloatingCta />
-          <Footer />
-        </div>
+        <JsonLd data={[createOrganizationSchema(), createWebsiteSchema()]} />
+        <RootSiteShell
+          header={<Header />}
+          floatingCta={<FloatingCta />}
+          footer={<Footer />}
+          floatingCtaEnabled={content.design.floatingCta.enabled}
+        >
+          {children}
+        </RootSiteShell>
       </body>
     </html>
   );

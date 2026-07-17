@@ -16,7 +16,7 @@
 
 ## 裝置預覽
 
-右側 Preview 可切換手機 390px、平板 768px 與桌機 1280px。可手動重新整理，或在新分頁開啟前台。手機後台會把預覽放在表單下方。L6 Draft Preview 完成前，iframe 只顯示 Published；Save Draft 與 Reset Draft 不會刷新它，只有 Publish 成功後才自動刷新。
+右側 Preview 可切換手機 390px、平板 768px 與桌機 1280px，也可切換「已發布版本」與「草稿預覽」。可手動重新整理，或在新分頁開啟目前模式。手機後台會把預覽放在表單下方。只有成功 Save Draft／Reset Draft 後才會啟用草稿預覽；尚未儲存的本地設定不會進入 iframe。Discard 或 Publish 後會回到已發布版本。草稿 Design variables 只套在受 Admin session 保護的 Preview view，不會改公開網站。
 
 ## 資料與恢復預設
 

@@ -1,5 +1,203 @@
 # Codex Handoff
 
+## Latest — L6 Final Acceptance／Ready for Commit — 2026-07-17
+
+### Final determination
+
+- **PASS — 可以進入 L6 Commit 階段**.
+- L6 Admin Draft Preview is complete. Security and unauthenticated blocking passed; authenticated access remained isolated to the allowed Preview targets.
+- Final focused Browser re-QA passed with console warnings／errors `0`, no hydration／runtime／MutationObserver error, and no Next overlay.
+- No product feature code was changed during this final acceptance. No commit, push, deploy, merge, production mutation, or L7 work was performed.
+
+### Final L6 acceptance coverage
+
+1. L6 Admin Draft Preview: **PASS／complete**.
+2. Security／unauthenticated blocking: **PASS**.
+3. `no-store`／`noindex`／`Vary: Cookie`: **PASS** for unauthenticated and authenticated Preview responses.
+4. General Rich Text Draft Preview: **PASS**.
+5. Page Block Draft Preview and four-page isolation: **PASS**.
+6. Multi-scope composition: **PASS**.
+7. Conflict local-value isolation: **PASS**.
+8. Publish transition: **PASS**.
+9. Header／Footer／Floating CTA use the same composed Draft content as the Preview page body: **PASS**.
+10. Preview contains exactly one Site Chrome set: **PASS**.
+11. Public routes continue to read Published content only: **PASS**.
+12. Founder priority warning repair: **PASS**; no final LCP warning.
+13. 390px viewport: **PASS**; no horizontal overflow.
+14. Console warnings／errors: `0`; hydration／runtime／MutationObserver／Next overlay: none.
+15. Final Draft scopes: empty.
+16. Published Brand／Contact／Social／Design and complete Published content equal the QA baseline: **PASS**.
+17. Final `npm run anti:check`: TypeScript **PASS**; Jest **22/22 suites, 325/325 tests PASS**; exit `0`. Final `npm run build`: compile, type validation, page collection, static generation **45/45**, finalization, and traces **PASS**; Middleware built; `/admin/preview/[target]` remains Dynamic; exit `0`.
+18. Formal `data/site-content.json`: Legacy root, no diff, SHA-256 `2d0bd7de997d8c4cacc72c198ca54a7921e317d3f98362f17983368c5c873939`; formal workflow temp files: `0`.
+19. Commit／push／deploy: not performed.
+20. L7: not started.
+
+### Focused Browser re-QA evidence
+
+- Focused Draft saves／discards all returned `200`: Brand PUT×1／DELETE×1; Contact PUT×1／DELETE×1; Social PUT×1／DELETE×1; Design PUT×2／DELETE×1; Founder PUT×1／DELETE×1.
+- Preview requests: Home GET `200`×10 and `307`×4; Contact GET `200`×2; About GET `200`×2; invalid target GET `307`×2 and `404`×1; Preview Home HEAD `307`×1. Login redirects were `307`×8 including the Admin Brand redirect. Mutation 4xx／5xx: `0`; Publish requests: `0`.
+- Isolated QA persistence: Envelope schemaVersion `1`, global Published revision `1`, Draft scopes empty, workflow temp files `0`; all Published content equals the Legacy baseline.
+- The recorded QA npm parent PID `91097` and Next listener PID `91122` were already absent after VS Code restarted; port `3011` was not listening. No signal was required, no unrelated process was stopped, and the QA directory／log／baseline／screenshots were preserved.
+
+### Restricted check and handoff state
+
+- Branch `feature/draft-publish-workflow-v1`; HEAD remains `1349d65 feat: add page block draft workflow UI`; no staged changes.
+- Seed, package manifests, Cases, Insights, and formal content have no diff. The untracked OpenClaw report and the complete L6 working-tree changes remain preserved.
+- Page Block generated-CSS tests, Preview security／composition tests, and public Published-route regressions remain in the passing full suite.
+- L6 changed product code introduces no `any`; product code does not use `suppressHydrationWarning`.
+- Final acceptance result: **可以進入 L6 Commit 階段**. Stop here; do not commit, push, deploy, or begin L7 without the next explicit authorization.
+
+## Historical／Superseded — L6 Preview Site Chrome／Header Repair — 2026-07-16
+
+### Final determination
+
+- **Ready for focused L6 Browser re-QA**.
+- The three confirmed blockers are repaired: Preview chrome now uses the same composed Preview content as the page body; the final Preview response retains Next's `Vary` tokens and adds `Cookie`; the Founder hero image has `priority`.
+- Automated tests, production build, restricted checks, unauthenticated HTTP smoke, and read-only authenticated response checks passed. Focused Browser **mutation** re-QA was intentionally not performed by Codex.
+- No commit, push, deploy, merge, production persistence mutation, package change, or L7 work was performed.
+
+### Original blockers and root causes
+
+- The inner Preview route received composed Draft content, but Root Layout rendered its Published Header／Footer／Floating CTA outside that wrapper; each chrome component also called `readContent()` independently.
+- Middleware set `Vary: Cookie`, but Next 15.5's App Router page template later replaced `Vary` with its framework tokens via `setHeader`, removing Cookie from the final response. A precise `next.config.mjs` Preview header was also proven to be overwritten and was not retained.
+- The above-the-fold Founder hero `Image` lacked Next Image `priority`, producing the LCP warning for `/people/founder-hero.svg`.
+
+### Site chrome and Preview composition repair
+
+- `HeaderContent`, `FooterContent`, and `FloatingCtaContent` are pure, typed, content-driven render components. Their existing public async wrappers still call `readContent()` and render the same JSX, so public routes remain Published-only and chrome markup has one implementation.
+- `AdminPreviewSiteShell` renders the banner, Header, page main, Floating CTA, and Footer from the same `preview.content`. Draft design data attributes and CSS variables wrap the entire Preview chrome; Draft `floatingCta.enabled` controls both CTA rendering and main bottom padding.
+- `RootSiteShell` uses `usePathname()` to omit only the outer Published Header／Footer／CTA and Published CTA spacing under `/admin/preview/*`. Public pages and normal Admin Editor routes keep their existing Published shell. No Draft cookie, query, localStorage, hydration suppression, or global Draft mode was introduced.
+- The Founder hero image expression `content.founder.heroImageUrl || "/people/founder-hero.svg"` now has `priority`; its source, dimensions, sizes, layout, and surrounding content were not changed.
+
+### Final `Vary: Cookie` repair
+
+- `lib/http-vary.ts` provides case-insensitive token merge and the exact `/admin/preview/*` request predicate.
+- Preview middleware continues to declare private/no-store intent, `Pragma: no-cache`, `X-Robots-Tag: noindex, nofollow`, and a merged Cookie vary token.
+- Because Next's final App Router template overwrites middleware/config `Vary`, `instrumentation.ts` installs one idempotent Node `ServerResponse.setHeader` boundary guard. It acts only when the response request URL starts `/admin/preview/` and only when the written header is `Vary`; it merges Cookie into the framework-generated value instead of hardcoding or deleting framework tokens.
+- Actual unauthenticated GET／HEAD final header: `rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Cookie, Accept-Encoding`; status `307` to `/admin/login`.
+- Actual authenticated GET final header has the same tokens; status `200`. Authenticated invalid target returned `404` with the same cache／robots boundary. Public `/about` retained framework tokens plus `Accept-Encoding` and did **not** gain Cookie.
+
+### Files added or changed for this repair
+
+- Added: `components/admin/preview/admin-preview-site-shell.tsx`, `components/layout/root-site-shell.tsx`, `lib/http-vary.ts`, `instrumentation.ts`, and `__tests__/lib/admin-preview-site-chrome.test.tsx`.
+- Updated: `app/layout.tsx`, `app/admin/preview/[target]/page.tsx`, `components/layout/header.tsx`, `components/layout/footer.tsx`, `components/layout/floating-cta.tsx`, `components/public-pages/about-page-content.tsx`, `middleware.ts`, `__tests__/lib/admin-preview.test.ts`, and this handoff.
+- `.agent_runs/openclaw-report-latest.md` remains untracked and was not modified.
+
+### Tests and build
+
+- Targeted TypeScript plus Preview tests: **2/2 suites, 13/13 tests PASS**.
+- Final `npm run anti:check`: TypeScript **PASS**; Jest **22/22 suites, 325/325 tests PASS**; exit `0`.
+- Tests cover supplied-content Header／Footer／CTA rendering, public Published wrappers, disabled Draft CTA, full-chrome design scope, Draft／Published banners, CTA padding, Root Preview boundary, no duplicate chrome implementation, Founder hero priority, Vary merge/deduplication, and matcher isolation.
+- Existing Draft composition, Page Block workflow, and generated CSS selector tests remain in the passing full suite.
+- Final `npm run build`: compile **PASS**; type validation **PASS**; page data **PASS**; static generation **45/45 PASS**; build traces／finalization **PASS**; exit `0`.
+- Middleware built successfully; `/admin/preview/[target]` remains a dynamic App Router route.
+
+### Restricted check
+
+- Formal `data/site-content.json`: Legacy root, no Draft／Envelope, no diff, SHA-256 `2d0bd7de997d8c4cacc72c198ca54a7921e317d3f98362f17983368c5c873939`.
+- `data/site-content.seed.ts`, package manifests, Cases, Insights, Page Block definitions／defaults／IDs, and formal content have no repair diff. Workflow temp files: `0`.
+- No staged changes. `git diff --check`: **PASS**. No `any`, `suppressHydrationWarning`, Draft cookie/query/localStorage, permanent Preview token, or package addition was introduced.
+
+### New isolated QA environment
+
+- QA_DIR: `/home/usersun/qa-workspaces/office-next-l6-preview-fix-qa-20260716-235037`.
+- URL／port: `http://localhost:3011`, port `3011`.
+- npm parent PID: `91097`; Next listener PID: `91122`. Both cwd values resolve exactly to the QA_DIR.
+- QA log: `/home/usersun/qa-workspaces/office-next-l6-preview-fix-qa-20260716-235037/qa-server.log`.
+- QA baseline: `/home/usersun/qa-workspaces/office-next-l6-preview-fix-qa-20260716-235037/qa-baseline.json`.
+- QA content, baseline, and formal JSON are byte-identical Legacy roots with no Draft／Envelope; SHA-256 for all three is `2d0bd7de997d8c4cacc72c198ca54a7921e317d3f98362f17983368c5c873939`.
+- Copy excludes `.git`, `.next`, `.swc`, copied `node_modules`, copied `.env.local`, and `tsconfig.tsbuildinfo`; `node_modules` and `.env.local` are symlinks. Environment values were not output.
+- Smoke: manifest, Home, About, and Contact returned `200`; unauthenticated Preview returned `307`; authenticated valid Preview returned `200`; authenticated invalid target returned `404`; port remains listening.
+- QA log has no Runtime Error, `require is not defined`, instrumentation compilation error, or module resolution error. Opening Preview did not change the QA persistence hash or create Draft／Envelope state.
+
+### Required next step
+
+- OpenClaw should run focused L6 Browser re-QA for Draft Header／Footer／CTA values and Draft Design across the entire Preview shell, including Draft CTA enabled／disabled behavior, 390px layout, hydration／console checks, and the Founder LCP warning.
+- The Coding Codex checks in this repair were read-only; no Save Draft, Publish, Discard, or Reset action was run. Do not commit, push, merge, deploy, or begin L7 until focused QA passes and the user authorizes the next phase.
+
+## Historical／Superseded — L6 Admin Draft Preview／Ready for Browser QA — 2026-07-16
+
+### 1. L6 Summary
+
+- Coding and automated verification: **PASS**. L6 is ready for isolated, authenticated Browser mutation QA; that QA was intentionally not run by Codex.
+- Base branch／HEAD remained `feature/draft-publish-workflow-v1` at `1349d65 feat: add page block draft workflow UI`; origin tracking matched at preflight.
+- Added authenticated Draft Preview for General Sections, Design, and all four Page Block pages. Public `/`, `/services`, `/about`, `/contact`, layout, Header, Footer, and CTA continue to obtain Published content through `readContent()`.
+- No commit, push, merge, PR, Vercel deploy, production migration, database work, or L7 was performed.
+
+### 2. Preview security architecture
+
+- Preview is a Server Component route at `/admin/preview/[target]`. It calls `requireAdminUser()` before target parsing／repository reads; an expired or missing session redirects to `/admin/login`.
+- No permanent capability, hardcoded secret, public `?draft=true`, arbitrary path proxy, Draft cookie, Draft localStorage payload, raw persistence fetch, or middleware-wide Draft mode was added.
+- Preview calls only `readPublished()` and typed `readEditor(scope)` methods. It never calls Save／Publish／Discard, never changes revisions, never creates a Draft, and never converts Legacy persistence to an Envelope.
+- Route metadata is `noindex, nofollow`; route is forced dynamic with `noStore()` and `revalidate = 0`. Preview-only middleware sets private/no-store intent, `Pragma: no-cache`, `X-Robots-Tag: noindex, nofollow`, and `Vary: Cookie`. Next dev normalizes the final Cache-Control header to `no-store, must-revalidate`, which remains non-shareable.
+- Storage／session errors render a generic safe error UI without paths, stack, Envelope metadata, tokens, or storage messages.
+
+### 3. Preview target allowlist and scope composition
+
+- Targets: `home`, `services`, `about`, `contact` only. Invalid targets use `notFound()`; target input is never used as a filesystem path or arbitrary import.
+- Home: `brand`, `home`, `founder`, `services`, `cases`, `testimonials`, `faq`, `contact`, `design`, `pageBlocks.home`.
+- Services: `brand`, `services`, `cases`, `faq`, `design`, `pageBlocks.services`.
+- About: `brand`, `founder`, `testimonials`, `faq`, `design`, `pageBlocks.about`.
+- Contact: `brand`, `contact`, `social`, `faq`, `design`, `pageBlocks.contact`.
+- Each listed scope uses Draft only when its EditorSnapshot source is Draft; otherwise it independently falls back to Published. Unlisted scopes remain Published, so another page's Page Block Draft cannot leak into the target.
+- Composition uses `mergeScopeValue()` and `readEditor()`; it does not merge raw Envelope structures and does not create a second repository.
+
+### 4. General／Design／Page Block Preview UI
+
+- General scopes `brand`, `home`, `founder`, `services`, `testimonials`, `faq`, `contact`, and `social` now share a right-side Preview appropriate to the public page where the scope renders. Contact and Social remain separate workflow snapshots.
+- Design Preview uses the composed Draft Design settings through the same safe CSS variable／data-attribute helpers. Reset Draft becomes previewable only after the server Save succeeds.
+- Home／Services／About／Contact Page Block Preview uses the target-specific Draft and preserves the existing normalizers, Hero lock, stable IDs, definitions/defaults, layout allowlists, background, motion, order, enabled state, static class maps, and generated CSS selectors.
+- Public page JSX was mechanically extracted to four pure `components/public-pages/*-page-content.tsx` views. Public page files still read Published and pass it to the same views; Admin Preview passes composed content, avoiding duplicated page markup or visual redesign.
+
+### 5. Published／Draft toggle and accessibility
+
+- Shared `AdminPreviewFrame` provides native Published／Draft buttons, `aria-pressed`, `aria-controls`, disabled Draft semantics, 390／768／1280 controls, explicit iframe titles, screen-reader status banners, `aria-busy`, timeout alert live region, and focus-visible styles.
+- Draft mode is disabled when the current Editor snapshot has no Draft. Save／Reset success updates the server snapshot and iframe key; Discard／Publish removes Draft availability and returns the control to Published.
+- Local dirty values and conflict-local values are never passed to Preview. The iframe reads persistence independently, so only a successful Save Draft is visible.
+- Banners are `草稿預覽｜此內容尚未發布` and `已發布版本`; server fallback additionally marks `data-preview-source="draft|published"`.
+
+### 6. Files changed
+
+- Added: `lib/admin-preview.ts`, `lib/admin-preview-types.ts`, `app/admin/preview/[target]/page.tsx`, its safe `error.tsx`, `components/admin/preview/admin-preview-frame.tsx`, four `components/public-pages/*-page-content.tsx`, `middleware.ts`, and `__tests__/lib/admin-preview.test.ts`.
+- Updated: four public page wrappers; General／Design／Page Block editors and preview adapter; workflow UI tests; Page Block workflow tests; four Draft workflow／Admin guides; this handoff.
+- Preserved untracked OpenClaw evidence: `.agent_runs/openclaw-report-latest.md` was not modified.
+
+### 7. Tests and build
+
+- Targeted L6／affected tests: **3 suites, 44 tests PASS**.
+- Final `npm run anti:check`: TypeScript **PASS**; Jest **21/21 suites, 316/316 tests PASS**; exit `0`.
+- Final `npm run build`: compile **PASS**; type validation **PASS**; page data collection **PASS**; static generation **45/45 PASS**; build traces／optimization **PASS**; exit `0`.
+- Build lists `/admin/preview/[target]` as dynamic and the four public pages as their prior on-demand server-rendered routes. Middleware build succeeded.
+- Existing generated Page Block selector tests remain in the full suite; static background/layout maps and generated selectors remain present.
+
+### 8. Restricted check
+
+- Formal `data/site-content.json`: Legacy root, no diff, SHA-256 `2d0bd7de997d8c4cacc72c198ca54a7921e317d3f98362f17983368c5c873939`.
+- `data/site-content.seed.ts`, `package.json`, `package-lock.json`, `data/cases.json`, `data/insights.json`, formal content, environment files, Page Block definitions/defaults/IDs, and Vercel config: no diff.
+- Formal workflow temp files: `0`. No staged changes. `git diff --check`: PASS.
+- No `any`, `suppressHydrationWarning`, Draft query, Draft localStorage, Draft cookie, permanent token, package change, secret read/output, or persistence mutation was added.
+
+### 9. Persistent isolated Browser QA environment
+
+- QA_DIR: `/home/usersun/qa-workspaces/office-next-l6-preview-qa-20260716-215854`.
+- URL／port: `http://localhost:3011`, port `3011`.
+- npm parent PID: `17621`; Next listener PID: `17646`. Both cwd values resolve exactly to the QA_DIR.
+- Log: `/home/usersun/qa-workspaces/office-next-l6-preview-qa-20260716-215854/l6-preview-dev.log`.
+- Baseline: `/home/usersun/qa-workspaces/office-next-l6-preview-qa-20260716-215854/qa-baseline.json`.
+- QA persistence and baseline are byte-identical Legacy roots with no Draft／Envelope; each SHA-256 is `2d0bd7de997d8c4cacc72c198ca54a7921e317d3f98362f17983368c5c873939`.
+- Copy excludes `.git`, copied `.next`, copied `.swc`, copied `node_modules`, and copied `.env.local`; `node_modules` and `.env.local` are symlinks. Environment contents were not read.
+- Read-only smoke: unauthenticated `/admin/preview/home` returned `307` to `/admin/login`, `no-store, must-revalidate`, `Pragma: no-cache`, and `X-Robots-Tag: noindex, nofollow`. QA persistence hash remained unchanged.
+- `agent-browser` CLI was unavailable (`command not found`), so no screenshot／visual check and no authenticated Browser QA were performed. The fallback was HTTP-only and non-mutating.
+
+### 10. Required OpenClaw Browser QA／manual verification
+
+- Authenticate only inside the QA copy and verify General Rich Text, Design Draft／Reset Draft, and Home／Services／About／Contact Page Block Draft Preview.
+- Verify local dirty values remain absent until Save Draft succeeds; then verify Draft banner/content, Discard fallback, Publish refresh, conflict isolation, and no cross-page Page Block Draft leak.
+- Verify 390px has no horizontal overflow; iframe titles／mode controls／disabled states are accessible; console, hydration, runtime, and Next overlay are clean.
+- Confirm unauthenticated／expired session blocking and response cache／robots headers.
+- Restore QA Published content to the baseline and clear every Draft scope before stopping the runtime.
+- L7 remains not started. Do not commit, push, merge, or deploy until OpenClaw QA reports PASS and the user authorizes the next phase.
+
 ## Latest — L5 Final Acceptance／Ready for Commit — 2026-07-16
 
 ### Final determination

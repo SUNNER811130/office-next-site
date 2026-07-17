@@ -529,33 +529,24 @@ Page Blocks 帶 `page`。成功後刪除該 scope Draft，回傳目前 Published
 
 ### 13.1 URL 與隔離
 
-建議 route：
-
-- `/admin/preview/home?scope=home`
-- `/admin/preview/home?scope=pageBlocks.home`
-- `/admin/preview/services?scope=pageBlocks.services`
-- `/admin/preview/about?scope=pageBlocks.about`
-- `/admin/preview/contact?scope=pageBlocks.contact`
-- 全站 Design preview 可用 `/admin/preview/home?scope=design`。
-
-scope 必須由 server allowlist 解析，不接受任意 JSON path。iframe 與「在新分頁開啟」都改用此 Admin URL。
+實作 route 為 `/admin/preview/[target]`，target 僅允許 `home`、`services`、`about`、`contact`。不接受 query scope、任意 path、raw Draft payload 或公開 mode switch。iframe 與「在新分頁開啟」在 Draft mode 使用此 Admin URL。
 
 ### 13.2 Composition
 
 1. Preview route 驗證 Admin session。
-2. `readPreview(scope)` 先讀 Published snapshot。
-3. 若該 scope 有 Draft，將 Draft 合併到 clone；沒有則保持 Published。
+2. 先讀 Published snapshot，再依 target 的固定 scope composition 呼叫 typed `readEditor(scope)`。
+3. 每個相關 scope 有 Draft 就使用 snapshot data，沒有則逐 scope保持 Published。
 4. 套用與正式讀取相同 normalizer/defaults。
 5. 使用與公開頁共用的 page view component render。
 6. response 設 `private, no-store` 與 `noindex`。
 
-v1 預設只合併 URL 明確指定的 scope，不自動混入所有 Draft，避免 preview 結果因其他 Editor 的未完成工作而不可預期。若未來需要組合預覽，可允許重複且 allowlisted 的 `scope`，但要在 UI 明示。
+組合規則由 target allowlist 固定：Home、Services、About、Contact 各自只讀頁面需要的 general scopes、Design 與該頁 `pageBlocks.<page>`。例如 Services Page Block Draft 不會進 Home；其他無關頁 Draft 也不會滲入。
 
 不建議 v1 用 session-wide preview cookie／Next draft mode 直接切換公開 routes，因為同一瀏覽器的 `/` 可能因此看到 Draft，安全邊界不夠直觀。
 
 ### 13.3 Render code reuse
 
-目前四個公開 page 把資料讀取與 JSX render 寫在同一檔。實作 preview 時應先小幅抽出「接收 `SiteContent` 的純 page view」，公開 route 傳 Published，Admin preview 傳 composed preview。不要複製四份頁面 JSX，否則 preview 很快與公開頁分岔。
+四個公開 page 的 JSX 已抽至 `components/public-pages/` 純 render components。公開 route 仍用 `readContent()` 傳 Published，Admin preview 傳 server-side composed content，因此沒有複製兩套頁面 JSX。
 
 ## 14. Publish 流程
 
@@ -819,7 +810,7 @@ Draft exists
 
 人工 QA：四頁各自建立 Draft；publish 其中一頁不改其他三頁 Draft 或 Published。
 
-實作狀態（2026-07-16）：四個 server pages 已各自讀取 `pageBlocks.<page>` EditorSnapshot；shared Editor 使用 L3 nested Draft／Publish／Discard API，Reset 只建立 Draft，並重用 L4 status/actions/conflict/dialog。L6 前 iframe 與新分頁維持 Published-only，只有 Publish 成功自動刷新。Browser mutation QA 必須在持久型隔離副本完成。
+實作狀態（2026-07-16）：四個 server pages 已各自讀取 `pageBlocks.<page>` EditorSnapshot；shared Editor 使用 L3 nested Draft／Publish／Discard API，Reset 只建立 Draft，並重用 L4 status/actions/conflict/dialog。L6 已加入共用 Published／Draft iframe；Browser mutation QA 必須在持久型隔離副本完成。
 
 ### L6｜受保護 Draft Preview
 
@@ -828,6 +819,8 @@ Draft exists
 測試：未登入拒絕、public route 永遠 Published、preview 只套指定 Draft、無 Draft fallback Published。
 
 人工 QA：同時開公開頁與 preview；Draft 只出現在 preview，登出後 preview 不可讀。
+
+實作狀態（2026-07-16）：完成 Admin-authenticated allowlisted route、target-based scope composition、純 page render reuse、Design variables、Draft／Published toggle、no-store／noindex 與 read-only isolation。尚待隔離副本 Browser mutation QA，未開始 L7。
 
 ### L7｜回歸、文件與 migration rehearsal
 
@@ -866,7 +859,7 @@ v1 不包含：
 以下六項已定案，後續 L1–L7 必須依此實作，不再視為待決問題：
 
 1. `SiteContent.cases` 保留為 `ContentScope`；`data/cases.json` 與 `/admin/cases` 的獨立 Cases CMS 排除。
-2. Preview v1 只合併目前 Editor scope，不自動組合其他 Draft。
+2. Preview v1 依固定 page target 組合該頁相關 Draft scopes，不接受 client 自選 scope，且不混入其他頁 Draft。
 3. Restore Published v1 等同 Discard current Draft，不做歷史 rollback。
 4. Reset、Discard、Publish 都需要確認；Publish confirmation 必須顯示 scope、expected draft revision 與 expected published revision。
 5. v1 只承諾單機、單 process、Local File CMS；正式 Production persistence 另遷移資料庫。
@@ -893,7 +886,7 @@ v1 不包含：
 ## 26. 本輪狀態
 
 - 已完成：現況盤點、風險分析、v1 架構與分階段設計。
-- 已定案：Cases 邊界、單 scope Preview、Discard-style Restore、三項確認、單機單 process 邊界、首次 mutation migration 與 ZIP 備份前置條件。
-- 未執行：任何 Draft／Publish 功能實作。
-- 未修改：`data/site-content.json`、seed、型別、API、repository、Editor、公開頁、套件與環境設定。
+- 已定案：Cases 邊界、target-based Preview composition、Discard-style Restore、三項確認、單機單 process 邊界、首次 mutation migration 與 ZIP 備份前置條件。
+- 已完成：L1–L6 coding 與 automated tests；L6 Browser mutation QA 尚未執行。
+- 未修改：`data/site-content.json`、seed、package manifests、Cases／Insights／Media、環境設定。
 - 未執行：commit、push、merge、PR、deploy。

@@ -7,6 +7,7 @@ import { ContentWorkflowConfirmDialog } from "@/components/admin/content-workflo
 import { useContentWorkflow } from "@/components/admin/content-workflow/use-content-workflow";
 import { FieldGroup } from "@/components/admin/field-group";
 import { MediaPicker } from "@/components/admin/media-picker";
+import { AdminPreviewFrame } from "@/components/admin/preview/admin-preview-frame";
 import { RepeaterField, type RepeaterSubField } from "@/components/admin/repeater-field";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { SaveBar } from "@/components/admin/save-bar";
@@ -95,6 +96,22 @@ type WorkflowSectionEditorProps<TScope extends AdminWorkflowSection> = SharedEdi
     description: string;
   };
 };
+
+const sectionPreviewConfig = {
+  brand: { target: "home", pageLabel: "首頁", publicPath: "/" },
+  home: { target: "home", pageLabel: "首頁", publicPath: "/" },
+  founder: { target: "about", pageLabel: "關於頁", publicPath: "/about" },
+  services: { target: "services", pageLabel: "服務頁", publicPath: "/services" },
+  testimonials: { target: "home", pageLabel: "首頁", publicPath: "/" },
+  faq: { target: "home", pageLabel: "首頁", publicPath: "/" },
+  contact: { target: "contact", pageLabel: "聯絡頁", publicPath: "/contact" },
+  social: { target: "contact", pageLabel: "聯絡頁", publicPath: "/contact" },
+  design: { target: "home", pageLabel: "首頁", publicPath: "/" }
+} as const satisfies Record<AdminWorkflowSection, {
+  target: "home" | "services" | "about" | "contact";
+  pageLabel: string;
+  publicPath: string;
+}>;
 
 function getValue(target: unknown, path: string) {
   return path.split(".").reduce((current, part) => (current as Record<string, unknown>)?.[part], target);
@@ -206,6 +223,7 @@ function LegacySectionEditor<T>({ initialValue, fields, fieldGroups, onSaveAsync
 }
 
 function WorkflowSectionEditor<TScope extends AdminWorkflowSection>({
+  section,
   initialSnapshot,
   fields,
   fieldGroups,
@@ -214,19 +232,29 @@ function WorkflowSectionEditor<TScope extends AdminWorkflowSection>({
 }: WorkflowSectionEditorProps<TScope>) {
   const workflow = useContentWorkflow(initialSnapshot, onPublished);
   const [resetOpen, setResetOpen] = useState(false);
+  const preview = sectionPreviewConfig[section];
 
   return (
-    <div className="grid gap-5">
-      <SectionFields value={workflow.value} fields={fields} fieldGroups={fieldGroups} onChange={workflow.changeValue} />
-      {resetDraft ? (
-        <section className="rounded-[2rem] border border-red-900/15 bg-white/75 p-5">
-          <h2 className="text-lg font-medium text-ink">{resetDraft.title}</h2>
-          <p className="mt-2 text-sm text-slate">{resetDraft.description}</p>
-          <button type="button" onClick={() => setResetOpen(true)} disabled={workflow.operation !== null || workflow.conflict !== null} className="mt-4 rounded-full border border-red-800/30 px-4 py-2 text-sm text-red-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-800/30">建立預設設計草稿</button>
-          {resetOpen ? <ContentWorkflowConfirmDialog id="reset-design" title="將預設設計建立為草稿？" confirmLabel="確認建立 Reset Draft" tone="danger" onCancel={() => setResetOpen(false)} onConfirm={() => { setResetOpen(false); void workflow.save(resetDraft.value, "resetting"); }}><p>目前 Published design 不會改變，必須另行 Publish 才會更新公開網站。</p><p>現有未發布草稿與本地修改會由預設設計取代。</p></ContentWorkflowConfirmDialog> : null}
-        </section>
-      ) : null}
-      <ContentWorkflowActions snapshot={workflow.snapshot} dirty={workflow.dirty} operation={workflow.operation} notice={workflow.notice} error={workflow.error} conflict={workflow.conflict} onSave={() => void workflow.save()} onPublish={() => void workflow.publish()} onDiscard={() => void workflow.discard()} onReload={() => void workflow.reload()} />
+    <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.82fr)]">
+      <div className="grid min-w-0 gap-5">
+        <SectionFields value={workflow.value} fields={fields} fieldGroups={fieldGroups} onChange={workflow.changeValue} />
+        {resetDraft ? (
+          <section className="rounded-[2rem] border border-red-900/15 bg-white/75 p-5">
+            <h2 className="text-lg font-medium text-ink">{resetDraft.title}</h2>
+            <p className="mt-2 text-sm text-slate">{resetDraft.description}</p>
+            <button type="button" onClick={() => setResetOpen(true)} disabled={workflow.operation !== null || workflow.conflict !== null} className="mt-4 rounded-full border border-red-800/30 px-4 py-2 text-sm text-red-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-800/30">建立預設設計草稿</button>
+            {resetOpen ? <ContentWorkflowConfirmDialog id="reset-design" title="將預設設計建立為草稿？" confirmLabel="確認建立 Reset Draft" tone="danger" onCancel={() => setResetOpen(false)} onConfirm={() => { setResetOpen(false); void workflow.save(resetDraft.value, "resetting"); }}><p>目前 Published design 不會改變，必須另行 Publish 才會更新公開網站。</p><p>現有未發布草稿與本地修改會由預設設計取代。</p></ContentWorkflowConfirmDialog> : null}
+          </section>
+        ) : null}
+        <ContentWorkflowActions snapshot={workflow.snapshot} dirty={workflow.dirty} operation={workflow.operation} notice={workflow.notice} error={workflow.error} conflict={workflow.conflict} onSave={() => void workflow.save()} onPublish={() => void workflow.publish()} onDiscard={() => void workflow.discard()} onReload={() => void workflow.reload()} />
+      </div>
+      <AdminPreviewFrame
+        target={preview.target}
+        pageLabel={preview.pageLabel}
+        publicPath={preview.publicPath}
+        hasDraft={workflow.snapshot.draftRevision !== null}
+        refreshKey={(workflow.snapshot.draftRevision ?? 0) + workflow.snapshot.publishedRevision}
+      />
     </div>
   );
 }

@@ -2,10 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { readContent } from "@/lib/content-store";
+import type { SiteContent } from "@/types/content";
 
 import { Container } from "../ui/container";
 
-function socialItems(social: Awaited<ReturnType<typeof readContent>>["social"]) {
+function socialItems(social: SiteContent["social"]) {
   return [
     { label: "LinkedIn", url: social.linkedin },
     { label: "Facebook", url: social.facebook },
@@ -19,6 +20,11 @@ function socialItems(social: Awaited<ReturnType<typeof readContent>>["social"]) 
 
 export async function Footer() {
   const content = await readContent();
+
+  return <FooterContent content={content} />;
+}
+
+export function FooterContent({ content }: { content: SiteContent }) {
   const socials = socialItems(content.social);
 
   return (

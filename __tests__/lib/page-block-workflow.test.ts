@@ -148,14 +148,17 @@ describe("Page Block workflow client and UI contracts", () => {
     expect(actions).toContain("尚未儲存的本地修改也會消失");
   });
 
-  it("keeps Preview Published-only and refreshes automatically only after Publish", () => {
+  it("switches between Published and authenticated Draft Preview without a public Draft query", () => {
     const editor = readFileSync(path.join(process.cwd(), "components/admin/page-block-editor/page-block-editor.tsx"), "utf8");
     const preview = readFileSync(path.join(process.cwd(), "components/admin/page-block-editor/page-block-preview.tsx"), "utf8");
-    expect(preview).toContain("目前預覽顯示已發布版本；Page Block 草稿預覽將於 Preview 功能完成後提供。");
+    const frame = readFileSync(path.join(process.cwd(), "components/admin/preview/admin-preview-frame.tsx"), "utf8");
+    expect(preview).toContain("<AdminPreviewFrame");
+    expect(frame).toContain("`/admin/preview/${target}`");
+    expect(frame).toContain("disabled={!hasDraft}");
     expect(editor).toContain("usePageBlockWorkflow(config.page, initialSnapshot, () => setPreviewKey");
     expect(editor).not.toContain("requestPageBlockSave");
     expect(editor).not.toContain("/api/admin/content/pageBlocks");
-    expect(preview).not.toContain("draft=");
+    expect(frame).not.toContain("draft=");
   });
 
   it("guards duplicate requests, aborts on unmount, and reloads without saving", () => {

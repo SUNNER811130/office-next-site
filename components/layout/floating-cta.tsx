@@ -1,9 +1,15 @@
 import { readContent } from "@/lib/content-store";
 
 import { ButtonLink } from "@/components/ui/button";
+import type { SiteContent } from "@/types/content";
 
 export async function FloatingCta() {
   const content = await readContent();
+
+  return <FloatingCtaContent content={content} />;
+}
+
+export function FloatingCtaContent({ content }: { content: SiteContent }) {
   if (!content.design.floatingCta.enabled) return null;
 
   return (

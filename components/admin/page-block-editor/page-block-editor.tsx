@@ -12,7 +12,6 @@ import { usePageBlockWorkflow } from "./use-page-block-workflow";
 
 export function PageBlockEditor<TPage extends PageBlockEditorPage>({ initialSnapshot, config }: { initialSnapshot: PageBlockEditorSnapshot<TPage>; config: PageBlockEditorConfig<TPage> }) {
   type Block = PageBlockSettings[TPage][number];
-  const [previewWidth, setPreviewWidth] = useState(390);
   const [previewKey, setPreviewKey] = useState(0);
   const [resetOpen, setResetOpen] = useState(false);
   const workflow = usePageBlockWorkflow(config.page, initialSnapshot, () => setPreviewKey((key) => key + 1));
@@ -37,6 +36,12 @@ export function PageBlockEditor<TPage extends PageBlockEditorPage>({ initialSnap
       </div>
       <ContentWorkflowActions snapshot={workflow.snapshot} dirty={workflow.dirty} operation={workflow.operation} notice={workflow.notice} error={workflow.error} conflict={workflow.conflict} onSave={() => void workflow.save()} onPublish={() => void workflow.publish()} onDiscard={() => void workflow.discard()} onReload={() => void workflow.reload()} />
     </div>
-    <PageBlockPreview pageLabel={config.pageLabel} previewPath={config.previewPath} previewWidth={previewWidth} previewKey={previewKey} onWidthChange={setPreviewWidth} onRefresh={() => setPreviewKey((key) => key + 1)} />
+    <PageBlockPreview
+      target={config.page}
+      pageLabel={config.pageLabel}
+      previewPath={config.previewPath}
+      hasDraft={workflow.snapshot.draftRevision !== null}
+      previewKey={previewKey + (workflow.snapshot.draftRevision ?? 0) + workflow.snapshot.publishedRevision}
+    />
   </div>;
 }
