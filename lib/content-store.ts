@@ -7,30 +7,47 @@ import { LocalFileContentWorkflowRepository } from "@/lib/content-workflow-repos
 import { normalizeDesignSettings } from "@/lib/design-settings";
 import { normalizePageBlockSettings } from "@/lib/page-block-settings";
 import type { ContentSection, ContentSectionMap, SiteContent } from "@/types/content";
+import type { ContentWorkflowRepository } from "@/types/content-workflow";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const CONTENT_FILE = path.join(DATA_DIR, "site-content.json");
 
-export type ContentStoreRepository = LocalFileContentWorkflowRepository;
+export type ContentStoreRepository = ContentWorkflowRepository;
 
-export function getContentWorkflowRepository(): ContentStoreRepository {
+type LegacyContentMutationRepository = ContentWorkflowRepository & {
+  replaceLegacyPublished(content: SiteContent): Promise<void>;
+  mutateLegacyPublished(
+    update: (latest: SiteContent) => SiteContent
+  ): Promise<SiteContent>;
+};
+
+function createLocalFileRepository(): LocalFileContentWorkflowRepository {
   return new LocalFileContentWorkflowRepository({
     persistencePath: CONTENT_FILE,
     seed: siteContentSeed
   });
 }
 
-function getRepository(): ContentStoreRepository {
-  return getContentWorkflowRepository();
+export function getContentWorkflowRepository(): ContentWorkflowRepository {
+  return createLocalFileRepository();
 }
 
-export async function readContent(repository = getRepository()): Promise<SiteContent> {
+function getLegacyContentMutationRepository(): LegacyContentMutationRepository {
+  return createLocalFileRepository();
+}
+
+export async function readContent(
+  repository: ContentWorkflowRepository = getContentWorkflowRepository()
+): Promise<SiteContent> {
   noStore();
   return (await repository.readPublished()).content;
 }
 
 /** @deprecated Restricted to legacy persistence before workflow migration. */
-export async function writeContent(content: SiteContent, repository = getRepository()) {
+export async function writeContent(
+  content: SiteContent,
+  repository: LegacyContentMutationRepository = getLegacyContentMutationRepository()
+) {
   await repository.replaceLegacyPublished(content);
 }
 
@@ -42,7 +59,7 @@ const sectionNormalizers: Partial<Record<ContentSection, (payload: unknown) => u
 export async function updateContentSection<K extends ContentSection>(
   section: K,
   payload: ContentSectionMap[K],
-  repository = getRepository()
+  repository: LegacyContentMutationRepository = getLegacyContentMutationRepository()
 ): Promise<SiteContent> {
   return repository.mutateLegacyPublished((current) => {
     const normalizedPayload = (sectionNormalizers[section]?.(payload) ?? payload) as ContentSectionMap[K];
@@ -56,7 +73,7 @@ export async function updateContentSection<K extends ContentSection>(
 export async function updatePageBlockPage(
   page: "home" | "services" | "about" | "contact",
   blocks: unknown,
-  repository = getRepository()
+  repository: LegacyContentMutationRepository = getLegacyContentMutationRepository()
 ): Promise<SiteContent> {
   return repository.mutateLegacyPublished((current) => {
     const pageBlocks = normalizePageBlockSettings({
@@ -67,7 +84,9 @@ export async function updatePageBlockPage(
   });
 }
 
-export async function resetContentToSeed(repository = getRepository()) {
+export async function resetContentToSeed(
+  repository: LegacyContentMutationRepository = getLegacyContentMutationRepository()
+) {
   await writeContent(siteContentSeed, repository);
   return siteContentSeed;
 }

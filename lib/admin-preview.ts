@@ -1,8 +1,7 @@
 import { mergeScopeValue } from "@/lib/content-scopes";
-import type { ContentStoreRepository } from "@/lib/content-store";
 import { getContentWorkflowRepository } from "@/lib/content-store";
 import type { SiteContent } from "@/types/content";
-import type { ContentScope } from "@/types/content-workflow";
+import type { ContentScope, ContentWorkflowRepository } from "@/types/content-workflow";
 import {
   adminPreviewTargets,
   type AdminPreviewTarget,
@@ -37,7 +36,7 @@ export function isAdminPreviewTarget(value: string): value is AdminPreviewTarget
 }
 
 async function applyEditorScope<TScope extends ContentScope>(
-  repository: ContentStoreRepository,
+  repository: ContentWorkflowRepository,
   content: SiteContent,
   scope: TScope
 ) {
@@ -50,7 +49,7 @@ async function applyEditorScope<TScope extends ContentScope>(
 
 export async function readAdminPreview(
   target: AdminPreviewTarget,
-  repository: ContentStoreRepository = getContentWorkflowRepository()
+  repository: ContentWorkflowRepository = getContentWorkflowRepository()
 ) {
   const config = adminPreviewTargetConfig[target];
   let content = (await repository.readPublished()).content;

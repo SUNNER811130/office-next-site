@@ -16,6 +16,7 @@ import {
 import { LegacyContentWriteBlockedError } from "@/lib/content-workflow-errors";
 import { LocalFileContentWorkflowRepository } from "@/lib/content-workflow-repository";
 import type { SiteContent } from "@/types/content";
+import type { ContentWorkflowRepository } from "@/types/content-workflow";
 
 jest.mock("next/cache", () => ({
   unstable_noStore: jest.fn()
@@ -74,6 +75,24 @@ describe("Content Store", () => {
     };
     const { repository } = await createFixture(envelope);
     await expect(readContent(repository)).resolves.toEqual(mockContent);
+  });
+
+  it("reads through the provider-neutral workflow contract", async () => {
+    const { repository } = await createFixture(mockContent);
+    const workflowOnlyRepository: ContentWorkflowRepository = {
+      readPublished: () => repository.readPublished(),
+      readEditor: (scope) => repository.readEditor(scope),
+      readPreview: (scope) => repository.readPreview(scope),
+      hasDrafts: () => repository.hasDrafts(),
+      saveDraft: (input) => repository.saveDraft(input),
+      publishDraft: (input) => repository.publishDraft(input),
+      discardDraft: (input) => repository.discardDraft(input)
+    };
+
+    expect("replaceLegacyPublished" in workflowOnlyRepository).toBe(false);
+    expect("mutateLegacyPublished" in workflowOnlyRepository).toBe(false);
+    expect("persistencePath" in workflowOnlyRepository).toBe(false);
+    await expect(readContent(workflowOnlyRepository)).resolves.toEqual(mockContent);
   });
 
   it("uses design and page-block defaults for older legacy files", async () => {
