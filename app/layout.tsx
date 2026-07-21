@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import { Instrument_Serif, Noto_Sans_TC } from "next/font/google";
 
-import { Footer } from "@/components/layout/footer";
-import { FloatingCta } from "@/components/layout/floating-cta";
-import { Header } from "@/components/layout/header";
-import { RootSiteShell } from "@/components/layout/root-site-shell";
 import { JsonLd, createOrganizationSchema, createWebsiteSchema } from "@/lib/seo";
 import { readContent } from "@/lib/content-store";
 import { getDesignCssVariables, getDesignDataAttributes } from "@/lib/design-settings";
@@ -105,14 +101,7 @@ export default async function RootLayout({
     <html lang="zh-Hant" data-scroll-behavior="smooth" className={`${bodyFont.variable} ${displayFont.variable}`}>
       <body {...designAttributes} style={designStyle}>
         <JsonLd data={[createOrganizationSchema(), createWebsiteSchema()]} />
-        <RootSiteShell
-          header={<Header />}
-          floatingCta={<FloatingCta />}
-          footer={<Footer />}
-          floatingCtaEnabled={content.design.floatingCta.enabled}
-        >
-          {children}
-        </RootSiteShell>
+        {children}
       </body>
     </html>
   );

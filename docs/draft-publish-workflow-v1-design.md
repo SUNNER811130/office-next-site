@@ -69,10 +69,10 @@ v1 建議採用以下最小架構：
 ### 2.3 公開讀取與現有測試
 
 - `app/layout.tsx`
-- `app/page.tsx`
-- `app/about/page.tsx`
-- `app/services/page.tsx`
-- `app/contact/page.tsx`
+- `app/(site)/page.tsx`
+- `app/(site)/about/page.tsx`
+- `app/(site)/services/page.tsx`
+- `app/(site)/contact/page.tsx`
 - `components/layout/header.tsx`
 - `components/layout/footer.tsx`
 - `components/layout/floating-cta.tsx`
@@ -825,6 +825,8 @@ Draft exists
 ### L7｜回歸、文件與 migration rehearsal
 
 由 OpenClaw 執行完整 QA；Codex 只修報告中列出的 FAIL。
+
+實作狀態（2026-07-17）：L1–L6 full automated regression、正式 Legacy bytes 的隔離 first-write migration／Discard／Publish／Page Block／failure-safety gate，以及全新持久型 L7 QA runtime 已完成。正式 JSON 仍為 Legacy root且未 mutation。Vercel Gate 為 A：UI／routing可做 read-only Preview smoke，但 LocalFile persistence 不可視為 durable mutation storage；完整 Browser mutation QA與外部 durable storage migration仍待後續授權。
 
 標準：
 

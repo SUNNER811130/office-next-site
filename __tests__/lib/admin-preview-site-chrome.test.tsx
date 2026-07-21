@@ -6,6 +6,7 @@ import { AdminPreviewSiteShell } from "@/components/admin/preview/admin-preview-
 import { FooterContent } from "@/components/layout/footer";
 import { FloatingCtaContent } from "@/components/layout/floating-cta";
 import { HeaderContent } from "@/components/layout/header";
+import { PublishedSiteShell } from "@/components/layout/published-site-shell";
 import { siteContentSeed } from "@/data/site-content.seed";
 import type { SiteContent } from "@/types/content";
 
@@ -61,6 +62,21 @@ describe("Admin Preview content-driven site chrome", () => {
     expect(renderToStaticMarkup(<FloatingCtaContent content={content} />)).toBe("");
   });
 
+  it("renders the Published site shell from one content snapshot without a client pathname branch", () => {
+    const html = renderToStaticMarkup(
+      <PublishedSiteShell content={previewContent()}>
+        <p>Published Page Body</p>
+      </PublishedSiteShell>
+    );
+
+    expect(html).toContain('data-root-site-shell="published"');
+    expect(html).toContain("Draft Brand Chrome");
+    expect(html).toContain("Draft Footer Summary");
+    expect(html).toContain("Draft CTA Label");
+    expect(html).toContain("Published Page Body");
+    expect(html).toContain("pb-24 lg:pb-0");
+  });
+
   it("wraps the complete Draft chrome in one design and source boundary", () => {
     const html = renderToStaticMarkup(
       <AdminPreviewSiteShell source="draft" content={previewContent()}>
@@ -96,31 +112,57 @@ describe("Admin Preview content-driven site chrome", () => {
     expect(html).not.toContain("site-floating-cta");
   });
 
-  it("keeps public wrappers reading Published while Preview uses the pure content components", () => {
-    const header = readFileSync(path.join(process.cwd(), "components/layout/header.tsx"), "utf8");
-    const footer = readFileSync(path.join(process.cwd(), "components/layout/footer.tsx"), "utf8");
-    const cta = readFileSync(path.join(process.cwd(), "components/layout/floating-cta.tsx"), "utf8");
-    const shell = readFileSync(path.join(process.cwd(), "components/admin/preview/admin-preview-site-shell.tsx"), "utf8");
+  it("composes Published and Preview chrome from one supplied content snapshot", () => {
+    const publishedShell = readFileSync(
+      path.join(process.cwd(), "components/layout/published-site-shell.tsx"),
+      "utf8"
+    );
+    const previewShell = readFileSync(
+      path.join(process.cwd(), "components/admin/preview/admin-preview-site-shell.tsx"),
+      "utf8"
+    );
 
-    for (const source of [header, footer, cta]) {
-      expect(source).toContain("const content = await readContent();");
+    for (const shell of [publishedShell, previewShell]) {
+      expect(shell).toContain("<HeaderContent content={content} />");
+      expect(shell).toContain("<FooterContent content={content} />");
+      expect(shell).toContain("<FloatingCtaContent content={content} />");
+      expect(shell).not.toContain("readContent");
     }
-    expect(shell).toContain("<HeaderContent content={content} />");
-    expect(shell).toContain("<FooterContent content={content} />");
-    expect(shell).toContain("<FloatingCtaContent content={content} />");
-    expect(shell).not.toContain("readContent");
   });
 
-  it("suppresses only outer Published chrome on Admin Preview paths", () => {
-    const rootShell = readFileSync(path.join(process.cwd(), "components/layout/root-site-shell.tsx"), "utf8");
-    expect(rootShell).toContain('pathname.startsWith("/admin/preview/")');
-    expect(rootShell).toContain("isAdminPreview ? null : header");
-    expect(rootShell).toContain("isAdminPreview ? null : floatingCta");
-    expect(rootShell).toContain("isAdminPreview ? null : footer");
-    expect(rootShell).toContain("!isAdminPreview && floatingCtaEnabled");
-    expect(rootShell).not.toContain("suppressHydrationWarning");
-    expect(rootShell).not.toContain("draft=");
-    expect(rootShell).not.toContain("localStorage");
+  it("keeps the public site shell server-only and separates it from Admin Preview chrome", () => {
+    const rootLayout = readFileSync(path.join(process.cwd(), "app/layout.tsx"), "utf8");
+    const siteLayout = readFileSync(path.join(process.cwd(), "app/(site)/layout.tsx"), "utf8");
+    const publishedShell = readFileSync(
+      path.join(process.cwd(), "components/layout/published-site-shell.tsx"),
+      "utf8"
+    );
+
+    const dashboardLayout = readFileSync(
+      path.join(process.cwd(), "app/admin/(dashboard)/layout.tsx"),
+      "utf8"
+    );
+    const loginLayout = readFileSync(path.join(process.cwd(), "app/admin/login/layout.tsx"), "utf8");
+    const previewPage = readFileSync(
+      path.join(process.cwd(), "app/admin/preview/[target]/page.tsx"),
+      "utf8"
+    );
+
+    expect(rootLayout).not.toContain("RootSiteShell");
+    expect(rootLayout).not.toContain("PublishedSiteShell");
+    expect(rootLayout).not.toContain("usePathname");
+    expect(siteLayout).toContain("const content = await readContent();");
+    expect(siteLayout).toContain("<PublishedSiteShell content={content}>{children}</PublishedSiteShell>");
+    expect(dashboardLayout).toContain("<PublishedSiteShell content={content}>");
+    expect(loginLayout).toContain("<PublishedSiteShell content={content}>{children}</PublishedSiteShell>");
+    expect(previewPage).toContain("<AdminPreviewSiteShell");
+    expect(previewPage).not.toContain("PublishedSiteShell");
+    expect(publishedShell).not.toContain('"use client"');
+    expect(publishedShell).not.toContain("usePathname");
+    expect(publishedShell).toContain('data-root-site-shell="published"');
+    expect(publishedShell).not.toContain("suppressHydrationWarning");
+    expect(publishedShell).not.toContain("draft=");
+    expect(publishedShell).not.toContain("localStorage");
   });
 
   it("marks only the Founder hero image as priority without changing its source", () => {

@@ -1,5 +1,338 @@
 # Codex Handoff
 
+## Final — L7 Conditional Release Closeout — 2026-07-21
+
+### 1. Summary
+
+**L7 Conditional PASS — intermittent recoverable React #418 remains a monitored known issue.** Server-Shell architecture and all deterministic workflow/security gates passed. The `58/58` focused production matrix and `160/160` paired document-start matrix passed. Historical supported #418 evidence remains preserved; no stable reproducer or product branch was localized, and React #418 is not declared eradicated. Additional random localhost load testing is closed due to diminishing diagnostic value.
+
+### 2. Files changed
+
+- Server-Shell product files and corresponding route moves.
+- Preview authentication／shell-separation regression tests.
+- Draft／Publish workflow guide and L7 release-gate documentation.
+- This handoff and `.agent_runs/l7-validation-report.md`.
+
+### 3. Tests run
+
+- Fresh isolated source copy with no inherited `.next` or `.swc` state.
+- `L7_MIGRATION_DIR=<dedicated /tmp fixture> npm run anti:check`: TypeScript PASS; Jest `25/25` suites and `345/345` tests PASS.
+- `npm run build`: PASS; production compile/type checks, Middleware／instrumentation, Dynamic Admin Preview, traces, and static generation `45/45` PASS.
+- Generated types stale/nonexistent route paths: `0`. Migration atomic temp files: `0`.
+- No new Browser load matrix and no workflow mutation were run during closeout.
+
+### 4. Commit
+
+- Message: `refactor: move published site chrome to server shell`.
+- The final immutable SHA is reported after commit creation; no push, deploy, merge, PR, or migration is authorized in this handoff.
+
+### 5. Needs OpenClaw QA
+
+- Yes. Verify the allowlisted commit and perform the normal post-commit safety review without rerunning random hydration matrices.
+
+### 6. Needs deploy
+
+- Push: No.
+- Deploy: No.
+- Real mutation deployment remains blocked until durable external persistence exists.
+
+### 7. Needs manual verification
+
+- Confirm the commit and restricted-file exclusion, then authorize Push separately if desired.
+- After Push, only read-only Preview evaluation may proceed.
+
+### 8. Risks / notes
+
+- Historical intermittent recoverable React #418 remains monitored. Historical FAIL reports are retained and not rewritten.
+- Read-only Preview evaluation may proceed; Draft／Publish mutation deployment may not.
+- Formal `data/site-content.json` remains an unchanged Legacy root with SHA-256 `2d0bd7de997d8c4cacc72c198ca54a7921e317d3f98362f17983368c5c873939`.
+
+## Latest — L7 Paired Clean-Profile Document-Start Capture Gate — 2026-07-21
+
+- **D — 160/160 PASS.** Strict alternating matrix completed: Legacy `80/80`, Envelope `80/80`; no new supported React #418, and no loads were added beyond the ceiling.
+- Four runtime lifecycles covered Pairs 01–20, 21–40, 41–60, and 61–80 with exact port release after each 20-pair boundary. Lifecycle 3 retained exact launch-shell/listener/cwd evidence, but its intermediate npm/Next-shell PIDs were not separately sampled and are reported as unavailable.
+- Every formal navigation used a distinct clean profile and document-start synchronous capture. Exact Document bodies/request IDs/SHA/bytes/headers, nine JS body hashes, Cookie/RSC booleans, and final snapshots are retained; all 160 used reduced-motion=false and no cache/service worker.
+- Classification text: **Paired capture did not reproduce / Historical supported FAIL remains / No product repair or Commit authorized.** No FAIL diff or new root-cause candidate is available.
+- Both QA runtimes stopped. Formal Legacy SHA, QA Legacy/Envelope baselines, empty Draft scopes, package/staging/temp safety all PASS. No product/test/persistence/workflow/build/package mutation; no commit/push/deploy/merge/PR/migration.
+- Report: `.agent_runs/l7-hydration-paired-document-start-capture.md`.
+
+## Latest — L7 Legacy／Envelope Hydration Isolation Gate — 2026-07-20
+
+- **FAIL / inconclusive.** Identical Build ID and isolated state confirmed. Corrected 2×2: Legacy clean `39/40` (one new #418 at LCA16), Legacy auth `10/10`, Envelope clean `40/40`, Envelope auth `10/10`.
+- agent-browser 0.31.1 `errors --clear` retained the error buffer; post-LCA16 raw counts were corrected by buffer deltas and are not 25 independent failures.
+- LCA01 PASS/LCA16 FAIL shared the same measured response SHA, chunks, headers, Page Blocks, normalized BODY style, and Chrome. FAIL post-recovery alone lacked trailing `$`/`/$` comments.
+- The matrix matches none of A–E; do not falsely blame Envelope, auth, Shell, or repository. Only paired clean-profile replication with document-start capture is authorized next; no product-code scope is authorized.
+- Both runtimes stopped; persistence/formal/package/staging/temp safety PASS. Patch remains applied/uncommitted; no commit/push/deploy/merge/migration.
+- Report: `.agent_runs/l7-hydration-legacy-envelope-isolation.md`.
+
+## Latest — L7 v3 Authenticated Resume Completed, Hydration FAIL — 2026-07-20
+
+- Authentication succeeded in the exact headed session/profile. Authenticated `/admin`, `/admin/home`, `/admin/design`, and initial Published-fallback Preview passed shell separation, security headers, console/error, and Chrome checks.
+- Minimal UI Save Draft PASS: one Home Draft revision 1, Published deep-equal baseline, Draft Preview marker visible, public content/fresh HTML remained Published-only, PUT 200, temp files 0; Publish not used.
+- Discard dialog accessibility PASS: modal semantics, inert/scroll lock, initial focus, bidirectional focus trap, Escape/focus restore. Reopened Confirm sent one DELETE 200; Draft scopes empty, Editor/Preview Published, marker absent, Published baseline preserved.
+- **Hydration FAIL:** public Home during Draft produced one React #418; after cleanup, Published Preview produced one #418 and public Home produced two #418 records. Warnings/console errors/overlay stayed 0 and no Draft serialization leaked.
+- Formal persistence/package/staging/temp safety PASS. No product/test/manifest/formal persistence change, commit, push, deploy, merge, PR, or formal migration. Hydration blocker not repaired; not ready for L7 Commit.
+- Detailed evidence: `.agent_runs/l7-hydration-server-shell-repair-validation-v3.md`.
+
+## Latest — L7 v3 Authenticated Resume — 2026-07-20
+
+- **FAIL / login still unavailable in required persistent profile.** Retained runtime/PID/cwd, Home 200, and Legacy byte-identical QA baseline all passed preflight; no prior gate was rerun.
+- With profile `/home/usersun/.agent-browser/profiles/office-next-admin-qa` and new session `office-next-l7-server-shell-v3-auth-resume`, direct `/admin` still redirected to `/admin/login`.
+- Stopped immediately per task. No Cookie/session/token read, credential input, bypass, Admin/Preview checks, Draft/Discard mutation, product/test/manifest/persistence change, commit, push, deploy, merge, or PR.
+- QA remains baseline-identical with no marker/temp files; listener `21378` remains on port `3011`. Next: log in within the exact persistent profile, then request the same restricted resume.
+- Updated report: `.agent_runs/l7-hydration-server-shell-repair-validation-v3.md`.
+
+## Latest — L7 Server-Shell Repair Validation v3 — 2026-07-20
+
+- **FAIL / awaiting Admin login.** Correct fixture `/tmp/office-next-l7-migration-cylR0N`; TypeScript PASS; Jest `25/25` suites and `345/345` tests PASS; migration cleanup/temp gate PASS.
+- Clean production build PASS: `45/45`, Middleware/instrumentation, Dynamic Preview, Page Block CSS, and generated-type target checks; stale old-route imports `0`.
+- Hydration matrix PASS: Phase A `29/29`, exact cold restart, Phase B `29/29`; combined `58/58`, React #418/page errors/warnings/errors/overlay all `0`. Public Chrome, 390 px overflow, and unauthenticated Preview 307/no-store/noindex passed.
+- Existing Admin QA profile redirected `/admin` to `/admin/login`; per task rule, authenticated Preview and Draft/Discard smoke stopped. QA remains Legacy/baseline-identical with no marker/temp files. Current retained QA listener: port `3011`, PID `21378`, exact v3 validation cwd.
+- No product/test/manifest/persistence mutation, commit, push, deploy, merge, PR, or formal migration. Next: user logs in to the existing Admin QA profile, then resume only authenticated Chrome and Draft/Discard smoke.
+- Detailed report: `.agent_runs/l7-hydration-server-shell-repair-validation-v3.md`.
+
+## Latest — L7 Server-Shell Repair Clean Generated-State Validation v2 — 2026-07-20
+
+- **FAIL at Automatic Gate; build and Browser QA were not run.** Clean validation copy: `/home/usersun/qa-workspaces/office-next-l7-server-shell-validation-20260720-201931`; it initially had no `.next` or `.swc`, and its Legacy persistence SHA matched formal.
+- TypeScript PASS, proving the previous stale `.next/types` failure did not recur. Jest: `24/25` suites, `342/342` executed tests PASS; `__tests__/lib/l7-migration-gate.test.ts` failed at load because the task-required `/tmp/office-next-l7-server-shell-migration-*` prefix is rejected by the test's `/tmp/office-next-l7-migration-*` invariant. Exit `1`.
+- No product/test/manifest/persistence change, build, Browser QA, server start, commit, push, deploy, merge, PR, or migration. Needs OpenClaw QA: issue a minimal fixture-prefix contract repair only, then rerun from a new clean generated-state copy.
+- Detailed report: `.agent_runs/l7-hydration-server-shell-repair-validation-v2.md`.
+
+## Latest — L7 Hydration #418 Corrected Cold-Restart Reproduction Gate — 2026-07-19
+
+- **78 PASS / 2 supported FAIL**: Phase A `39/1` (A12), exact mandatory cold restart, Phase B `39/1` (B10).
+- Canonical PASS MAIN is `SCRIPT` + nine ordered Page Block DIVs + `$`/`/$` = 12 raw children. Historical 11 is a SCRIPT canonicalizer-count difference, not whitespace or a missing block.
+- Cold restart PASS: `6936/6952/6953` stopped by exact-PID SIGTERM; port released; new `11335/11347/11348`; exact QA cwd, unchanged Build ID/QA SHA, Home 200.
+- A12/B10 have different exact response SHAs, but identical server MAIN, first difference, missing comment hashes, error-time structure, later snapshots, and Fiber branch. Each FAIL SHA also produced PASS loads.
+- No observer record proves marker removal before the synchronous error/recovery point. **Boundary removal classified as React recovery; hydration root cause remains unlocalized.** Controlled variant/repair not authorized.
+- Persistence/restricted checks remain safe. No product change, Workflow mutation, commit, push, deploy, merge, PR, or migration.
+- Detailed report: `.agent_runs/l7-hydration-corrected-cold-restart.md`.
+
+## Latest — L7 Hydration #418 Error-time DOM／Client Render Localization Gate — 2026-07-17
+
+- **E — Hydration evidence仍不足；不得進行猜測性 repair。** The passive unmodified-scheduling runner reached its 20-load limit with 19 PASS / 1 FAIL, so the required two-FAIL consistency gate was not met.
+- FAIL load 5 is linked to server PID 37834, one Document requestId, and exact response SHA `12823d8e677b7b8c6af3ff8db0347885723d5154366ccdecc153fd730095675e`; synchronous error-time, exact server-parsed, and post-recovery snapshots are preserved.
+- First difference: MAIN has 11 canonical children in exact server-parsed DOM but 9 at error-time/post-recovery; the removed nodes are trailing React/Suspense `$` and `/$` comment markers. PASS final DOM retains both markers.
+- BODY raw style changes only in serialization; the normalized ten-property map is identical. Post-error Hero filter change is normal motion completion.
+- MAIN Fiber safely maps to the RootSiteShell children insertion point; adjacent FAQ maps through PageBlockFrame and a Next Suspense/loading boundary. Comment nodes have no own Fiber, and one FAIL cannot assign a unique causal branch.
+- Formal/QA Legacy SHA remains correct; restricted checks pass. No product change, controlled variant, commit, push, deploy, merge, migration, clasp push, or Cloud Run deploy.
+- Detailed report: `.agent_runs/l7-hydration-error-time-localization.md`.
+
+## Latest — L7 Hydration #418 Pre-hydration Evidence Gate — 2026-07-17
+
+- **E — Hydration evidence仍不足；不得進行猜測性 repair。** Profile B reproduced 3/3; cache-enabled failed load 4/6; cache-disabled failed load 5/6; mutation trace failed load 6/6.
+- Raw bytes/Flight ordering vary, but visible/pre-hydration structure and chunk versions are stable. The same document SHA passes/fails; three cold clean cycles passed 9/9.
+- Simple cache/resource mixing is ruled out. Eight paused-JS pre-DOM snapshots were structurally identical and nesting-valid, but pausing suppressed the race.
+- Trace shows #418 before React root recovery, not the first causal node/attribute. RootSiteShell pathname and PageBlockFrame/motion reduced-motion branches remain unproven candidates only.
+- Restricted checks pass; formal/QA Legacy SHA remains `2d0bd7de997d8c4cacc72c198ca54a7921e317d3f98362f17983368c5c873939`. No product change, commit, push, deploy, merge, migration, clasp push, or Cloud Run deploy.
+- Detailed report: `.agent_runs/l7-hydration-preload-evidence.md`.
+
+## Latest — L7 Hydration Stability Soak Gate — 2026-07-17
+
+- **FAIL — Supported production reproduction confirmed.** Fresh Profile A passed 21/21 loads, but after an exact cold restart, fresh supported default-motion Profile B produced #418 on Home load 2.
+- The same Profile B session reproduced #418 on Services, About, Contact, and three additional Home confirmations: seven supported reproductions total. `matchMedia` was false; extensions were disabled; no forbidden media token was used.
+- Every failure retained Published shell structure `A/HEADER/MAIN/DIV/DIV/FOOTER`, chrome counts `1/1/1` plus CTA `2`, console warning/error `0`, and overlay `0`. Raw error, DOM summaries, Browser batches, and server HTML SHA are preserved in the fresh QA evidence directory.
+- The 68-load PASS matrix stopped: Profile A `21/21` PASS; Profile B attempted 5 matrix loads with 4 #418 failures; 3/3 separate confirmation loads failed. Existing and reduced-motion phases were not run.
+- Fresh QA_DIR: `/home/usersun/qa-workspaces/office-next-l7-hydration-soak-qa-20260717-201458`; current listener PID `14562`, exact QA cwd. Persistence remains byte-identical Legacy; no Draft/Envelope/temp files or mutations.
+- Automated checks: TypeScript PASS; Jest 25/25 suites, 344/344 tests PASS; build 45/45 PASS; restricted checks PASS.
+- No product code change, variant, commit, push, deploy, merge, PR, or formal migration. Product repair remains blocked pending exact pre-hydration evidence. Detailed report: `.agent_runs/l7-hydration-stability-soak.md`.
+
+## Latest — L7 Production Hydration #418 Root-Cause Gate — 2026-07-17
+
+- **FAIL / Hydration root cause尚未定位.** Existing authenticated profile passed 0/3 errors; two independent clean default/no-preference profiles passed 0/3 and 0/8; documented reduced-motion passed 0/2. No extension-injected DOM was found.
+- #418 appeared only twice after an unsupported runner media token (`reduce`) that did not activate `matchMedia`; that contaminated session is not accepted as proof of a product defect or normal profile contamination.
+- Server/existing/clean structure matched: identical html/body attributes, RootSiteShell `A/HEADER/MAIN/DIV/DIV/FOOTER`, Header/main/Footer `1/1/1`, CTA `2`; only Next's route announcer was added live. HTML nesting checks passed.
+- RootSiteShell Variant 1 passed 0/8 in an isolated production copy, but an unmodified fresh control also passed 0/8, so the variant is non-discriminating and no formal product change was made. Motion Variant 2 was not run.
+- Safe final checks: `anti:check` 25/25 suites and 344/344 tests PASS using a dedicated `/tmp` migration gate; formal build 45/45 PASS; `git diff --check` PASS. Formal Legacy SHA and restricted diffs remain correct.
+- Detailed evidence: `.agent_runs/l7-hydration-root-cause.md`. Commit/push/deploy/merge/formal migration: not performed. Needs OpenClaw QA: obtain a supported repeatable baseline reproduction with pre-hydration evidence before issuing any repair task.
+
+## Latest — L7 Production Full Browser QA Ready — 2026-07-17
+
+- **Ready for final production-runtime L7 Browser QA.** The complete authenticated Browser mutation checklist remains pending and was not run in this preparation step.
+- The preserved diagnostic result is unchanged: `next dev` serializes Draft／Envelope data only in React Flight development debug records, while all three fresh `next start` production responses passed with no Draft／Envelope／revision leakage. No product repair is required. Do not expose the development server to an untrusted network; final release/security QA must use `next build` + `next start`.
+- Historical evidence was preserved, including `.agent_runs/l7-production-serialization-gate.md` and all existing L7 Browser reports. The old production QA PIDs `91692`／`91698`／`91710` were already absent and port `3011` was free, so no signal was sent and the old QA directory/logs/baselines/evidence were not deleted.
+- Fresh QA_DIR: `/home/usersun/qa-workspaces/office-next-l7-production-full-qa-20260717-162347`; it is not a Git repository. Port: `3011`.
+- Runtime: shell PID `4683`; npm PID `4689`; `next start` shell PID `4700`; Next listener PID `4701`. All four cwd values resolve exactly to the fresh QA_DIR; port `3011` remains LISTEN and the runtime is not `next dev`.
+- QA_BUILD_LOG: `/home/usersun/qa-workspaces/office-next-l7-production-full-qa-20260717-162347/qa-production-build.log`. Build exit `0`: compile/type validation, static generation `45/45`, finalization/traces, Middleware `33.9 kB`, Dynamic `/admin/preview/[target]`, and generated Page Block CSS selectors passed.
+- QA_LOG: `/home/usersun/qa-workspaces/office-next-l7-production-full-qa-20260717-162347/qa-production-server.log`. Runtime/Fatal/`require is not defined` scan: `0`.
+- QA_BASELINE: `/home/usersun/qa-workspaces/office-next-l7-production-full-qa-20260717-162347/qa-baseline.json`; QA_MIGRATION_BASELINE: `/home/usersun/qa-workspaces/office-next-l7-production-full-qa-20260717-162347/qa-migration-baseline.json`.
+- Initial QA persistence and both baselines are byte-identical Legacy roots with no `schemaVersion`, Draft, or Envelope. All three SHA-256 values are `2d0bd7de997d8c4cacc72c198ca54a7921e317d3f98362f17983368c5c873939`; workflow temp files: `0`.
+- Read-only smoke: `/`, `/services`, `/about`, `/contact`, `/manifest.webmanifest`, and `/admin/login` returned `200`. Unauthenticated `/admin/preview/home` returned `307` to `/admin/login` with a 12-byte body, `private, no-store`, `Pragma: no-cache`, `X-Robots-Tag: noindex, nofollow`, and `Vary: Cookie`; the body contained no Published Site Chrome, Draft, Envelope, or `__next_f`. Public `Vary` retained framework tokens and did not gain `Cookie`.
+- Persistence remained byte-identical to the Legacy baseline after smoke. Authenticated Preview/header verification and the complete Browser mutation QA remain for OpenClaw in this isolated runtime.
+- No product source, public page, RootLayout, repository, package manifest, formal persistence, or secret was changed. Commit/push/deploy/merge/PR/formal migration: **not performed**.
+
+## Latest — L7 Public RSC Serialization Production Gate — 2026-07-17
+
+- **PASS — Dev-only React Flight debug serialization.** The prior `next dev` fresh-response leak remains a valid development-runtime failure, but three fresh `next start` production checks contained zero Draft marker, `drafts.home`, Envelope schema/revision metadata, or `Object.readFile` record.
+- Production QA_DIR: `/home/usersun/qa-workspaces/office-next-l7-production-serialization-qa-20260717-154624`; initial persistence and both baselines were byte-identical Legacy roots with SHA `2d0bd7de997d8c4cacc72c198ca54a7921e317d3f98362f17983368c5c873939`.
+- Production build exit 0: compile/type validation, 45/45 pages, Middleware/instrumentation, build traces, and Dynamic `/admin/preview/[target]` passed.
+- `next start` runtime: shell PID 91692, npm PID 91698, listener PID 91710; npm/Next cwd exactly equals QA_DIR; port 3011 remains running.
+- First Home Save Draft returned 200 and created Envelope v1 with only Home Draft revision 1 over Published revision 1. Published content deep-equaled baseline; Draft Preview showed the marker while public visible content remained Published.
+- Production fresh evidence: no-Cookie raw HTML, authenticated no-store fetch, and a completely fresh public Browser document each had marker/Envelope/revision/`Object.readFile` counts of 0. Normal production `self.__next_f.push` scripts remained but did not contain Draft/Envelope data.
+- UI Discard returned 200. Final QA Draft scopes empty, Published deep-equal baseline, marker 0, temp files 0. Formal JSON remains Legacy, SHA-correct, diff-clean; restricted files unchanged.
+- No product repair is required for this production serialization gate. Do not expose `next dev` to untrusted networks or use it for release security QA; use `next build` + `next start`.
+- Full evidence: `.agent_runs/l7-production-serialization-gate.md`. Complete L7 Browser Gate remains pending and is not marked PASS.
+- Commit/push/deploy/merge/PR/formal migration: not performed. Needs OpenClaw QA: review this gate report and start a fresh production-runtime full L7 Browser QA only as a separate authorized step.
+
+## Latest — L7 Vary Contract Correction／QA False Blocker — 2026-07-17
+
+- The earlier “Middleware redirect has only `Vary: Cookie`, therefore FAIL” result is **Historical／Superseded — QA contract false blocker** and is not a product issue.
+- For a Middleware-generated unauthenticated Preview redirect, the contract is: 307 to login; private/no-store; pragma no-cache; noindex/nofollow; Cookie in Vary; and no Site Chrome, Preview, Draft, or Envelope serialization. RSC/router tokens are not required because App Router rendering is bypassed; Accept-Encoding is required only when actual encoding negotiation occurs.
+- Authenticated App Router Preview responses retain Next's actual framework Vary output plus Cookie and remain no-store/noindex. Public App Router responses retain normal framework Vary and must not gain Cookie.
+- No middleware, instrumentation, session, Vary helper, Preview route, Root Layout, public route, workflow, persistence, or package code was changed for this contract correction.
+
+## Latest — L7 Preview Pre-render Auth／Serialization Repair — 2026-07-17
+
+### Final determination
+
+- **Ready for corrected full L7 Browser QA**.
+- The original L7 Browser Gate stopped after confirming that unauthenticated `GET /admin/preview/home` returned a correct 307 and security headers but serialized Published site content in the raw redirect body.
+- The separate public Draft concern remains **unconfirmed at the raw-response layer**: the marker was found only in Browser DOM script history after Admin navigation. No public page, `readContent`, repository, cache, or rendering code was changed without the required fresh-response evidence.
+
+### Root cause and repair
+
+- `RootLayout` reads Published content and creates Header／Footer／Floating CTA React nodes before the Preview page-level `requireAdminUser()` redirect completes. `RootSiteShell` is a Client Component receiving those nodes, so page-level auth was too late to prevent the Published RSC payload from being serialized.
+- Added `lib/admin-session.ts`, an Edge-compatible Web Crypto verifier for the existing `<base64url JSON>.<base64url HMAC-SHA256>` token and the existing `office_next_admin_session` cookie name. It rejects missing, malformed, invalid-signature, incomplete, and expired sessions without logging token or payload data and has no Node crypto, Buffer, headers, fs, or path dependency.
+- `middleware.ts` is now async and validates the session only for `/admin/preview/:path*` before rendering. Invalid sessions redirect directly to `/admin/login`; valid and redirect responses receive private no-store, no-cache, noindex/nofollow, and Vary Cookie headers.
+- Preview Page `requireAdminUser()` remains intact as defense-in-depth. Cookie flags, TTL, login UI, logout behavior, public routes, Draft／Publish／Conflict/Page Block logic, and public rendering were not changed.
+
+### Tests and build
+
+- Targeted verifier／middleware／Preview contract: **3/3 suites, 22/22 tests PASS**.
+- Final `L7_MIGRATION_DIR=/tmp/office-next-l7-migration-JMl3dz npm run anti:check`: TypeScript **PASS**; Jest **25/25 suites, 344/344 tests PASS**; exit `0`.
+- `npm run build`: compile, lint/type validation, page data, static generation **45/45**, finalization, and traces **PASS**; Middleware **34 kB**; `/admin/preview/[target]` remains Dynamic; exit `0`.
+- The first unsupported anti-check invocation correctly stopped at the pre-existing isolated migration gate because `L7_MIGRATION_DIR` was absent; the required dedicated `/tmp` fixture was then supplied without changing the test.
+
+### Corrected isolated QA runtime
+
+- QA_DIR: `/home/usersun/qa-workspaces/office-next-l7-serialization-fix-qa-20260717-143336`.
+- Port: `3011`; npm parent PID `61700`; Next listener PID `61729`; both cwd values exactly equal QA_DIR.
+- QA log: `/home/usersun/qa-workspaces/office-next-l7-serialization-fix-qa-20260717-143336/qa-server.log`; Runtime/Error scan `0`.
+- QA baseline and migration baseline are byte-identical Legacy copies. Persistence remains Legacy with SHA `2d0bd7de997d8c4cacc72c198ca54a7921e317d3f98362f17983368c5c873939`.
+- Public `/`, `/services`, `/about`, `/contact`, and `/manifest.webmanifest` returned `200`.
+- Unauthenticated Preview returned `307` to `/admin/login`, required security headers, and a 12-byte body: exact baseline long-text hits `0`, Published `__next_f` chrome payload `false`, Draft metadata `false`, raw Envelope `false`.
+- The QA server remains running for corrected Browser QA. Codex did **not** run Browser mutation QA in this repair round.
+
+### Safety and release state
+
+- Formal `data/site-content.json` remains an unchanged Legacy root with the required SHA; restricted Seed/package/Cases/Insights files and formal temp files are unchanged/absent.
+- Existing `.agent_runs/l7-browser-qa-report.md` and `.agent_runs/openclaw-report-latest.md` were preserved without overwrite.
+- Full L7 Browser QA has not been rerun. No commit, push, deploy, merge, PR, formal migration, Draft Cookie, public Draft query, package change, or production mutation was performed.
+
+## Latest — L7 Automated Regression／Migration Gate Ready — 2026-07-17
+
+### Final determination
+
+- **Ready for L7 full isolated Browser QA**.
+- Branch `feature/draft-publish-workflow-v1`; HEAD `8d89d37f7e01a6d64261a87100ff52b911794e85` (`feat: add admin draft preview`), synchronized with origin at preflight.
+- Full regression, isolated Legacy first-write migration, Publish／Discard, Page Block normalization, failure safety, public/Admin read-only smoke, and formal restricted checks passed.
+- Vercel Gate: **A — UI/routing may be deployed for read-only Preview evaluation; real mutation must remain disabled until durable external persistence exists**.
+- Browser mutation QA, deployment, merge, commit, push, and formal persistence migration were not performed.
+
+### Automated regression and build
+
+- Final `npm run anti:check`: TypeScript **PASS**; Jest **23/23 suites, 328/328 tests PASS**; exit `0`.
+- Targeted migration/repository/atomic/coordinator gate: **4/4 suites, 36/36 tests PASS**.
+- `npm run build`: compile, type validation, page data, static generation **45/45**, finalization, and traces **PASS**; exit `0`.
+- Middleware and instrumentation built successfully; `/admin/preview/[target]` remains Dynamic.
+- Coverage includes Legacy/Envelope parsing, atomic writes, revisions/conflicts, Draft/Publish/Discard isolation, General/Design/Page Block workflows, Contact/Social isolation, Design Reset Draft, four-page Page Block isolation, Hero lock, duplicate guard, Tiptap external sync, Publish revalidation, generated CSS, Preview security/composition/site chrome, Vary Cookie, and Published-only public routes.
+
+### Legacy migration and recovery gate
+
+- Fixture: `/tmp/office-next-l7-migration-20260717-133448-nilBpl`.
+- Legacy baseline and backup SHA: `2d0bd7de997d8c4cacc72c198ca54a7921e317d3f98362f17983368c5c873939`.
+- Read-only Published/Editor/Admin Preview access kept exact Legacy bytes and did not create an Envelope.
+- First valid Save Draft created Envelope v1 only in the fixture: Published deep-equal baseline, only `brand` Draft, Draft revision 1, Published revision 1. Migration Envelope SHA: `9d428956b1e31b45abcec347e1c712b5c9c91333f443d9c4dee7b7d32db421ec`.
+- Discard returned Draft scopes to empty and retained baseline Published content. Clean Save＋Publish removed the Draft, changed only the target scope, and advanced global/scope revisions to 2.
+- Clean `pageBlocks.home` first write preserved Published, full IDs, defaults, and Hero lock; Discard returned Published to baseline.
+- Failed write, missing Draft, malformed persistence, invalid scope, stale revision, and concurrent writes did not partially overwrite, last-write-win, or silently lose data. Atomic temp files: `0`.
+- Migration is not deployment-triggered. Only a separately authorized legal Workflow mutation converts Legacy; production migration still requires an external backup and explicit authorization.
+
+### Read-only smoke and persistent QA runtime
+
+- Public `/`, `/services`, `/about`, `/contact`, manifest, and icons returned `200`; `/admin/login` returned `200`.
+- All requested unauthenticated Admin and Preview routes returned `307` to `/admin/login`.
+- Preview final responses retained `no-store`, `noindex`, and framework Vary tokens merged with `Cookie`; runtime/require error scan: `0`.
+- Authenticated invalid-target `404` remains a Browser QA item because authentication intentionally precedes target parsing. `agent-browser` CLI was unavailable, so no visual or mutation operation was attempted.
+- QA_DIR: `/home/usersun/qa-workspaces/office-next-l7-full-regression-qa-20260717-133602`.
+- Port: `3011`; npm parent PID `22283`; Next listener PID `22309`; both cwd values exactly equal QA_DIR and the port remains listening.
+- QA_LOG: `/home/usersun/qa-workspaces/office-next-l7-full-regression-qa-20260717-133602/qa-server.log`.
+- QA_BASELINE: `/home/usersun/qa-workspaces/office-next-l7-full-regression-qa-20260717-133602/qa-baseline.json`.
+- QA_MIGRATION_BASELINE: `/home/usersun/qa-workspaces/office-next-l7-full-regression-qa-20260717-133602/qa-migration-baseline.json`.
+- Initial QA persistence and both baselines are byte-identical Legacy roots with SHA `2d0bd7de997d8c4cacc72c198ca54a7921e317d3f98362f17983368c5c873939`.
+
+### Vercel Preview capability and persistence risk
+
+- No local `.vercel/project.json` exists; no Vercel project/link/env/integration was read from a remote service or changed.
+- Local production build and Preview UI/routing are deployable for read-only evaluation.
+- `LocalFileContentWorkflowRepository` writes `process.cwd()/data/site-content.json` with local atomic rename semantics. A Vercel Function filesystem is not durable application storage across invocations/instances, so Save/Publish/Discard cannot be accepted as persistent there.
+- Full mutation requires durable external storage with atomic revision/conflict semantics; transactional Postgres-compatible storage is the conservative fit. Blob/KV requires a separately designed conditional-write/concurrency model.
+
+### Formal restricted check
+
+- Formal `data/site-content.json`: Legacy root, no diff, SHA `2d0bd7de997d8c4cacc72c198ca54a7921e317d3f98362f17983368c5c873939`.
+- Seed, package manifests, Cases, and Insights: no diff. Formal workflow temp files: `0`.
+- OpenClaw report remains untracked and unmodified. No staged changes, commit, push, deploy, merge, or formal migration.
+
+### Full L7 isolated Browser QA checklist
+
+1. Public `/`, `/services`, `/about`, `/contact` at 1280px and 390px.
+2. Public Header／Footer／Floating CTA.
+3. Public Design CSS variables and data attributes.
+4. Page Block background／layout／motion／order／enabled state.
+5. No public Preview banner.
+6. No public Draft leakage.
+7. General Save Draft.
+8. General Draft Preview.
+9. General Discard fallback.
+10. General Publish public update.
+11. Restore and Publish baseline.
+12. Rich Text render/external snapshot sync.
+13. Contact／Social isolation.
+14. Design Save Draft.
+15. Design Draft Preview across full chrome.
+16. Design Reset Draft Preview.
+17. Design Discard.
+18. Design Publish／Restore.
+19. Floating CTA enabled/disabled and spacing.
+20. Four-page Page Block Save Draft.
+21. Four-page Preview isolation.
+22. Scoped Page Block Publish.
+23. Scoped Page Block Discard.
+24. Scoped Page Block Reset Draft.
+25. Hero lock/first position/ID.
+26. Move／toggle／background／motion／layout.
+27. General two-tab conflict.
+28. Page Block two-tab conflict.
+29. Reload server version.
+30. Duplicate request guard.
+31. Local conflict values absent from Preview.
+32. QA initial persistence is Legacy.
+33. First valid Save converts QA to Envelope v1.
+34. Published baseline retained immediately after conversion.
+35. Only selected Draft scope exists.
+36. Final Draft scopes empty.
+37. Complete Published content restored to baseline.
+38. Final Envelope structure/revisions valid.
+39. Preview unauthenticated/expired blocking.
+40. Authenticated invalid target safe 404.
+41. Final no-store/noindex/Vary Cookie.
+42. No Draft cookie.
+43. No public Draft query.
+44. No raw persistence/metadata/path/sensitive output.
+45. 390px no horizontal overflow.
+46. Mode controls and disabled semantics.
+47. Dialog focus/inert/cancel/restore.
+48. Descriptive iframe titles.
+49. Console warnings/errors 0.
+50. No hydration/runtime/MutationObserver/Next overlay error.
+
+### Reports and next step
+
+- Detailed report: `.agent_runs/l7-validation-report.md`.
+- Release gate: `docs/draft-publish-l7-release-gate.md`.
+- Next step is OpenClaw/full authenticated Browser mutation QA in the persistent QA copy. Do not deploy, merge, or perform formal migration before that QA is PASS and durable persistence limitations are explicitly accepted.
+
 ## Latest — L6 Final Acceptance／Ready for Commit — 2026-07-17
 
 ### Final determination
@@ -823,3 +1156,15 @@ Mutation incident and authorized persistence recovery:
 ## 20. Critical transition warning
 
 **Before L5 is complete, do not execute the first real Save Draft, Publish, Discard, or Design Reset against the formal local persistence.** The first workflow write converts the Legacy JSON to an Envelope; the still-legacy Page Block immediate-Publish API would then be blocked by Envelope write protection.
+
+## 21. L7 Hydration #418 Two-Failure Consistency Gate (2026-07-18)
+
+- Result: **Two-FAIL consistency not met; hydration evidence remains insufficient**.
+- Evidence: `/home/usersun/qa-workspaces/office-next-l7-hydration-soak-qa-20260717-201458/qa-hydration-two-fail-evidence-20260718T153346`.
+- Matrix: 80 PASS / 0 new supported React #418 FAIL; 80-navigation limit reached.
+- Build ID remained `82M7nU5t-M-Tu7CMfQSYr`; formal and QA Site Content remained byte-identical Legacy roots with SHA-256 `2d0bd7de997d8c4cacc72c198ca54a7921e317d3f98362f17983368c5c873939`.
+- Conformance limitations: no cold restart occurred between loads 40 and 41 (1 ms gap), and all PASS records report MAIN child count 12 rather than the required canonical count 11.
+- No additional navigation was run after audit because the authorized 80-load ceiling was exhausted.
+- Product code/tests, persistence, manifests, and historical reports were not modified. No Save/Publish/Discard/Reset/Admin mutation, controlled variant, commit, push, deploy, merge, PR, or migration was performed.
+- Controlled diagnostic variant: **not authorized**.
+- Detailed report: `.agent_runs/l7-hydration-two-fail-consistency.md`.

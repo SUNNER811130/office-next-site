@@ -4,13 +4,13 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { redirect } from "next/navigation";
 
-const SESSION_COOKIE = "office_next_admin_session";
-const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
+import {
+  ADMIN_SESSION_COOKIE_NAME,
+  type SessionPayload,
+  verifyAdminSessionToken
+} from "@/lib/admin-session";
 
-type SessionPayload = {
-  username: string;
-  expiresAt: number;
-};
+const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
 
 function getRequiredEnv() {
   const clean = (val?: string) => {
@@ -55,29 +55,6 @@ function encodeSession(payload: SessionPayload, secret: string) {
   return `${body}.${signature}`;
 }
 
-function decodeSession(token: string, secret: string): SessionPayload | null {
-  const [body, signature] = token.split(".");
-  if (!body || !signature) {
-    return null;
-  }
-
-  const expected = sign(body, secret);
-  if (!safeEqual(signature, expected)) {
-    return null;
-  }
-
-  try {
-    const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as SessionPayload;
-    if (!payload.username || !payload.expiresAt || Date.now() > payload.expiresAt) {
-      return null;
-    }
-
-    return payload;
-  } catch {
-    return null;
-  }
-}
-
 export function getAdminEnvStatus() {
   const env = getRequiredEnv();
   return {
@@ -105,7 +82,7 @@ export async function loginAdmin(username: string, password: string) {
     env.secret
   );
 
-  cookieStore.set(SESSION_COOKIE, token, {
+  cookieStore.set(ADMIN_SESSION_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -118,7 +95,7 @@ export async function loginAdmin(username: string, password: string) {
 
 export async function logoutAdmin() {
   const cookieStore = await cookies();
-  cookieStore.delete(SESSION_COOKIE);
+  cookieStore.delete(ADMIN_SESSION_COOKIE_NAME);
 }
 
 export async function getAdminSession() {
@@ -128,12 +105,12 @@ export async function getAdminSession() {
   }
 
   const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  const token = cookieStore.get(ADMIN_SESSION_COOKIE_NAME)?.value;
   if (!token) {
     return null;
   }
 
-  return decodeSession(token, env.secret);
+  return verifyAdminSessionToken(token, env.secret);
 }
 
 export async function isAdminAuthenticated() {

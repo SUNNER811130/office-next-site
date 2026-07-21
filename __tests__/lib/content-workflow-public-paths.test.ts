@@ -46,7 +46,7 @@ describe("Published workflow public paths", () => {
   });
 
   it("does not add public-page dynamic or client cache-busting workarounds", () => {
-    const publicPages = ["app/page.tsx", "app/services/page.tsx", "app/about/page.tsx", "app/contact/page.tsx"]
+    const publicPages = ["app/(site)/page.tsx", "app/(site)/services/page.tsx", "app/(site)/about/page.tsx", "app/(site)/contact/page.tsx"]
       .map(source)
       .join("\n");
     const repairSources = [
