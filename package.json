@@ -10,7 +10,8 @@
     "db:migrate": "ts-node --project tsconfig.scripts.json scripts/content-db.ts up",
     "db:status": "ts-node --project tsconfig.scripts.json scripts/content-db.ts status",
     "db:verify": "ts-node --project tsconfig.scripts.json scripts/content-db.ts verify",
-    "test:db-schema": "ts-node --project tsconfig.scripts.json scripts/content-db-schema-test.ts"
+    "test:db-schema": "ts-node --project tsconfig.scripts.json scripts/content-db-schema-test.ts",
+    "test:db-repository": "ts-node --project tsconfig.scripts.json scripts/content-db-repository-test.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.48",
