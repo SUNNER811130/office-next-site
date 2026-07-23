@@ -43,3 +43,24 @@ also require the explicit production confirmation flag.
 No Neon resource or Preview database connection is configured in L8B-4. L8B-5
 will provision the Neon Preview resource and perform a read-only bootstrap.
 Never commit real runtime URLs, site identifiers, or secrets.
+
+## L8B-5A Preview bootstrap tooling
+
+L8B-5A adds safe tooling for bootstrapping the read-only formal Legacy JSON into
+a previously migrated Preview content site. The source file is read-only and is
+accepted only when its SHA-256 equals the reviewed fixed checksum. Bootstrap is
+transactional and idempotent: an exact existing state is unchanged, while any
+content, revision, scope, schema, or Draft drift fails closed without repair,
+overwrite, or force support. Production is not supported.
+
+Commands:
+
+- `npm run db:preview-bootstrap` uses only the migration URL to bootstrap and verify.
+- `npm run db:preview-verify` uses only the runtime URL for read-only verification.
+- `npm run test:db-preview-bootstrap` validates the complete flow against an isolated PostgreSQL 17 container.
+
+Migration and runtime credentials remain separate. The intended runtime role has
+only `CONNECT`, schema `USAGE`, and table `SELECT` privileges. The tooling neither
+runs migrations automatically nor enables runtime bootstrap. L8B-5A creates no
+Neon resource and changes no Vercel configuration; external Preview provisioning
+is deferred to L8B-5B. Never commit a real database URL or password.
