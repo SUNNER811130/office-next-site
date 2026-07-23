@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { rejectIfNotAdmin } from "@/lib/admin-auth";
-import { workflowErrorResponse } from "@/lib/content-workflow-api";
+import {
+  assertWorkflowContentMutationsEnabled,
+  workflowErrorResponse
+} from "@/lib/content-workflow-api";
 import { readContent, updateContentSection, updatePageBlockPage } from "@/lib/content-store";
 import type { ContentSection } from "@/types/content";
 
@@ -54,9 +57,11 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ sec
     if (section === "pageBlocks" && payload && typeof payload === "object" && "page" in payload && "blocks" in payload) {
       const page = (payload as { page?: unknown }).page;
       if (page !== "home" && page !== "services" && page !== "about" && page !== "contact") return NextResponse.json({ error: "Unknown page" }, { status: 400 });
+      assertWorkflowContentMutationsEnabled();
       const content = await updatePageBlockPage(page, (payload as { blocks: unknown }).blocks);
       return NextResponse.json({ ok: true, data: content.pageBlocks });
     }
+    assertWorkflowContentMutationsEnabled();
     const content = await updateContentSection(section as ContentSection, payload);
     return NextResponse.json({ ok: true, data: content[section as ContentSection] });
   } catch (error: unknown) {

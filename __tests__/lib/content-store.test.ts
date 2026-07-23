@@ -13,7 +13,10 @@ import {
   updatePageBlockPage,
   writeContent
 } from "@/lib/content-store";
-import { LegacyContentWriteBlockedError } from "@/lib/content-workflow-errors";
+import {
+  ContentMutationDisabledError,
+  LegacyContentWriteBlockedError
+} from "@/lib/content-workflow-errors";
 import { LocalFileContentWorkflowRepository } from "@/lib/content-workflow-repository";
 import type { SiteContent } from "@/types/content";
 import type { ContentWorkflowRepository } from "@/types/content-workflow";
@@ -36,6 +39,27 @@ async function createFixture(initial?: unknown) {
       clock: () => "2026-07-15T00:00:00.000Z"
     })
   };
+}
+
+async function withPersistenceEnv(
+  values: Record<string, string | undefined>,
+  operation: () => Promise<void>
+) {
+  const keys = Object.keys(values);
+  const previous = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
+  for (const [key, value] of Object.entries(values)) {
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  }
+  try {
+    await operation();
+  } finally {
+    for (const key of keys) {
+      const value = previous[key];
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
 }
 
 describe("Content Store", () => {
@@ -173,5 +197,56 @@ describe("Content Store", () => {
     await expect(updateContentSection("brand", mockContent.brand, fixture.repository)).rejects.toBeInstanceOf(LegacyContentWriteBlockedError);
     await expect(updatePageBlockPage("home", mockContent.pageBlocks.home, fixture.repository)).rejects.toBeInstanceOf(LegacyContentWriteBlockedError);
     await expect(fs.readFile(fixture.persistencePath, "utf8")).resolves.toBe(before);
+  });
+
+  it.each(["preview", "production"] as const)(
+    "blocks Local File legacy mutations in %s without touching the fixture",
+    async (environment) => {
+      const fixture = await createFixture(mockContent);
+      const before = await fs.readFile(fixture.persistencePath, "utf8");
+      await withPersistenceEnv({
+        CONTENT_RUNTIME_ENVIRONMENT: environment,
+        CONTENT_PERSISTENCE_DRIVER: "local",
+        CONTENT_MUTATIONS_ENABLED: "true",
+        CONTENT_PRODUCTION_MUTATIONS_CONFIRMED: "true"
+      }, async () => {
+        await expect(updateContentSection(
+          "brand",
+          siteContentSeed.brand,
+          fixture.repository
+        )).rejects.toBeInstanceOf(ContentMutationDisabledError);
+      });
+      await expect(fs.readFile(fixture.persistencePath, "utf8")).resolves.toBe(before);
+    }
+  );
+
+  it("blocks database-driver legacy mutations before touching a Local fixture", async () => {
+    const fixture = await createFixture(mockContent);
+    const mutate = jest.spyOn(fixture.repository, "mutateLegacyPublished");
+    await withPersistenceEnv({
+      CONTENT_RUNTIME_ENVIRONMENT: "test",
+      CONTENT_PERSISTENCE_DRIVER: "database",
+      CONTENT_MUTATIONS_ENABLED: "true",
+      CONTENT_DATABASE_RUNTIME_URL: "postgresql://runtime_user:fake@localhost:5432/office_next",
+      CONTENT_SITE_KEY: "office-next"
+    }, async () => {
+      await expect(updateContentSection(
+        "brand",
+        siteContentSeed.brand,
+        fixture.repository
+      )).rejects.toMatchObject({ reason: "LEGACY_MUTATIONS_REQUIRE_LOCAL_DRIVER" });
+    });
+    expect(mutate).not.toHaveBeenCalled();
+  });
+
+  it("keeps readContent available while runtime mutations are disabled", async () => {
+    const fixture = await createFixture(mockContent);
+    await withPersistenceEnv({
+      CONTENT_RUNTIME_ENVIRONMENT: "preview",
+      CONTENT_PERSISTENCE_DRIVER: "local",
+      CONTENT_MUTATIONS_ENABLED: "false"
+    }, async () => {
+      await expect(readContent(fixture.repository)).resolves.toEqual(mockContent);
+    });
   });
 });

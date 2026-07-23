@@ -2,6 +2,7 @@ import { type NextRequest } from "next/server";
 
 import { rejectIfNotAdmin } from "@/lib/admin-auth";
 import {
+  assertWorkflowContentMutationsEnabled,
   workflowErrorResponse,
   workflowSnapshotResponse,
   workflowUnauthorizedResponse
@@ -22,6 +23,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   try {
     const { section } = await context.params;
     const input = parseSaveDraftInput(section, await parseWorkflowJsonBody(request));
+    assertWorkflowContentMutationsEnabled();
     const snapshot = await getContentWorkflowRepository().saveDraft(input);
     return workflowSnapshotResponse(snapshot);
   } catch (error: unknown) {
@@ -36,6 +38,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
     const { section } = await context.params;
     const input = parseDiscardDraftInput(section, await parseWorkflowJsonBody(request));
+    assertWorkflowContentMutationsEnabled();
     const snapshot = await getContentWorkflowRepository().discardDraft(input);
     return workflowSnapshotResponse(snapshot);
   } catch (error: unknown) {

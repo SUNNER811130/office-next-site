@@ -3,6 +3,7 @@ import { type NextRequest } from "next/server";
 
 import { rejectIfNotAdmin } from "@/lib/admin-auth";
 import {
+  assertWorkflowContentMutationsEnabled,
   workflowErrorResponse,
   workflowSnapshotResponse,
   workflowUnauthorizedResponse
@@ -23,6 +24,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const { section } = await context.params;
     const input = parsePublishDraftInput(section, await parseWorkflowJsonBody(request));
+    assertWorkflowContentMutationsEnabled();
     const snapshot = await getContentWorkflowRepository().publishDraft(input);
     const publishedPagePath = getPublishedPagePath(input.scope);
     if (publishedPagePath !== null) revalidatePath(publishedPagePath, "page");

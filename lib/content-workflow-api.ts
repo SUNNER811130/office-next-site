@@ -5,11 +5,14 @@ import {
   UnknownContentSchemaVersionError
 } from "@/lib/content-envelope";
 import {
+  ContentMutationDisabledError,
   ContentDraftNotFoundError,
   ContentRevisionConflictError,
   ContentStorageMutationError,
   LegacyContentWriteBlockedError
 } from "@/lib/content-workflow-errors";
+import { resolveContentPersistenceConfig } from "@/lib/content-persistence-config";
+import { assertContentMutationsEnabled } from "@/lib/content-mutation-gate";
 import { ContentWorkflowRequestError } from "@/lib/content-workflow-request";
 import type { ContentScope, EditorSnapshot } from "@/types/content-workflow";
 
@@ -50,6 +53,11 @@ export function workflowUnauthorizedResponse(): NextResponse {
   }, 401);
 }
 
+export function assertWorkflowContentMutationsEnabled(): void {
+  const config = resolveContentPersistenceConfig();
+  assertContentMutationsEnabled(config.mutationPolicy, config);
+}
+
 function errorResponse(
   status: number,
   code: string,
@@ -74,6 +82,13 @@ export function workflowErrorResponse(error: unknown): NextResponse {
   }
   if (error instanceof ContentDraftNotFoundError) {
     return errorResponse(404, "DRAFT_NOT_FOUND", "Draft not found", { scope: error.scope });
+  }
+  if (error instanceof ContentMutationDisabledError) {
+    return errorResponse(
+      503,
+      "CONTENT_MUTATIONS_DISABLED",
+      "Content mutations are temporarily unavailable."
+    );
   }
   if (error instanceof LegacyContentWriteBlockedError) {
     return errorResponse(409, "LEGACY_WRITE_BLOCKED", "Legacy content write is blocked after workflow migration");

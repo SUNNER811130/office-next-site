@@ -1,4 +1,32 @@
 import type { ContentScope, Revision } from "@/types/content-workflow";
+import type {
+  ContentMutationDisabledReason,
+  ContentPersistenceDriver,
+  ContentRuntimeEnvironment
+} from "@/lib/content-persistence-config";
+
+export type ContentMutationDisabledErrorReason =
+  | ContentMutationDisabledReason
+  | "LEGACY_MUTATIONS_REQUIRE_LOCAL_DRIVER";
+
+export class ContentMutationDisabledError extends Error {
+  readonly code = "CONTENT_MUTATIONS_DISABLED" as const;
+  readonly environment: ContentRuntimeEnvironment;
+  readonly driver: ContentPersistenceDriver;
+  readonly reason: ContentMutationDisabledErrorReason;
+
+  constructor(details: {
+    environment: ContentRuntimeEnvironment;
+    driver: ContentPersistenceDriver;
+    reason: ContentMutationDisabledErrorReason;
+  }) {
+    super("Content mutations are disabled");
+    this.name = "ContentMutationDisabledError";
+    this.environment = details.environment;
+    this.driver = details.driver;
+    this.reason = details.reason;
+  }
+}
 
 export type ContentRevisionConflictDetails = {
   scope: ContentScope;
