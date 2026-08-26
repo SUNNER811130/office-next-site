@@ -12,6 +12,7 @@ import {
   createContentWorkflowRepositoryRuntime,
   type ContentWorkflowRepositoryFactoryDependencies
 } from "@/lib/content-workflow-repository-factory";
+import * as contentWorkflowRepositoryFactory from "@/lib/content-workflow-repository-factory";
 import { LocalFileContentWorkflowRepository } from "@/lib/content-workflow-repository";
 import type { ContentWorkflowRepository } from "@/types/content-workflow";
 
@@ -44,22 +45,25 @@ function dependencies() {
     connect: jest.fn(),
     end: jest.fn()
   };
+  const localAdapter = localRepository();
   const databaseRepository = localRepository();
   const value: ContentWorkflowRepositoryFactoryDependencies = {
-    createLocalRepository: jest.fn(localRepository),
+    createLocalRepository: jest.fn(() => localAdapter),
     createDatabasePool: jest.fn(() => pool),
     createDatabaseRepository: jest.fn(() => databaseRepository)
   };
-  return { value, pool, databaseRepository };
+  return { value, pool, localAdapter, databaseRepository };
 }
 
 describe("content workflow repository factory", () => {
   it("creates the Local File adapter at the unchanged default path", () => {
     const deps = dependencies();
     const created = createContentWorkflowRepository({ config: config(), dependencies: deps.value });
-    expect(created.localRepository).toBeInstanceOf(LocalFileContentWorkflowRepository);
+    expect("localRepository" in created).toBe(false);
+    expect("pool" in created).toBe(false);
     expect(created.repository).toBeInstanceOf(ReadOnlyContentWorkflowRepository);
     expect(CONTENT_FILE).toBe(path.join(process.cwd(), "data", "site-content.json"));
+    expect(deps.value.createLocalRepository).toHaveBeenCalledTimes(1);
     expect(deps.value.createDatabasePool).not.toHaveBeenCalled();
   });
 
@@ -86,8 +90,8 @@ describe("content workflow repository factory", () => {
       dependencies: deps.value
     });
     expect(created.repository).toBeInstanceOf(ReadOnlyContentWorkflowRepository);
-    const readPublished = jest.spyOn(created.localRepository!, "readPublished");
-    const saveDraft = jest.spyOn(created.localRepository!, "saveDraft");
+    const readPublished = jest.spyOn(deps.localAdapter, "readPublished");
+    const saveDraft = jest.spyOn(deps.localAdapter, "saveDraft");
     await created.repository.readPublished();
     await expect(created.repository.saveDraft({
       scope: "home",
@@ -178,20 +182,25 @@ describe("content workflow repository factory", () => {
     await expect(runtime.getRepository().readPublished()).resolves.toMatchObject({ revision: 1 });
   });
 
-  it("does not expose a database repository as a legacy Local adapter", () => {
+  it("does not expose a raw Local adapter from factory or runtime surfaces", () => {
     const deps = dependencies();
     const runtime = createContentWorkflowRepositoryRuntime({
-      resolveConfig: () => databaseConfig(),
+      resolveConfig: () => config(),
       dependencies: deps.value
     });
-    expect(() => runtime.getLocalRepository()).toThrow(
-      expect.objectContaining({ code: "INVALID_PERSISTENCE_DRIVER" })
-    );
+    const created = createContentWorkflowRepository({ config: config(), dependencies: deps.value });
+    expect("localRepository" in created).toBe(false);
+    expect("pool" in created).toBe(false);
+    expect("getLocalRepository" in runtime).toBe(false);
+    expect("getLocalFileContentWorkflowRepository" in contentWorkflowRepositoryFactory).toBe(false);
   });
 
-  it("never returns an unrestricted writer through the generic repository", async () => {
+  it("never returns an unrestricted writer through the generic repository with master enabled", async () => {
     const deps = dependencies();
-    const created = createContentWorkflowRepository({ config: config(), dependencies: deps.value });
+    const created = createContentWorkflowRepository({
+      config: databaseConfig(),
+      dependencies: deps.value
+    });
     expect(created.repository).toBeInstanceOf(ReadOnlyContentWorkflowRepository);
     await expect(created.repository.saveDraft({
       scope: "home",

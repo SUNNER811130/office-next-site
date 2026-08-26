@@ -1,7 +1,10 @@
 import { type NextRequest } from "next/server";
 
 import { rejectIfNotAdmin } from "@/lib/admin-auth";
-import { resolveContentResetDefaults } from "@/lib/content-reset-defaults";
+import {
+  isResettableContentScope,
+  resolveContentResetDefaults
+} from "@/lib/content-reset-defaults";
 import {
   authorizeWorkflowContentMutation,
   workflowErrorResponse,
@@ -9,6 +12,7 @@ import {
   workflowUnauthorizedResponse
 } from "@/lib/content-workflow-api";
 import {
+  ContentWorkflowRequestError,
   parseResetDraftInput,
   parseWorkflowJsonBody
 } from "@/lib/content-workflow-request";
@@ -23,8 +27,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const { section } = await context.params;
     const input = parseResetDraftInput(section, await parseWorkflowJsonBody(request));
-    const value = resolveContentResetDefaults(input.scope);
     const authorization = authorizeWorkflowContentMutation("reset-draft", input.scope);
+    if (!isResettableContentScope(input.scope)) {
+      throw new ContentWorkflowRequestError("NOT_FOUND", "Reset is unavailable for this scope");
+    }
+    const value = resolveContentResetDefaults(input.scope);
     const repository = getContentWorkflowMutationRepository(authorization);
     const snapshot = await repository.resetDraft({ ...input, value });
     return workflowSnapshotResponse(snapshot);

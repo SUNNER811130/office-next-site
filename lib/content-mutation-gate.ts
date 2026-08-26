@@ -28,15 +28,13 @@ export function assertContentMutationsEnabled(
   }
 }
 
-export function assertLegacyContentMutationsEnabled(config: ContentPersistenceConfig): void {
+export function assertLegacyContentMutationsEnabled(config: ContentPersistenceConfig): never {
   assertContentMutationsEnabled(config.mutationPolicy, config);
-  if (config.driver !== "local") {
-    throw new ContentMutationDisabledError({
-      environment: config.environment,
-      driver: config.driver,
-      reason: "LEGACY_MUTATIONS_REQUIRE_LOCAL_DRIVER"
-    });
-  }
+  throw new ContentMutationDisabledError({
+    environment: config.environment,
+    driver: config.driver,
+    reason: "SCOPED_MUTATION_CAPABILITY_REQUIRED"
+  });
 }
 
 const authorizedMutationTokens = new WeakSet<object>();

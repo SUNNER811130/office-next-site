@@ -253,20 +253,25 @@ describe("read-only content repository", () => {
     expect(inner.saveDraft).not.toHaveBeenCalled();
   });
 
-  it("rejects database-backed legacy direct mutations even under an enabled policy", () => {
-    expect(() => assertLegacyContentMutationsEnabled({
-      environment: "test",
-      driver: "database",
-      mutationsEnabled: true,
-      productionMutationsConfirmed: false,
-      scopedMutations: disabledConfig.scopedMutations,
-      mutationPolicy: { enabled: true, reason: null },
-      database: { connectionString: "postgresql://fake@localhost/db", siteKey: "test" }
-    })).toThrow(expect.objectContaining({
-      code: "CONTENT_MUTATIONS_DISABLED",
-      reason: "LEGACY_MUTATIONS_REQUIRE_LOCAL_DRIVER"
-    }));
-  });
+  it.each(["local", "database"] as const)(
+    "rejects %s legacy direct mutations even under an enabled master policy",
+    (driver) => {
+      expect(() => assertLegacyContentMutationsEnabled({
+        environment: "test",
+        driver,
+        mutationsEnabled: true,
+        productionMutationsConfirmed: false,
+        scopedMutations: disabledConfig.scopedMutations,
+        mutationPolicy: { enabled: true, reason: null },
+        database: driver === "database"
+          ? { connectionString: "postgresql://fake@localhost/db", siteKey: "test" }
+          : null
+      })).toThrow(expect.objectContaining({
+        code: "CONTENT_MUTATIONS_DISABLED",
+        reason: "SCOPED_MUTATION_CAPABILITY_REQUIRED"
+      }));
+    }
+  );
 
   it("does not expose the internal reason through the public workflow response", async () => {
     const { workflowErrorResponse } = await import("@/lib/content-workflow-api");

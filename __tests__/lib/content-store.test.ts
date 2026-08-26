@@ -14,8 +14,7 @@ import {
   writeContent
 } from "@/lib/content-store";
 import {
-  ContentMutationDisabledError,
-  LegacyContentWriteBlockedError
+  ContentMutationDisabledError
 } from "@/lib/content-workflow-errors";
 import { LocalFileContentWorkflowRepository } from "@/lib/content-workflow-repository";
 import type { SiteContent } from "@/types/content";
@@ -127,77 +126,66 @@ describe("Content Store", () => {
     expect(content.pageBlocks).toEqual(siteContentSeed.pageBlocks);
   });
 
-  it("normalizes Design and Page Blocks legacy updates", async () => {
-    const first = await createFixture(mockContent);
-    const design = await updateContentSection("design", {
-      ...siteContentSeed.design,
-      layout: { ...siteContentSeed.design.layout, mobileGutter: 999 as 16 }
-    }, first.repository);
-    expect(design.design.layout.mobileGutter).toBe(siteContentSeed.design.layout.mobileGutter);
+  it("blocks legacy write and reset with master enabled without touching the repository", async () => {
+    const fixture = await createFixture(mockContent);
+    const before = await fs.readFile(fixture.persistencePath, "utf8");
+    const replace = jest.spyOn(fixture.repository, "replaceLegacyPublished");
 
-    const second = await createFixture(mockContent);
-    const blocks = await updateContentSection("pageBlocks", {
-      ...siteContentSeed.pageBlocks,
-      home: [{ ...siteContentSeed.pageBlocks.home[0], enabled: false, order: 99 }]
-    }, second.repository);
-    expect(blocks.pageBlocks.home[0]).toEqual(expect.objectContaining({
-      id: "hero",
-      enabled: true,
-      order: 0
-    }));
+    await withPersistenceEnv({
+      CONTENT_RUNTIME_ENVIRONMENT: "test",
+      CONTENT_PERSISTENCE_DRIVER: "local",
+      CONTENT_MUTATIONS_ENABLED: "true"
+    }, async () => {
+      await expect(writeContent(mockContent, fixture.repository))
+        .rejects.toMatchObject({ reason: "SCOPED_MUTATION_CAPABILITY_REQUIRED" });
+      await expect(resetContentToSeed(fixture.repository))
+        .rejects.toMatchObject({ reason: "SCOPED_MUTATION_CAPABILITY_REQUIRED" });
+    });
+
+    expect(replace).not.toHaveBeenCalled();
+    await expect(fs.readFile(fixture.persistencePath, "utf8")).resolves.toBe(before);
+  });
+
+  it("blocks legacy section mutations with master enabled without touching the repository", async () => {
+    const fixture = await createFixture(mockContent);
+    const before = await fs.readFile(fixture.persistencePath, "utf8");
+    const mutate = jest.spyOn(fixture.repository, "mutateLegacyPublished");
+
+    await withPersistenceEnv({
+      CONTENT_RUNTIME_ENVIRONMENT: "test",
+      CONTENT_PERSISTENCE_DRIVER: "local",
+      CONTENT_MUTATIONS_ENABLED: "true"
+    }, async () => {
+      await expect(updateContentSection("brand", mockContent.brand, fixture.repository))
+        .rejects.toMatchObject({ reason: "SCOPED_MUTATION_CAPABILITY_REQUIRED" });
+      await expect(updateContentSection("design", mockContent.design, fixture.repository))
+        .rejects.toMatchObject({ reason: "SCOPED_MUTATION_CAPABILITY_REQUIRED" });
+    });
+
+    expect(mutate).not.toHaveBeenCalled();
+    await expect(fs.readFile(fixture.persistencePath, "utf8")).resolves.toBe(before);
   });
 
   it.each(["home", "services", "about", "contact"] as const)(
-    "updates only the %s Page Blocks page from the latest legacy file",
+    "blocks legacy pageBlocks.%s mutation with master enabled",
     async (page) => {
-      const changedHome = mockContent.pageBlocks.home.map((block) => (
-        block.id === "faq" ? { ...block, enabled: false } : block
-      ));
-      const latest = {
-        ...mockContent,
-        pageBlocks: { ...mockContent.pageBlocks, home: changedHome }
-      };
-      const { repository } = await createFixture(latest);
-      const next = await updatePageBlockPage(page, siteContentSeed.pageBlocks[page], repository);
+      const fixture = await createFixture(mockContent);
+      const before = await fs.readFile(fixture.persistencePath, "utf8");
+      const mutate = jest.spyOn(fixture.repository, "mutateLegacyPublished");
 
-      if (page !== "home") {
-        expect(next.pageBlocks.home.find((block) => block.id === "faq")?.enabled).toBe(false);
-      }
-      for (const other of ["home", "services", "about", "contact"] as const) {
-        if (other !== page && other !== "home") {
-          expect(next.pageBlocks[other]).toEqual(latest.pageBlocks[other]);
-        }
-      }
+      await withPersistenceEnv({
+        CONTENT_RUNTIME_ENVIRONMENT: "test",
+        CONTENT_PERSISTENCE_DRIVER: "local",
+        CONTENT_MUTATIONS_ENABLED: "true"
+      }, async () => {
+        await expect(updatePageBlockPage(page, mockContent.pageBlocks[page], fixture.repository))
+          .rejects.toMatchObject({ reason: "SCOPED_MUTATION_CAPABILITY_REQUIRED" });
+      });
+
+      expect(mutate).not.toHaveBeenCalled();
+      await expect(fs.readFile(fixture.persistencePath, "utf8")).resolves.toBe(before);
     }
   );
-
-  it("writes and resets legacy content through atomic persistence", async () => {
-    const fixture = await createFixture(mockContent);
-    await writeContent({ ...mockContent, brand: { ...mockContent.brand, name: "Replacement" } }, fixture.repository);
-    await expect(readContent(fixture.repository)).resolves.toMatchObject({ brand: { name: "Replacement" } });
-
-    await resetContentToSeed(fixture.repository);
-    await expect(readContent(fixture.repository)).resolves.toEqual(siteContentSeed);
-    const raw = await fs.readFile(fixture.persistencePath, "utf8");
-    expect(raw.endsWith("\n")).toBe(true);
-  });
-
-  it("blocks all legacy write boundaries after Envelope migration", async () => {
-    const envelope = createEnvelopeFromLegacy(mockContent, "2026-07-15T00:00:00.000Z");
-    envelope.drafts.brand = {
-      value: { ...mockContent.brand, name: "Draft" },
-      revision: 1,
-      basedOnPublishedRevision: 1,
-      updatedAt: "2026-07-15T01:00:00.000Z"
-    };
-    const fixture = await createFixture(envelope);
-    const before = await fs.readFile(fixture.persistencePath, "utf8");
-
-    await expect(writeContent(mockContent, fixture.repository)).rejects.toBeInstanceOf(LegacyContentWriteBlockedError);
-    await expect(updateContentSection("brand", mockContent.brand, fixture.repository)).rejects.toBeInstanceOf(LegacyContentWriteBlockedError);
-    await expect(updatePageBlockPage("home", mockContent.pageBlocks.home, fixture.repository)).rejects.toBeInstanceOf(LegacyContentWriteBlockedError);
-    await expect(fs.readFile(fixture.persistencePath, "utf8")).resolves.toBe(before);
-  });
 
   it.each(["preview", "production"] as const)(
     "blocks Local File legacy mutations in %s without touching the fixture",
@@ -234,7 +222,7 @@ describe("Content Store", () => {
         "brand",
         siteContentSeed.brand,
         fixture.repository
-      )).rejects.toMatchObject({ reason: "LEGACY_MUTATIONS_REQUIRE_LOCAL_DRIVER" });
+      )).rejects.toMatchObject({ reason: "SCOPED_MUTATION_CAPABILITY_REQUIRED" });
     });
     expect(mutate).not.toHaveBeenCalled();
   });

@@ -54,13 +54,10 @@ export type CreateContentWorkflowRepositoryOptions = {
 
 export type CreatedContentWorkflowRepository = {
   repository: ContentWorkflowRepository;
-  localRepository: LocalFileContentWorkflowRepository | null;
-  pool: DatabaseRepositoryPool | null;
 };
 
 type CreatedRepositoryAdapters = {
   sourceRepository: ContentWorkflowRepository;
-  localRepository: LocalFileContentWorkflowRepository | null;
   pool: DatabaseRepositoryPool | null;
 };
 
@@ -72,7 +69,6 @@ function createRepositoryAdapters({
     const localRepository = dependencies.createLocalRepository();
     return {
       sourceRepository: localRepository,
-      localRepository,
       pool: null
     };
   }
@@ -98,7 +94,6 @@ function createRepositoryAdapters({
   });
   return {
     sourceRepository: databaseRepository,
-    localRepository: null,
     pool
   };
 }
@@ -108,14 +103,13 @@ export function createContentWorkflowRepository(
 ): CreatedContentWorkflowRepository {
   const adapters = createRepositoryAdapters(options);
   return {
-    repository: applyContentMutationPolicy(adapters.sourceRepository, options.config),
-    localRepository: adapters.localRepository,
-    pool: adapters.pool
+    repository: applyContentMutationPolicy(adapters.sourceRepository, options.config)
   };
 }
 
 type RuntimeRepositoryState = CreatedContentWorkflowRepository & {
   sourceRepository: ContentWorkflowRepository;
+  pool: DatabaseRepositoryPool | null;
   fingerprint: string;
 };
 
@@ -147,7 +141,6 @@ export function createContentWorkflowRepositoryRuntime(options: {
     state = {
       repository: applyContentMutationPolicy(adapters.sourceRepository, config),
       sourceRepository: adapters.sourceRepository,
-      localRepository: adapters.localRepository,
       pool: adapters.pool,
       fingerprint
     };
@@ -157,16 +150,6 @@ export function createContentWorkflowRepositoryRuntime(options: {
   return {
     getRepository(): ContentWorkflowRepository {
       return getState().repository;
-    },
-    getLocalRepository(): LocalFileContentWorkflowRepository {
-      const current = getState();
-      if (!current.localRepository) {
-        throw new ContentPersistenceConfigurationError(
-          "INVALID_PERSISTENCE_DRIVER",
-          "CONTENT_PERSISTENCE_DRIVER"
-        );
-      }
-      return current.localRepository;
     },
     getMutationRepository(
       authorization: AuthorizedContentMutation
@@ -185,10 +168,6 @@ const runtime = createContentWorkflowRepositoryRuntime();
 
 export function getContentWorkflowRepository(): ContentWorkflowRepository {
   return runtime.getRepository();
-}
-
-export function getLocalFileContentWorkflowRepository(): LocalFileContentWorkflowRepository {
-  return runtime.getLocalRepository();
 }
 
 export function getContentWorkflowMutationRepository(

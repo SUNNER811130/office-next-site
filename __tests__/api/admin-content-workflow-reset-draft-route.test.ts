@@ -2,17 +2,35 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { POST } from "@/app/api/admin/content/[section]/reset-draft/route";
 import { rejectIfNotAdmin } from "@/lib/admin-auth";
+import { resolveContentResetDefaults } from "@/lib/content-reset-defaults";
 import { designSettingsDefaults } from "@/lib/design-settings";
 import { pageBlockSettingsDefaults } from "@/lib/page-block-settings";
+import { authorizeWorkflowContentMutation } from "@/lib/content-workflow-api";
 import { getContentWorkflowMutationRepository } from "@/lib/content-workflow-repository-factory";
 import type { EditorSnapshot } from "@/types/content-workflow";
 
 jest.mock("@/lib/admin-auth", () => ({ rejectIfNotAdmin: jest.fn() }));
+jest.mock("@/lib/content-reset-defaults", () => {
+  const actual = jest.requireActual("@/lib/content-reset-defaults");
+  return {
+    ...actual,
+    resolveContentResetDefaults: jest.fn(actual.resolveContentResetDefaults)
+  };
+});
+jest.mock("@/lib/content-workflow-api", () => {
+  const actual = jest.requireActual("@/lib/content-workflow-api");
+  return {
+    ...actual,
+    authorizeWorkflowContentMutation: jest.fn(actual.authorizeWorkflowContentMutation)
+  };
+});
 jest.mock("@/lib/content-workflow-repository-factory", () => ({
   getContentWorkflowMutationRepository: jest.fn()
 }));
 
 const mockedRejectIfNotAdmin = jest.mocked(rejectIfNotAdmin);
+const mockedResolveContentResetDefaults = jest.mocked(resolveContentResetDefaults);
+const mockedAuthorizeWorkflowContentMutation = jest.mocked(authorizeWorkflowContentMutation);
 const mockedGetMutationRepository = jest.mocked(getContentWorkflowMutationRepository);
 
 const persistenceKeys = [
@@ -72,12 +90,13 @@ describe("admin content workflow Reset Draft route", () => {
     }
   });
 
-  it("returns 401 before parsing or mutation capability acquisition", async () => {
+  it("returns 401 before parsing, default resolution, or mutation capability acquisition", async () => {
     mockedRejectIfNotAdmin.mockResolvedValue(
       NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     );
     const response = await POST(request("design", "not-json"), context("design"));
     expect(response.status).toBe(401);
+    expect(mockedResolveContentResetDefaults).not.toHaveBeenCalled();
     expect(mockedGetMutationRepository).not.toHaveBeenCalled();
     expect(resetDraft).not.toHaveBeenCalled();
   });
@@ -100,6 +119,12 @@ describe("admin content workflow Reset Draft route", () => {
     }), context("design"));
 
     expect(response.status).toBe(200);
+    expect(mockedAuthorizeWorkflowContentMutation).toHaveBeenCalledWith("reset-draft", "design");
+    expect(mockedResolveContentResetDefaults).toHaveBeenCalledWith("design");
+    expect(mockedAuthorizeWorkflowContentMutation.mock.invocationCallOrder[0])
+      .toBeLessThan(mockedResolveContentResetDefaults.mock.invocationCallOrder[0]);
+    expect(mockedResolveContentResetDefaults.mock.invocationCallOrder[0])
+      .toBeLessThan(mockedGetMutationRepository.mock.invocationCallOrder[0]);
     expect(resetDraft).toHaveBeenCalledWith({
       scope: "design",
       value: designSettingsDefaults,
@@ -145,6 +170,8 @@ describe("admin content workflow Reset Draft route", () => {
       expectedPublishedRevision: 1
     }), context("design"));
     expect(response.status).toBe(400);
+    expect(mockedAuthorizeWorkflowContentMutation).not.toHaveBeenCalled();
+    expect(mockedResolveContentResetDefaults).not.toHaveBeenCalled();
     expect(mockedGetMutationRepository).not.toHaveBeenCalled();
     expect(resetDraft).not.toHaveBeenCalled();
   });
@@ -156,6 +183,8 @@ describe("admin content workflow Reset Draft route", () => {
       expectedPublishedRevision: 1
     }), context("home"));
     expect(response.status).toBe(404);
+    expect(mockedAuthorizeWorkflowContentMutation).toHaveBeenCalledWith("reset-draft", "home");
+    expect(mockedResolveContentResetDefaults).not.toHaveBeenCalled();
     expect(mockedGetMutationRepository).not.toHaveBeenCalled();
     expect(resetDraft).not.toHaveBeenCalled();
   });
@@ -168,6 +197,8 @@ describe("admin content workflow Reset Draft route", () => {
       expectedPublishedRevision: 1
     }), context("design"));
     expect(response.status).toBe(503);
+    expect(mockedAuthorizeWorkflowContentMutation).toHaveBeenCalledWith("reset-draft", "design");
+    expect(mockedResolveContentResetDefaults).not.toHaveBeenCalled();
     expect(mockedGetMutationRepository).not.toHaveBeenCalled();
     expect(resetDraft).not.toHaveBeenCalled();
   });

@@ -5,11 +5,8 @@ import { resolveContentPersistenceConfig } from "@/lib/content-persistence-confi
 import { assertLegacyContentMutationsEnabled } from "@/lib/content-mutation-gate";
 import {
   CONTENT_FILE,
-  getContentWorkflowRepository as getRuntimeContentWorkflowRepository,
-  getLocalFileContentWorkflowRepository
+  getContentWorkflowRepository as getRuntimeContentWorkflowRepository
 } from "@/lib/content-workflow-repository-factory";
-import { normalizeDesignSettings } from "@/lib/design-settings";
-import { normalizePageBlockSettings } from "@/lib/page-block-settings";
 import type { ContentSection, ContentSectionMap, SiteContent } from "@/types/content";
 import type { ContentWorkflowRepository } from "@/types/content-workflow";
 
@@ -26,11 +23,7 @@ export function getContentWorkflowRepository(): ContentWorkflowRepository {
   return getRuntimeContentWorkflowRepository();
 }
 
-function getLegacyContentMutationRepository(): LegacyContentMutationRepository {
-  return getLocalFileContentWorkflowRepository();
-}
-
-function assertLegacyMutationAllowed(): void {
+function assertLegacyMutationAllowed(): never {
   assertLegacyContentMutationsEnabled(resolveContentPersistenceConfig());
 }
 
@@ -43,46 +36,26 @@ export async function readContent(
 
 /** @deprecated Restricted to legacy persistence before workflow migration. */
 export async function writeContent(
-  content: SiteContent,
-  repository?: LegacyContentMutationRepository
+  _content: SiteContent,
+  _repository?: LegacyContentMutationRepository
 ) {
   assertLegacyMutationAllowed();
-  await (repository ?? getLegacyContentMutationRepository()).replaceLegacyPublished(content);
 }
 
-const sectionNormalizers: Partial<Record<ContentSection, (payload: unknown) => unknown>> = {
-  design: normalizeDesignSettings,
-  pageBlocks: normalizePageBlockSettings
-};
-
 export async function updateContentSection<K extends ContentSection>(
-  section: K,
-  payload: ContentSectionMap[K],
-  repository?: LegacyContentMutationRepository
+  _section: K,
+  _payload: ContentSectionMap[K],
+  _repository?: LegacyContentMutationRepository
 ): Promise<SiteContent> {
   assertLegacyMutationAllowed();
-  return (repository ?? getLegacyContentMutationRepository()).mutateLegacyPublished((current) => {
-    const normalizedPayload = (sectionNormalizers[section]?.(payload) ?? payload) as ContentSectionMap[K];
-    return {
-      ...current,
-      [section]: normalizedPayload
-    } satisfies SiteContent;
-  });
 }
 
 export async function updatePageBlockPage(
-  page: "home" | "services" | "about" | "contact",
-  blocks: unknown,
-  repository?: LegacyContentMutationRepository
+  _page: "home" | "services" | "about" | "contact",
+  _blocks: unknown,
+  _repository?: LegacyContentMutationRepository
 ): Promise<SiteContent> {
   assertLegacyMutationAllowed();
-  return (repository ?? getLegacyContentMutationRepository()).mutateLegacyPublished((current) => {
-    const pageBlocks = normalizePageBlockSettings({
-      ...current.pageBlocks,
-      [page]: blocks
-    });
-    return { ...current, pageBlocks } satisfies SiteContent;
-  });
 }
 
 export async function resetContentToSeed(
