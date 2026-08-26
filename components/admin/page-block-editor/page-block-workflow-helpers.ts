@@ -49,6 +49,17 @@ export function createPageBlockDiscardPayload<TPage extends PageBlockEditorPage>
   return { page, expectedDraftRevision };
 }
 
+export function createPageBlockResetDraftPayload<TPage extends PageBlockEditorPage>(
+  page: TPage,
+  revisions: Pick<PageBlockEditorSnapshot<TPage>, "draftRevision" | "publishedRevision">
+) {
+  return {
+    page,
+    expectedDraftRevision: revisions.draftRevision,
+    expectedPublishedRevision: revisions.publishedRevision
+  };
+}
+
 async function requestPageBlockSnapshot<TPage extends PageBlockEditorPage>(
   page: TPage,
   path: string,
@@ -111,5 +122,19 @@ export function discardPageBlockDraft<TPage extends PageBlockEditorPage>(
     credentials: "same-origin",
     signal: options.signal,
     body: JSON.stringify(createPageBlockDiscardPayload(page, expectedDraftRevision))
+  }, options.request ?? fetch);
+}
+
+export function resetPageBlockDraft<TPage extends PageBlockEditorPage>(
+  page: TPage,
+  revisions: Pick<PageBlockEditorSnapshot<TPage>, "draftRevision" | "publishedRevision">,
+  options: RequestOptions = {}
+): Promise<PageBlockEditorSnapshot<TPage>> {
+  return requestPageBlockSnapshot(page, "/api/admin/content/pageBlocks/reset-draft", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    signal: options.signal,
+    body: JSON.stringify(createPageBlockResetDraftPayload(page, revisions))
   }, options.request ?? fetch);
 }

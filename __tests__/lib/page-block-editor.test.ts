@@ -4,6 +4,7 @@ import { movePageBlock, updatePageBlock } from "@/components/admin/page-block-ed
 import { pageBlockBackgroundOptions, pageBlockMotionOptions, pageBlockPreviewDevices } from "@/components/admin/page-block-editor/page-block-editor-options";
 import {
   createPageBlockSaveDraftPayload,
+  resetPageBlockDraft,
   savePageBlockDraft
 } from "@/components/admin/page-block-editor/page-block-workflow-helpers";
 import type { PageBlockEditorSnapshot } from "@/components/admin/page-block-editor/page-block-editor-types";
@@ -90,5 +91,19 @@ describe("Shared page block editor", () => {
   it("rejects a failed Draft save with a safe message", async () => {
     const request = jest.fn().mockResolvedValue(new Response(JSON.stringify({ ok: false, error: { code: "INTERNAL_ERROR", message: "secret" } }), { status: 500 }));
     await expect(savePageBlockDraft("home", pageBlockSettingsDefaults.home, publishedHome, { request })).rejects.toThrow("伺服器暫時無法處理內容");
+  });
+
+  it("submits Reset revisions without Client-provided default blocks", async () => {
+    const request = jest.fn().mockResolvedValue(new Response(JSON.stringify({
+      ok: true,
+      snapshot: publishedHome
+    })));
+    await resetPageBlockDraft("home", publishedHome, { request });
+    expect(request.mock.calls[0][0]).toBe("/api/admin/content/pageBlocks/reset-draft");
+    expect(JSON.parse(request.mock.calls[0][1].body)).toEqual({
+      page: "home",
+      expectedDraftRevision: null,
+      expectedPublishedRevision: 1
+    });
   });
 });

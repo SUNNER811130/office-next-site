@@ -2,7 +2,10 @@ import path from "path";
 
 import { siteContentSeed } from "@/data/site-content.seed";
 import { resolveContentPersistenceConfig } from "@/lib/content-persistence-config";
-import { ReadOnlyContentWorkflowRepository } from "@/lib/content-mutation-gate";
+import {
+  authorizeContentMutation,
+  ReadOnlyContentWorkflowRepository
+} from "@/lib/content-mutation-gate";
 import {
   CONTENT_FILE,
   createContentWorkflowRepository,
@@ -55,7 +58,7 @@ describe("content workflow repository factory", () => {
     const deps = dependencies();
     const created = createContentWorkflowRepository({ config: config(), dependencies: deps.value });
     expect(created.localRepository).toBeInstanceOf(LocalFileContentWorkflowRepository);
-    expect(created.repository).toBe(created.localRepository);
+    expect(created.repository).toBeInstanceOf(ReadOnlyContentWorkflowRepository);
     expect(CONTENT_FILE).toBe(path.join(process.cwd(), "data", "site-content.json"));
     expect(deps.value.createDatabasePool).not.toHaveBeenCalled();
   });
@@ -66,7 +69,7 @@ describe("content workflow repository factory", () => {
       config: databaseConfig({ CONTENT_RUNTIME_ENVIRONMENT: "preview" }),
       dependencies: deps.value
     });
-    expect(created.repository).toBe(deps.databaseRepository);
+    expect(created.repository).toBeInstanceOf(ReadOnlyContentWorkflowRepository);
     expect(deps.value.createDatabaseRepository).toHaveBeenCalledWith({
       pool: deps.pool,
       siteKey: "office-next",
@@ -159,9 +162,20 @@ describe("content workflow repository factory", () => {
       resolveConfig: () => config(),
       dependencies: deps.value
     });
-    expect(runtime.getRepository()).toBeInstanceOf(LocalFileContentWorkflowRepository);
+    expect(runtime.getRepository()).toBeInstanceOf(ReadOnlyContentWorkflowRepository);
     expect(deps.value.createDatabasePool).not.toHaveBeenCalled();
     expect(deps.pool.connect).not.toHaveBeenCalled();
+  });
+
+  it("keeps generic reads healthy when scoped mutation configuration is invalid", async () => {
+    const deps = dependencies();
+    const resolved = config({ CONTENT_MUTATIONS_ALLOWED_SCOPES: "home,unknown" });
+    const runtime = createContentWorkflowRepositoryRuntime({
+      resolveConfig: () => resolved,
+      dependencies: deps.value
+    });
+    expect(resolved.scopedMutations.valid).toBe(false);
+    await expect(runtime.getRepository().readPublished()).resolves.toMatchObject({ revision: 1 });
   });
 
   it("does not expose a database repository as a legacy Local adapter", () => {
@@ -175,10 +189,67 @@ describe("content workflow repository factory", () => {
     );
   });
 
-  it("returns a writable repository when the resolved policy is enabled", () => {
+  it("never returns an unrestricted writer through the generic repository", async () => {
     const deps = dependencies();
     const created = createContentWorkflowRepository({ config: config(), dependencies: deps.value });
-    expect(created.repository).toBe(created.localRepository as ContentWorkflowRepository);
-    expect(created.repository).not.toBeInstanceOf(ReadOnlyContentWorkflowRepository);
+    expect(created.repository).toBeInstanceOf(ReadOnlyContentWorkflowRepository);
+    await expect(created.repository.saveDraft({
+      scope: "home",
+      value: siteContentSeed.home,
+      expectedDraftRevision: null,
+      expectedPublishedRevision: 1
+    })).rejects.toMatchObject({ code: "CONTENT_MUTATIONS_DISABLED" });
+  });
+
+  it("creates an exact operation and scope capability only after authorization", async () => {
+    const deps = dependencies();
+    const resolved = databaseConfig({
+      CONTENT_RUNTIME_ENVIRONMENT: "preview",
+      CONTENT_MUTATIONS_SAVE_DRAFT_ENABLED: "true",
+      CONTENT_MUTATIONS_ALLOWED_SCOPES: "home"
+    });
+    const runtime = createContentWorkflowRepositoryRuntime({
+      resolveConfig: () => resolved,
+      dependencies: deps.value
+    });
+    const saveDraft = jest.spyOn(deps.databaseRepository, "saveDraft")
+      .mockResolvedValue({
+        scope: "home",
+        data: siteContentSeed.home,
+        source: "draft",
+        draftRevision: 1,
+        publishedRevision: 1,
+        draftUpdatedAt: "2026-08-26T00:00:00.000Z",
+        publishedUpdatedAt: "2026-08-25T00:00:00.000Z"
+      });
+    const discardDraft = jest.spyOn(deps.databaseRepository, "discardDraft");
+    const authorization = authorizeContentMutation(resolved, "save-draft", "home");
+    const capability = runtime.getMutationRepository(authorization);
+    await capability.saveDraft({
+      scope: "home",
+      value: siteContentSeed.home,
+      expectedDraftRevision: null,
+      expectedPublishedRevision: 1
+    });
+    expect(saveDraft).toHaveBeenCalledTimes(1);
+    expect(() => capability.discardDraft({
+      scope: "home",
+      expectedDraftRevision: 1
+    })).toThrow(expect.objectContaining({ code: "CONTENT_MUTATIONS_DISABLED" }));
+    expect(discardDraft).not.toHaveBeenCalled();
+  });
+
+  it("does not construct a mutable repository when policy authorization is denied", () => {
+    const deps = dependencies();
+    const resolved = databaseConfig({ CONTENT_RUNTIME_ENVIRONMENT: "preview" });
+    const runtime = createContentWorkflowRepositoryRuntime({
+      resolveConfig: () => resolved,
+      dependencies: deps.value
+    });
+    expect(() => authorizeContentMutation(resolved, "save-draft", "home"))
+      .toThrow(expect.objectContaining({ code: "CONTENT_MUTATIONS_DISABLED" }));
+    expect(deps.value.createDatabasePool).not.toHaveBeenCalled();
+    expect(deps.value.createDatabaseRepository).not.toHaveBeenCalled();
+    expect(() => runtime.getRepository()).not.toThrow();
   });
 });

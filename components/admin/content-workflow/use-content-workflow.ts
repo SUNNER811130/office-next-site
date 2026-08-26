@@ -9,12 +9,11 @@ import {
   isRevisionConflict,
   loadEditorSnapshot,
   publishDraft,
+  resetDraft,
   saveDraft,
   type AdminWorkflowSection
 } from "@/lib/content-workflow-client";
 import type { EditorSnapshot, ScopeValue } from "@/types/content-workflow";
-
-type SaveMode = "saving" | "resetting";
 
 export function useContentWorkflow<TScope extends AdminWorkflowSection>(
   initialSnapshot: EditorSnapshot<TScope>,
@@ -94,17 +93,13 @@ export function useContentWorkflow<TScope extends AdminWorkflowSection>(
     setError("");
   }, []);
 
-  const save = useCallback(async (
-    overrideValue?: ScopeValue<TScope>,
-    mode: SaveMode = "saving"
-  ) => {
-    const signal = begin(mode);
+  const save = useCallback(async () => {
+    const signal = begin("saving");
     if (!signal) return;
-    const nextValue = overrideValue ?? valueRef.current;
     try {
       const nextSnapshot = await saveDraft(
         initialSnapshot.scope,
-        nextValue,
+        valueRef.current,
         snapshotRef.current,
         { signal }
       );
@@ -115,7 +110,31 @@ export function useContentWorkflow<TScope extends AdminWorkflowSection>(
       setValue(nextSnapshot.data);
       setDirty(false);
       setConflict(null);
-      setNotice(mode === "resetting" ? "reset" : "saved");
+      setNotice("saved");
+    } catch (caught: unknown) {
+      fail(caught);
+    } finally {
+      finish();
+    }
+  }, [begin, fail, finish, initialSnapshot.scope]);
+
+  const reset = useCallback(async () => {
+    const signal = begin("resetting");
+    if (!signal) return;
+    try {
+      const nextSnapshot = await resetDraft(
+        initialSnapshot.scope,
+        snapshotRef.current,
+        { signal }
+      );
+      if (!mountedRef.current) return;
+      snapshotRef.current = nextSnapshot;
+      valueRef.current = nextSnapshot.data;
+      setSnapshot(nextSnapshot);
+      setValue(nextSnapshot.data);
+      setDirty(false);
+      setConflict(null);
+      setNotice("reset");
     } catch (caught: unknown) {
       fail(caught);
     } finally {
@@ -204,6 +223,7 @@ export function useContentWorkflow<TScope extends AdminWorkflowSection>(
     conflict,
     changeValue,
     save,
+    reset,
     publish,
     discard,
     reload

@@ -6,10 +6,11 @@ import {
   loadEditorSnapshot,
   parseWorkflowResponse,
   publishDraft,
+  resetDraft,
   saveDraft
 } from "@/lib/content-workflow-client";
 import { siteContentSeed } from "@/data/site-content.seed";
-import type { EditorSnapshot } from "@/types/content-workflow";
+import type { ContentScope, EditorSnapshot } from "@/types/content-workflow";
 
 const publishedBrand: EditorSnapshot<"brand"> = {
   scope: "brand",
@@ -28,7 +29,10 @@ const draftBrand: EditorSnapshot<"brand"> = {
   draftUpdatedAt: "2026-07-16T01:00:00.000Z"
 };
 
-function response(snapshot: EditorSnapshot<"brand">, status = 200) {
+function response<TScope extends ContentScope>(
+  snapshot: EditorSnapshot<TScope>,
+  status = 200
+) {
   return new Response(JSON.stringify({ ok: true, snapshot }), {
     status,
     headers: { "Content-Type": "application/json" }
@@ -80,6 +84,25 @@ describe("content workflow client", () => {
     expect(request.mock.calls[0][0]).toBe("/api/admin/content/brand/draft");
     expect(request.mock.calls[0][1]?.method).toBe("DELETE");
     expect(JSON.parse(String(request.mock.calls[0][1]?.body))).toEqual({ expectedDraftRevision: 3 });
+  });
+
+  it("resets through the explicit endpoint without sending Client content", async () => {
+    const designSnapshot: EditorSnapshot<"design"> = {
+      scope: "design",
+      data: siteContentSeed.design,
+      source: "draft",
+      draftRevision: 3,
+      publishedRevision: 7,
+      draftUpdatedAt: "2026-07-16T01:00:00.000Z",
+      publishedUpdatedAt: "2026-07-15T01:00:00.000Z"
+    };
+    const request = jest.spyOn(global, "fetch").mockResolvedValue(response(designSnapshot));
+    await resetDraft("design", designSnapshot);
+    const body = JSON.parse(String(request.mock.calls[0][1]?.body));
+    expect(request.mock.calls[0][0]).toBe("/api/admin/content/design/reset-draft");
+    expect(request.mock.calls[0][1]?.method).toBe("POST");
+    expect(body).toEqual({ expectedDraftRevision: 3, expectedPublishedRevision: 7 });
+    expect(body).not.toHaveProperty("data");
   });
 
   it("keeps scopeUpdatedAt-derived published metadata unchanged", () => {

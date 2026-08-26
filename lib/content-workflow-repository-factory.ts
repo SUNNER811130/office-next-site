@@ -13,7 +13,13 @@ import {
   resolveContentPersistenceConfig,
   type ContentPersistenceConfig
 } from "@/lib/content-persistence-config";
-import { applyContentMutationPolicy } from "@/lib/content-mutation-gate";
+import {
+  applyContentMutationPolicy,
+  createScopedContentMutationRepositoryCapability,
+  getAuthorizedContentMutationDetails,
+  type AuthorizedContentMutation,
+  type ScopedContentMutationRepositoryCapability
+} from "@/lib/content-mutation-gate";
 import { LocalFileContentWorkflowRepository } from "@/lib/content-workflow-repository";
 import type { ContentWorkflowRepository } from "@/types/content-workflow";
 
@@ -52,14 +58,20 @@ export type CreatedContentWorkflowRepository = {
   pool: DatabaseRepositoryPool | null;
 };
 
-export function createContentWorkflowRepository({
+type CreatedRepositoryAdapters = {
+  sourceRepository: ContentWorkflowRepository;
+  localRepository: LocalFileContentWorkflowRepository | null;
+  pool: DatabaseRepositoryPool | null;
+};
+
+function createRepositoryAdapters({
   config,
   dependencies = defaultDependencies
-}: CreateContentWorkflowRepositoryOptions): CreatedContentWorkflowRepository {
+}: CreateContentWorkflowRepositoryOptions): CreatedRepositoryAdapters {
   if (config.driver === "local") {
     const localRepository = dependencies.createLocalRepository();
     return {
-      repository: applyContentMutationPolicy(localRepository, config),
+      sourceRepository: localRepository,
       localRepository,
       pool: null
     };
@@ -85,13 +97,25 @@ export function createContentWorkflowRepository({
     environment: config.environment
   });
   return {
-    repository: applyContentMutationPolicy(databaseRepository, config),
+    sourceRepository: databaseRepository,
     localRepository: null,
     pool
   };
 }
 
+export function createContentWorkflowRepository(
+  options: CreateContentWorkflowRepositoryOptions
+): CreatedContentWorkflowRepository {
+  const adapters = createRepositoryAdapters(options);
+  return {
+    repository: applyContentMutationPolicy(adapters.sourceRepository, options.config),
+    localRepository: adapters.localRepository,
+    pool: adapters.pool
+  };
+}
+
 type RuntimeRepositoryState = CreatedContentWorkflowRepository & {
+  sourceRepository: ContentWorkflowRepository;
   fingerprint: string;
 };
 
@@ -101,6 +125,9 @@ function configFingerprint(config: ContentPersistenceConfig): string {
     config.driver,
     config.mutationsEnabled,
     config.productionMutationsConfirmed,
+    config.scopedMutations.valid,
+    config.scopedMutations.operations,
+    config.scopedMutations.allowedScopes,
     config.database?.connectionString ?? null,
     config.database?.siteKey ?? null
   ]);
@@ -113,15 +140,15 @@ export function createContentWorkflowRepositoryRuntime(options: {
   const resolveConfig = options.resolveConfig ?? resolveContentPersistenceConfig;
   let state: RuntimeRepositoryState | null = null;
 
-  function getState(): RuntimeRepositoryState {
-    const config = resolveConfig();
+  function getState(config: ContentPersistenceConfig = resolveConfig()): RuntimeRepositoryState {
     const fingerprint = configFingerprint(config);
     if (state?.fingerprint === fingerprint) return state;
+    const adapters = createRepositoryAdapters({ config, dependencies: options.dependencies });
     state = {
-      ...createContentWorkflowRepository({
-        config,
-        dependencies: options.dependencies
-      }),
+      repository: applyContentMutationPolicy(adapters.sourceRepository, config),
+      sourceRepository: adapters.sourceRepository,
+      localRepository: adapters.localRepository,
+      pool: adapters.pool,
       fingerprint
     };
     return state;
@@ -140,6 +167,16 @@ export function createContentWorkflowRepositoryRuntime(options: {
         );
       }
       return current.localRepository;
+    },
+    getMutationRepository(
+      authorization: AuthorizedContentMutation
+    ): ScopedContentMutationRepositoryCapability {
+      const details = getAuthorizedContentMutationDetails(authorization);
+      const current = getState(details.config);
+      return createScopedContentMutationRepositoryCapability(
+        current.sourceRepository,
+        authorization
+      );
     }
   };
 }
@@ -152,4 +189,10 @@ export function getContentWorkflowRepository(): ContentWorkflowRepository {
 
 export function getLocalFileContentWorkflowRepository(): LocalFileContentWorkflowRepository {
   return runtime.getLocalRepository();
+}
+
+export function getContentWorkflowMutationRepository(
+  authorization: AuthorizedContentMutation
+): ScopedContentMutationRepositoryCapability {
+  return runtime.getMutationRepository(authorization);
 }

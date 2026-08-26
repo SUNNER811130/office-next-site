@@ -10,11 +10,10 @@ import {
   discardPageBlockDraft,
   loadPageBlockEditorSnapshot,
   publishPageBlockDraft,
+  resetPageBlockDraft,
   savePageBlockDraft
 } from "./page-block-workflow-helpers";
 import type { PageBlockEditorPage, PageBlockEditorSnapshot } from "./page-block-editor-types";
-
-type SaveMode = "saving" | "resetting";
 
 export function usePageBlockWorkflow<TPage extends PageBlockEditorPage>(
   page: TPage,
@@ -98,15 +97,11 @@ export function usePageBlockWorkflow<TPage extends PageBlockEditorPage>(
     setError("");
   }, []);
 
-  const save = useCallback(async (
-    overrideBlocks?: PageBlockSettings[TPage],
-    mode: SaveMode = "saving"
-  ) => {
-    const signal = begin(mode);
+  const save = useCallback(async () => {
+    const signal = begin("saving");
     if (!signal) return;
-    const nextBlocks = overrideBlocks ?? blocksRef.current;
     try {
-      const nextSnapshot = await savePageBlockDraft(page, nextBlocks, snapshotRef.current, { signal });
+      const nextSnapshot = await savePageBlockDraft(page, blocksRef.current, snapshotRef.current, { signal });
       if (!mountedRef.current) return;
       snapshotRef.current = nextSnapshot;
       blocksRef.current = nextSnapshot.data;
@@ -114,7 +109,27 @@ export function usePageBlockWorkflow<TPage extends PageBlockEditorPage>(
       setBlocks(nextSnapshot.data);
       setDirty(false);
       setConflict(null);
-      setNotice(mode === "resetting" ? "reset" : "saved");
+      setNotice("saved");
+    } catch (caught: unknown) {
+      fail(caught);
+    } finally {
+      finish();
+    }
+  }, [begin, fail, finish, page]);
+
+  const reset = useCallback(async () => {
+    const signal = begin("resetting");
+    if (!signal) return;
+    try {
+      const nextSnapshot = await resetPageBlockDraft(page, snapshotRef.current, { signal });
+      if (!mountedRef.current) return;
+      snapshotRef.current = nextSnapshot;
+      blocksRef.current = nextSnapshot.data;
+      setSnapshot(nextSnapshot);
+      setBlocks(nextSnapshot.data);
+      setDirty(false);
+      setConflict(null);
+      setNotice("reset");
     } catch (caught: unknown) {
       fail(caught);
     } finally {
@@ -204,6 +219,7 @@ export function usePageBlockWorkflow<TPage extends PageBlockEditorPage>(
     conflict,
     changeBlocks,
     save,
+    reset,
     publish,
     discard,
     reload

@@ -2,7 +2,7 @@ import { type NextRequest } from "next/server";
 
 import { rejectIfNotAdmin } from "@/lib/admin-auth";
 import {
-  assertWorkflowContentMutationsEnabled,
+  authorizeWorkflowContentMutation,
   workflowErrorResponse,
   workflowSnapshotResponse,
   workflowUnauthorizedResponse
@@ -12,7 +12,7 @@ import {
   parseSaveDraftInput,
   parseWorkflowJsonBody
 } from "@/lib/content-workflow-request";
-import { getContentWorkflowRepository } from "@/lib/content-store";
+import { getContentWorkflowMutationRepository } from "@/lib/content-workflow-repository-factory";
 
 type RouteContext = { params: Promise<{ section: string }> };
 
@@ -23,8 +23,9 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   try {
     const { section } = await context.params;
     const input = parseSaveDraftInput(section, await parseWorkflowJsonBody(request));
-    assertWorkflowContentMutationsEnabled();
-    const snapshot = await getContentWorkflowRepository().saveDraft(input);
+    const authorization = authorizeWorkflowContentMutation("save-draft", input.scope);
+    const repository = getContentWorkflowMutationRepository(authorization);
+    const snapshot = await repository.saveDraft(input);
     return workflowSnapshotResponse(snapshot);
   } catch (error: unknown) {
     return workflowErrorResponse(error);
@@ -38,8 +39,9 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
     const { section } = await context.params;
     const input = parseDiscardDraftInput(section, await parseWorkflowJsonBody(request));
-    assertWorkflowContentMutationsEnabled();
-    const snapshot = await getContentWorkflowRepository().discardDraft(input);
+    const authorization = authorizeWorkflowContentMutation("discard-draft", input.scope);
+    const repository = getContentWorkflowMutationRepository(authorization);
+    const snapshot = await repository.discardDraft(input);
     return workflowSnapshotResponse(snapshot);
   } catch (error: unknown) {
     return workflowErrorResponse(error);

@@ -8,7 +8,7 @@ import {
   UnknownContentSchemaVersionError
 } from "@/lib/content-envelope";
 import { getScopeValue } from "@/lib/content-scopes";
-import { getContentWorkflowRepository } from "@/lib/content-store";
+import { getContentWorkflowMutationRepository } from "@/lib/content-workflow-repository-factory";
 import {
   ContentDraftNotFoundError,
   ContentRevisionConflictError,
@@ -21,10 +21,12 @@ import type {
 } from "@/types/content-workflow";
 
 jest.mock("@/lib/admin-auth", () => ({ rejectIfNotAdmin: jest.fn() }));
-jest.mock("@/lib/content-store", () => ({ getContentWorkflowRepository: jest.fn() }));
+jest.mock("@/lib/content-workflow-repository-factory", () => ({
+  getContentWorkflowMutationRepository: jest.fn()
+}));
 
 const mockedRejectIfNotAdmin = jest.mocked(rejectIfNotAdmin);
-const mockedGetRepository = jest.mocked(getContentWorkflowRepository);
+const mockedGetRepository = jest.mocked(getContentWorkflowMutationRepository);
 
 function createRepository(): jest.Mocked<ContentWorkflowRepository> {
   return {
@@ -79,14 +81,49 @@ function context(section: string) {
 
 describe("admin content workflow draft route", () => {
   let repository: jest.Mocked<ContentWorkflowRepository>;
+  const previousEnvironment = {
+    runtime: process.env.CONTENT_RUNTIME_ENVIRONMENT,
+    driver: process.env.CONTENT_PERSISTENCE_DRIVER,
+    master: process.env.CONTENT_MUTATIONS_ENABLED,
+    save: process.env.CONTENT_MUTATIONS_SAVE_DRAFT_ENABLED,
+    discard: process.env.CONTENT_MUTATIONS_DISCARD_DRAFT_ENABLED,
+    scopes: process.env.CONTENT_MUTATIONS_ALLOWED_SCOPES,
+    url: process.env.CONTENT_DATABASE_RUNTIME_URL,
+    site: process.env.CONTENT_SITE_KEY
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
     repository = createRepository();
     mockedRejectIfNotAdmin.mockResolvedValue(null);
     mockedGetRepository.mockReturnValue(
-      repository as unknown as ReturnType<typeof getContentWorkflowRepository>
+      repository as unknown as ReturnType<typeof getContentWorkflowMutationRepository>
     );
+    process.env.CONTENT_RUNTIME_ENVIRONMENT = "preview";
+    process.env.CONTENT_PERSISTENCE_DRIVER = "database";
+    process.env.CONTENT_MUTATIONS_ENABLED = "true";
+    process.env.CONTENT_MUTATIONS_SAVE_DRAFT_ENABLED = "true";
+    process.env.CONTENT_MUTATIONS_DISCARD_DRAFT_ENABLED = "true";
+    process.env.CONTENT_MUTATIONS_ALLOWED_SCOPES = "home,design,pageBlocks.home,pageBlocks.services,pageBlocks.about,pageBlocks.contact";
+    process.env.CONTENT_DATABASE_RUNTIME_URL = "postgresql://fake@localhost/db";
+    process.env.CONTENT_SITE_KEY = "test";
+  });
+
+  afterAll(() => {
+    const values = {
+      CONTENT_RUNTIME_ENVIRONMENT: previousEnvironment.runtime,
+      CONTENT_PERSISTENCE_DRIVER: previousEnvironment.driver,
+      CONTENT_MUTATIONS_ENABLED: previousEnvironment.master,
+      CONTENT_MUTATIONS_SAVE_DRAFT_ENABLED: previousEnvironment.save,
+      CONTENT_MUTATIONS_DISCARD_DRAFT_ENABLED: previousEnvironment.discard,
+      CONTENT_MUTATIONS_ALLOWED_SCOPES: previousEnvironment.scopes,
+      CONTENT_DATABASE_RUNTIME_URL: previousEnvironment.url,
+      CONTENT_SITE_KEY: previousEnvironment.site
+    };
+    for (const [key, value] of Object.entries(values)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
   });
 
   it.each(["PUT", "DELETE"] as const)(

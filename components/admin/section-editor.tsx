@@ -243,7 +243,7 @@ function WorkflowSectionEditor<TScope extends AdminWorkflowSection>({
             <h2 className="text-lg font-medium text-ink">{resetDraft.title}</h2>
             <p className="mt-2 text-sm text-slate">{resetDraft.description}</p>
             <button type="button" onClick={() => setResetOpen(true)} disabled={workflow.operation !== null || workflow.conflict !== null} className="mt-4 rounded-full border border-red-800/30 px-4 py-2 text-sm text-red-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-800/30">建立預設設計草稿</button>
-            {resetOpen ? <ContentWorkflowConfirmDialog id="reset-design" title="將預設設計建立為草稿？" confirmLabel="確認建立 Reset Draft" tone="danger" onCancel={() => setResetOpen(false)} onConfirm={() => { setResetOpen(false); void workflow.save(resetDraft.value, "resetting"); }}><p>目前 Published design 不會改變，必須另行 Publish 才會更新公開網站。</p><p>現有未發布草稿與本地修改會由預設設計取代。</p></ContentWorkflowConfirmDialog> : null}
+            {resetOpen ? <ContentWorkflowConfirmDialog id="reset-design" title="將預設設計建立為草稿？" confirmLabel="確認建立 Reset Draft" tone="danger" onCancel={() => setResetOpen(false)} onConfirm={() => { setResetOpen(false); void workflow.reset(); }}><p>目前 Published design 不會改變，必須另行 Publish 才會更新公開網站。</p><p>現有未發布草稿與本地修改會由預設設計取代。</p></ContentWorkflowConfirmDialog> : null}
           </section>
         ) : null}
         <ContentWorkflowActions snapshot={workflow.snapshot} dirty={workflow.dirty} operation={workflow.operation} notice={workflow.notice} error={workflow.error} conflict={workflow.conflict} onSave={() => void workflow.save()} onPublish={() => void workflow.publish()} onDiscard={() => void workflow.discard()} onReload={() => void workflow.reload()} />

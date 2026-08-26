@@ -1,7 +1,7 @@
-import { revalidatePath } from "next/cache";
 import { type NextRequest } from "next/server";
 
 import { rejectIfNotAdmin } from "@/lib/admin-auth";
+import { resolveContentResetDefaults } from "@/lib/content-reset-defaults";
 import {
   authorizeWorkflowContentMutation,
   workflowErrorResponse,
@@ -9,10 +9,9 @@ import {
   workflowUnauthorizedResponse
 } from "@/lib/content-workflow-api";
 import {
-  parsePublishDraftInput,
+  parseResetDraftInput,
   parseWorkflowJsonBody
 } from "@/lib/content-workflow-request";
-import { getPublishedPagePath } from "@/lib/content-workflow-public-paths";
 import { getContentWorkflowMutationRepository } from "@/lib/content-workflow-repository-factory";
 
 type RouteContext = { params: Promise<{ section: string }> };
@@ -23,12 +22,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   try {
     const { section } = await context.params;
-    const input = parsePublishDraftInput(section, await parseWorkflowJsonBody(request));
-    const authorization = authorizeWorkflowContentMutation("publish", input.scope);
+    const input = parseResetDraftInput(section, await parseWorkflowJsonBody(request));
+    const value = resolveContentResetDefaults(input.scope);
+    const authorization = authorizeWorkflowContentMutation("reset-draft", input.scope);
     const repository = getContentWorkflowMutationRepository(authorization);
-    const snapshot = await repository.publishDraft(input);
-    const publishedPagePath = getPublishedPagePath(input.scope);
-    if (publishedPagePath !== null) revalidatePath(publishedPagePath, "page");
+    const snapshot = await repository.resetDraft({ ...input, value });
     return workflowSnapshotResponse(snapshot);
   } catch (error: unknown) {
     return workflowErrorResponse(error);

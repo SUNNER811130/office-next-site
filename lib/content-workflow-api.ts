@@ -11,8 +11,15 @@ import {
   ContentStorageMutationError,
   LegacyContentWriteBlockedError
 } from "@/lib/content-workflow-errors";
-import { resolveContentPersistenceConfig } from "@/lib/content-persistence-config";
-import { assertContentMutationsEnabled } from "@/lib/content-mutation-gate";
+import {
+  resolveContentPersistenceConfig,
+  type ContentMutationOperation
+} from "@/lib/content-persistence-config";
+import {
+  assertContentMutationsEnabled,
+  authorizeContentMutation,
+  type AuthorizedContentMutation
+} from "@/lib/content-mutation-gate";
 import { ContentWorkflowRequestError } from "@/lib/content-workflow-request";
 import type { ContentScope, EditorSnapshot } from "@/types/content-workflow";
 
@@ -56,6 +63,13 @@ export function workflowUnauthorizedResponse(): NextResponse {
 export function assertWorkflowContentMutationsEnabled(): void {
   const config = resolveContentPersistenceConfig();
   assertContentMutationsEnabled(config.mutationPolicy, config);
+}
+
+export function authorizeWorkflowContentMutation(
+  operation: ContentMutationOperation,
+  scope: ContentScope
+): AuthorizedContentMutation {
+  return authorizeContentMutation(resolveContentPersistenceConfig(), operation, scope);
 }
 
 function errorResponse(

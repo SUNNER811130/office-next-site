@@ -1,3 +1,6 @@
+import { isContentScope } from "@/lib/content-scopes";
+import type { ContentScope } from "@/types/content-workflow";
+
 export type ContentRuntimeEnvironment = "development" | "test" | "preview" | "production";
 
 export type ContentPersistenceDriver = "local" | "database";
@@ -5,7 +8,24 @@ export type ContentPersistenceDriver = "local" | "database";
 export type ContentMutationDisabledReason =
   | "MUTATIONS_DISABLED_BY_FLAG"
   | "LOCAL_DRIVER_NOT_DURABLE"
-  | "PRODUCTION_CONFIRMATION_REQUIRED";
+  | "PRODUCTION_CONFIRMATION_REQUIRED"
+  | "MUTATION_RUNTIME_NOT_ALLOWED"
+  | "MUTATION_CONFIGURATION_INVALID"
+  | "MUTATION_OPERATION_DISABLED"
+  | "MUTATION_SCOPE_NOT_ALLOWED"
+  | "SCOPED_MUTATION_CAPABILITY_REQUIRED";
+
+export type ContentMutationOperation =
+  | "save-draft"
+  | "discard-draft"
+  | "publish"
+  | "reset-draft";
+
+export type ContentScopedMutationConfiguration = {
+  valid: boolean;
+  operations: Readonly<Record<ContentMutationOperation, boolean>>;
+  allowedScopes: readonly ContentScope[];
+};
 
 export type ContentMutationPolicy =
   | { enabled: true; reason: null }
@@ -21,6 +41,7 @@ export type ContentPersistenceConfig = {
   driver: ContentPersistenceDriver;
   mutationsEnabled: boolean;
   productionMutationsConfirmed: boolean;
+  scopedMutations: ContentScopedMutationConfiguration;
   mutationPolicy: ContentMutationPolicy;
   database: ContentDatabaseRuntimeConfig | null;
 };
@@ -101,6 +122,53 @@ function parseBooleanFlag(
   throw new ContentPersistenceConfigurationError("INVALID_BOOLEAN_FLAG", variableName);
 }
 
+const operationFlagNames = {
+  "save-draft": "CONTENT_MUTATIONS_SAVE_DRAFT_ENABLED",
+  "discard-draft": "CONTENT_MUTATIONS_DISCARD_DRAFT_ENABLED",
+  publish: "CONTENT_MUTATIONS_PUBLISH_ENABLED",
+  "reset-draft": "CONTENT_MUTATIONS_RESET_DRAFT_ENABLED"
+} as const satisfies Record<ContentMutationOperation, string>;
+
+function parseOperationFlag(value: string | undefined): { valid: boolean; enabled: boolean } {
+  if (value === undefined || value === "") return { valid: true, enabled: false };
+  if (value === "true") return { valid: true, enabled: true };
+  if (value === "false") return { valid: true, enabled: false };
+  return { valid: false, enabled: false };
+}
+
+function parseAllowedScopes(value: string | undefined): {
+  valid: boolean;
+  scopes: readonly ContentScope[];
+} {
+  if (value === undefined || value.trim() === "") {
+    return { valid: true, scopes: [] };
+  }
+
+  const tokens = value.split(",").map((token) => token.trim());
+  if (tokens.some((token) => token === "" || !isContentScope(token))) {
+    return { valid: false, scopes: [] };
+  }
+  return { valid: true, scopes: [...new Set(tokens as ContentScope[])] };
+}
+
+function parseScopedMutationConfiguration(
+  env: RuntimeEnvironment
+): ContentScopedMutationConfiguration {
+  const parsedOperations = Object.entries(operationFlagNames).map(([operation, variableName]) => [
+    operation as ContentMutationOperation,
+    parseOperationFlag(env[variableName])
+  ] as const);
+  const allowedScopes = parseAllowedScopes(env.CONTENT_MUTATIONS_ALLOWED_SCOPES);
+
+  return {
+    valid: allowedScopes.valid && parsedOperations.every(([, parsed]) => parsed.valid),
+    operations: Object.fromEntries(
+      parsedOperations.map(([operation, parsed]) => [operation, parsed.enabled])
+    ) as Record<ContentMutationOperation, boolean>,
+    allowedScopes: allowedScopes.scopes
+  };
+}
+
 function defaultMutationsEnabled(environment: ContentRuntimeEnvironment): boolean {
   return environment === "development" || environment === "test";
 }
@@ -167,6 +235,30 @@ export function resolveContentMutationPolicy(config: Pick<
   return { enabled: true, reason: null };
 }
 
+export function resolveScopedContentMutationPolicy(
+  config: ContentPersistenceConfig,
+  operation: ContentMutationOperation,
+  scope: ContentScope
+): ContentMutationPolicy {
+  if (config.driver === "local") {
+    return { enabled: false, reason: "LOCAL_DRIVER_NOT_DURABLE" };
+  }
+  if (config.environment !== "preview" && config.environment !== "production") {
+    return { enabled: false, reason: "MUTATION_RUNTIME_NOT_ALLOWED" };
+  }
+  if (!config.mutationPolicy.enabled) return config.mutationPolicy;
+  if (!config.scopedMutations.valid) {
+    return { enabled: false, reason: "MUTATION_CONFIGURATION_INVALID" };
+  }
+  if (!config.scopedMutations.operations[operation]) {
+    return { enabled: false, reason: "MUTATION_OPERATION_DISABLED" };
+  }
+  if (!config.scopedMutations.allowedScopes.includes(scope)) {
+    return { enabled: false, reason: "MUTATION_SCOPE_NOT_ALLOWED" };
+  }
+  return { enabled: true, reason: null };
+}
+
 export function resolveContentPersistenceConfig(
   env: RuntimeEnvironment = process.env
 ): ContentPersistenceConfig {
@@ -182,12 +274,14 @@ export function resolveContentPersistenceConfig(
     "CONTENT_PRODUCTION_MUTATIONS_CONFIRMED",
     false
   );
+  const scopedMutations = parseScopedMutationConfiguration(env);
   const database = driver === "database" ? parseDatabaseConfig(env) : null;
   const config = {
     environment,
     driver,
     mutationsEnabled,
     productionMutationsConfirmed,
+    scopedMutations,
     database
   };
   return { ...config, mutationPolicy: resolveContentMutationPolicy(config) };

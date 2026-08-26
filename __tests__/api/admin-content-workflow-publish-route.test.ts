@@ -5,7 +5,7 @@ import { POST } from "@/app/api/admin/content/[section]/publish/route";
 import { siteContentSeed } from "@/data/site-content.seed";
 import { rejectIfNotAdmin } from "@/lib/admin-auth";
 import { getScopeValue } from "@/lib/content-scopes";
-import { getContentWorkflowRepository } from "@/lib/content-store";
+import { getContentWorkflowMutationRepository } from "@/lib/content-workflow-repository-factory";
 import {
   ContentDraftNotFoundError,
   ContentRevisionConflictError,
@@ -18,11 +18,13 @@ import type {
 } from "@/types/content-workflow";
 
 jest.mock("@/lib/admin-auth", () => ({ rejectIfNotAdmin: jest.fn() }));
-jest.mock("@/lib/content-store", () => ({ getContentWorkflowRepository: jest.fn() }));
+jest.mock("@/lib/content-workflow-repository-factory", () => ({
+  getContentWorkflowMutationRepository: jest.fn()
+}));
 jest.mock("next/cache", () => ({ revalidatePath: jest.fn() }));
 
 const mockedRejectIfNotAdmin = jest.mocked(rejectIfNotAdmin);
-const mockedGetRepository = jest.mocked(getContentWorkflowRepository);
+const mockedGetRepository = jest.mocked(getContentWorkflowMutationRepository);
 const mockedRevalidatePath = jest.mocked(revalidatePath);
 
 function createRepository(): jest.Mocked<ContentWorkflowRepository> {
@@ -65,14 +67,41 @@ function context(section: string) {
 
 describe("admin content workflow publish route", () => {
   let repository: jest.Mocked<ContentWorkflowRepository>;
+  const persistenceKeys = [
+    "CONTENT_RUNTIME_ENVIRONMENT",
+    "CONTENT_PERSISTENCE_DRIVER",
+    "CONTENT_MUTATIONS_ENABLED",
+    "CONTENT_MUTATIONS_PUBLISH_ENABLED",
+    "CONTENT_MUTATIONS_ALLOWED_SCOPES",
+    "CONTENT_DATABASE_RUNTIME_URL",
+    "CONTENT_SITE_KEY"
+  ] as const;
+  const previousEnvironment = Object.fromEntries(
+    persistenceKeys.map((key) => [key, process.env[key]])
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();
     repository = createRepository();
     mockedRejectIfNotAdmin.mockResolvedValue(null);
     mockedGetRepository.mockReturnValue(
-      repository as unknown as ReturnType<typeof getContentWorkflowRepository>
+      repository as unknown as ReturnType<typeof getContentWorkflowMutationRepository>
     );
+    process.env.CONTENT_RUNTIME_ENVIRONMENT = "preview";
+    process.env.CONTENT_PERSISTENCE_DRIVER = "database";
+    process.env.CONTENT_MUTATIONS_ENABLED = "true";
+    process.env.CONTENT_MUTATIONS_PUBLISH_ENABLED = "true";
+    process.env.CONTENT_MUTATIONS_ALLOWED_SCOPES = "home,design,pageBlocks.home,pageBlocks.services,pageBlocks.about,pageBlocks.contact";
+    process.env.CONTENT_DATABASE_RUNTIME_URL = "postgresql://fake@localhost/db";
+    process.env.CONTENT_SITE_KEY = "test";
+  });
+
+  afterAll(() => {
+    for (const key of persistenceKeys) {
+      const value = previousEnvironment[key];
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
   });
 
   it("returns 401 before body parsing or repository access", async () => {

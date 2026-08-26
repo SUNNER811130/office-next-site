@@ -129,9 +129,10 @@ export async function parseWorkflowFetchResponse<TScope extends ContentScope>(
 
 async function requestSnapshot<TScope extends AdminWorkflowSection>(
   section: TScope,
+  endpoint: "editor" | "draft" | "publish" | "reset-draft",
   init: RequestInit
 ): Promise<EditorSnapshot<TScope>> {
-  const response = await fetch(`/api/admin/content/${section}/${init.method === "GET" ? "editor" : init.method === "POST" ? "publish" : "draft"}`, init);
+  const response = await fetch(`/api/admin/content/${section}/${endpoint}`, init);
   return parseWorkflowFetchResponse(section, response);
 }
 
@@ -139,7 +140,7 @@ export function loadEditorSnapshot<TScope extends AdminWorkflowSection>(
   section: TScope,
   options: RequestOptions = {}
 ): Promise<EditorSnapshot<TScope>> {
-  return requestSnapshot(section, {
+  return requestSnapshot(section, "editor", {
     method: "GET",
     cache: "no-store",
     credentials: "same-origin",
@@ -153,7 +154,7 @@ export function saveDraft<TScope extends AdminWorkflowSection>(
   revisions: Pick<EditorSnapshot<TScope>, "draftRevision" | "publishedRevision">,
   options: RequestOptions = {}
 ): Promise<EditorSnapshot<TScope>> {
-  return requestSnapshot(section, {
+  return requestSnapshot(section, "draft", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "same-origin",
@@ -171,7 +172,7 @@ export function publishDraft<TScope extends AdminWorkflowSection>(
   revisions: Pick<EditorSnapshot<TScope>, "draftRevision" | "publishedRevision"> & { draftRevision: Revision },
   options: RequestOptions = {}
 ): Promise<EditorSnapshot<TScope>> {
-  return requestSnapshot(section, {
+  return requestSnapshot(section, "publish", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "same-origin",
@@ -188,12 +189,29 @@ export function discardDraft<TScope extends AdminWorkflowSection>(
   expectedDraftRevision: Revision,
   options: RequestOptions = {}
 ): Promise<EditorSnapshot<TScope>> {
-  return requestSnapshot(section, {
+  return requestSnapshot(section, "draft", {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
     credentials: "same-origin",
     signal: options.signal,
     body: JSON.stringify({ expectedDraftRevision })
+  });
+}
+
+export function resetDraft<TScope extends AdminWorkflowSection>(
+  section: TScope,
+  revisions: Pick<EditorSnapshot<TScope>, "draftRevision" | "publishedRevision">,
+  options: RequestOptions = {}
+): Promise<EditorSnapshot<TScope>> {
+  return requestSnapshot(section, "reset-draft", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    signal: options.signal,
+    body: JSON.stringify({
+      expectedDraftRevision: revisions.draftRevision,
+      expectedPublishedRevision: revisions.publishedRevision
+    })
   });
 }
 

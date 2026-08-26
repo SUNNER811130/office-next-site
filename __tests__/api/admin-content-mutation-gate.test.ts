@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GET as getEditor } from "@/app/api/admin/content/[section]/editor/route";
 import { DELETE as discardDraft, PUT as saveDraft } from "@/app/api/admin/content/[section]/draft/route";
 import { POST as publishDraft } from "@/app/api/admin/content/[section]/publish/route";
+import { POST as resetDraft } from "@/app/api/admin/content/[section]/reset-draft/route";
 import { PUT as legacyPut } from "@/app/api/admin/content/[section]/route";
 import { siteContentSeed } from "@/data/site-content.seed";
 import { rejectIfNotAdmin } from "@/lib/admin-auth";
@@ -11,6 +12,7 @@ import {
   updateContentSection,
   updatePageBlockPage
 } from "@/lib/content-store";
+import { getContentWorkflowMutationRepository } from "@/lib/content-workflow-repository-factory";
 import type { ContentWorkflowRepository, EditorSnapshot } from "@/types/content-workflow";
 
 jest.mock("@/lib/admin-auth", () => ({ rejectIfNotAdmin: jest.fn() }));
@@ -20,10 +22,14 @@ jest.mock("@/lib/content-store", () => ({
   updateContentSection: jest.fn(),
   updatePageBlockPage: jest.fn()
 }));
+jest.mock("@/lib/content-workflow-repository-factory", () => ({
+  getContentWorkflowMutationRepository: jest.fn()
+}));
 jest.mock("next/cache", () => ({ revalidatePath: jest.fn() }));
 
 const mockedRejectIfNotAdmin = jest.mocked(rejectIfNotAdmin);
 const mockedGetRepository = jest.mocked(getContentWorkflowRepository);
+const mockedGetMutationRepository = jest.mocked(getContentWorkflowMutationRepository);
 const mockedUpdateContentSection = jest.mocked(updateContentSection);
 const mockedUpdatePageBlockPage = jest.mocked(updatePageBlockPage);
 
@@ -67,6 +73,11 @@ const persistenceKeys = [
   "CONTENT_RUNTIME_ENVIRONMENT",
   "CONTENT_PERSISTENCE_DRIVER",
   "CONTENT_MUTATIONS_ENABLED",
+  "CONTENT_MUTATIONS_SAVE_DRAFT_ENABLED",
+  "CONTENT_MUTATIONS_DISCARD_DRAFT_ENABLED",
+  "CONTENT_MUTATIONS_PUBLISH_ENABLED",
+  "CONTENT_MUTATIONS_RESET_DRAFT_ENABLED",
+  "CONTENT_MUTATIONS_ALLOWED_SCOPES",
   "CONTENT_PRODUCTION_MUTATIONS_CONFIRMED",
   "CONTENT_DATABASE_RUNTIME_URL",
   "CONTENT_SITE_KEY"
@@ -87,6 +98,9 @@ describe("admin content API mutation gate", () => {
     repo = repository();
     mockedRejectIfNotAdmin.mockResolvedValue(null);
     mockedGetRepository.mockReturnValue(repo);
+    mockedGetMutationRepository.mockReturnValue(repo as unknown as ReturnType<
+      typeof getContentWorkflowMutationRepository
+    >);
   });
 
   afterAll(() => {
@@ -111,7 +125,7 @@ describe("admin content API mutation gate", () => {
     );
     expect(response.status).toBe(401);
     expect(JSON.stringify(await response.json())).not.toContain("CONTENT_MUTATIONS_DISABLED");
-    expect(mockedGetRepository).not.toHaveBeenCalled();
+    expect(mockedGetMutationRepository).not.toHaveBeenCalled();
     expect(repo.saveDraft).not.toHaveBeenCalled();
   });
 
@@ -146,7 +160,13 @@ describe("admin content API mutation gate", () => {
       request("/api/admin/content/home/draft", "DELETE", {
         expectedDraftRevision: 1
       }), context()
-    ), "discardDraft"]
+    ), "discardDraft"],
+    ["Reset", () => resetDraft(
+      request("/api/admin/content/design/reset-draft", "POST", {
+        expectedDraftRevision: null,
+        expectedPublishedRevision: 1
+      }), context("design")
+    ), "saveDraft"]
   ] as const)("returns a safe 503 for authenticated %s without repository mutation", async (_label, invoke, method) => {
     const response = await invoke();
     expect(response.status).toBe(503);
@@ -157,7 +177,7 @@ describe("admin content API mutation gate", () => {
         message: "Content mutations are temporarily unavailable."
       }
     });
-    expect(mockedGetRepository).not.toHaveBeenCalled();
+    expect(mockedGetMutationRepository).not.toHaveBeenCalled();
     expect(repo[method]).not.toHaveBeenCalled();
   });
 
@@ -189,8 +209,12 @@ describe("admin content API mutation gate", () => {
     expect(repo.readEditor).toHaveBeenCalledWith("home");
   });
 
-  it("preserves enabled test behavior and revision responses", async () => {
-    process.env.CONTENT_RUNTIME_ENVIRONMENT = "test";
+  it("preserves enabled Preview behavior only with the exact operation and scope", async () => {
+    process.env.CONTENT_PERSISTENCE_DRIVER = "database";
+    process.env.CONTENT_DATABASE_RUNTIME_URL = "postgresql://fake@localhost/db";
+    process.env.CONTENT_SITE_KEY = "test";
+    process.env.CONTENT_MUTATIONS_SAVE_DRAFT_ENABLED = "true";
+    process.env.CONTENT_MUTATIONS_ALLOWED_SCOPES = "home";
     const response = await saveDraft(
       request("/api/admin/content/home/draft", "PUT", {
         data: siteContentSeed.home,
@@ -202,5 +226,6 @@ describe("admin content API mutation gate", () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ ok: true, snapshot: snapshot() });
     expect(repo.saveDraft).toHaveBeenCalledTimes(1);
+    expect(mockedGetMutationRepository).toHaveBeenCalledTimes(1);
   });
 });

@@ -5,11 +5,13 @@ import path from "path";
 import {
   createPageBlockDiscardPayload,
   createPageBlockPublishPayload,
+  createPageBlockResetDraftPayload,
   createPageBlockSaveDraftPayload,
   discardPageBlockDraft,
   getPageBlockWorkflowScope,
   loadPageBlockEditorSnapshot,
   publishPageBlockDraft,
+  resetPageBlockDraft,
   savePageBlockDraft
 } from "@/components/admin/page-block-editor/page-block-workflow-helpers";
 import type { PageBlockEditorPage, PageBlockEditorSnapshot } from "@/components/admin/page-block-editor/page-block-editor-types";
@@ -101,6 +103,22 @@ describe("Page Block workflow client and UI contracts", () => {
     expect(request.mock.calls[0][0]).toBe("/api/admin/content/pageBlocks/draft");
     expect(request.mock.calls[0][1].method).toBe("DELETE");
     expect(JSON.parse(request.mock.calls[0][1].body)).toEqual(createPageBlockDiscardPayload("contact", 4));
+  });
+
+  it("resets through the explicit endpoint without sending blocks", async () => {
+    const initial = publishedSnapshot("about");
+    const request = jest.fn().mockResolvedValue(snapshotResponse({
+      ...initial,
+      source: "draft",
+      draftRevision: 1,
+      draftUpdatedAt: "2026-07-16T02:00:00.000Z"
+    }));
+    await resetPageBlockDraft("about", initial, { request });
+    const body = JSON.parse(request.mock.calls[0][1].body);
+    expect(request.mock.calls[0][0]).toBe("/api/admin/content/pageBlocks/reset-draft");
+    expect(request.mock.calls[0][1].method).toBe("POST");
+    expect(body).toEqual(createPageBlockResetDraftPayload("about", initial));
+    expect(body).not.toHaveProperty("blocks");
   });
 
   it("rejects a mismatched nested scope response", async () => {

@@ -208,3 +208,39 @@ export function parseDiscardDraftInput(
     )
   };
 }
+
+export type ResetDraftRequestInput = Pick<
+  SaveDraftInput<ContentScope>,
+  "scope" | "expectedDraftRevision" | "expectedPublishedRevision"
+>;
+
+export function parseResetDraftInput(
+  section: string,
+  body: UnknownRecord
+): ResetDraftRequestInput {
+  if (section === "pageBlocks") {
+    requireExactKeys(body, ["page", "expectedDraftRevision", "expectedPublishedRevision"]);
+    return {
+      scope: parseWorkflowScope(section, requireField(body, "page")),
+      expectedDraftRevision: requireExpectedDraftRevision(
+        requireField(body, "expectedDraftRevision")
+      ),
+      expectedPublishedRevision: requireRevision(
+        requireField(body, "expectedPublishedRevision"),
+        "expectedPublishedRevision"
+      )
+    };
+  }
+
+  requireExactKeys(body, ["expectedDraftRevision", "expectedPublishedRevision"]);
+  return {
+    scope: parseWorkflowScope(section),
+    expectedDraftRevision: requireExpectedDraftRevision(
+      requireField(body, "expectedDraftRevision")
+    ),
+    expectedPublishedRevision: requireRevision(
+      requireField(body, "expectedPublishedRevision"),
+      "expectedPublishedRevision"
+    )
+  };
+}
